@@ -1,0 +1,77 @@
+name: Apply desktop writing-game layouts
+
+on:
+  push:
+    paths:
+      - '.github/workflows/desktop-layout.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-layouts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Improve desktop layouts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('writing_games')
+          desktop = '''
+          @media (min-width:900px){
+            main{max-width:1280px;padding:28px 32px}
+            .hero,.panel{padding:24px 28px}
+            .hero p{max-width:78ch}
+            .controls{align-items:center}
+            .grid{gap:18px}
+            .box,.char,.shared,.collision,.active{min-width:0}
+          }
+          @media (min-width:1100px){
+            main:has(> .panel + .panel){display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr);gap:18px;align-items:start}
+            main:has(> .panel + .panel)>.hero{grid-column:1/-1;margin-bottom:0}
+            main:has(> .panel + .panel)>.panel{margin-bottom:0}
+            main:has(> .panel + .panel)>.panel:nth-of-type(2){grid-column:1}
+            main:has(> .panel + .panel)>.panel:nth-of-type(n+3){grid-column:2}
+          }
+          '''
+
+          # Some games have many panels. For those, the generic two-column board
+          # places the primary play panel on the left and supporting panels on the right.
+          # Mobile CSS remains untouched and continues to stack naturally.
+          for path in sorted(root.glob('*/game_index.html')):
+              text = path.read_text(encoding='utf-8')
+              original = text
+              text = re.sub(r'main\{max-width:(\d+)px;', lambda m: 'main{max-width:1280px;' if int(m.group(1)) < 1200 else m.group(0), text, count=1)
+              if '/* desktop-workspace-v1 */' not in text:
+                  marker = '@media(max-width:'
+                  pos = text.find(marker)
+                  if pos < 0:
+                      marker = '@media (max-width:'
+                      pos = text.find(marker)
+                  if pos < 0:
+                      pos = text.find('</style>')
+                  block = '/* desktop-workspace-v1 */\n' + desktop
+                  text = text[:pos] + block + text[pos:]
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  print('updated', path)
+          PY
+      - name: Commit desktop layout changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add writing_games/*/game_index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Improve desktop layouts for writing games"
+            git push origin HEAD:master
+          fi
