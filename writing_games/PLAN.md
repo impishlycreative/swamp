@@ -68,19 +68,6 @@ Common visible effects may include:
 
 The main costs are implementation and testing discipline rather than presentation quality. Some visual ideas may need adjustment if they depend on very low contrast, tiny controls, hidden focus, hover-only interaction, sound-only cues, aggressive motion, or inaccessible dragging. In general, the large controls, simple layouts, prominent timers, and mobile-first direction already used by the writing games are compatible with strong accessibility.
 
-## Responsive Layout and KCW Visual Direction
-
-The games should feel like part of the Kemptville Creative Writers site while still behaving like purpose-built games.
-
-1. **Mobile remains a first-class experience.** Preserve the strong stacked mobile layouts and large touch-friendly controls unless a specific game mechanic requires a different treatment.
-2. **Desktop must not be a stretched phone layout.** At wider breakpoints, use the extra horizontal space to create a game workspace or game board. Related information, controls, prompts, timers, characters, or consequences should sit side by side when that improves play.
-3. **Choose the desktop layout by mechanic.** Comparison games, sequence/chain games, reveal games, timed-pressure games, and prompt/reflection games may use different desktop compositions. Do not force every game into one generic grid.
-4. **Reduce unnecessary vertical travel on desktop.** Important game state and primary controls should generally remain visible together without long scrolling where practical.
-5. **Match the KCW main-site visual language.** Typography, spacing rhythm, card treatment, control styling, border radius, visual hierarchy, and general polish should feel related to the KCW main site.
-6. **Allow game-specific accents.** Individual games may retain their own accent colour or mood where useful, provided contrast and other WCAG 2.2 AA requirements are met.
-7. **Accessibility survives every breakpoint.** Reflow, horizontal grouping, larger desktop canvases, sticky regions, animations, and visual emphasis must not reduce keyboard usability, focus visibility, reading order, zoom support, reduced-motion behaviour, touch usability, or screen-reader clarity.
-8. **Responsive changes must preserve logical order.** The DOM and focus order should remain meaningful even when desktop CSS visually rearranges the interface.
-
 ## Design Test for Every New Game
 
 Before a game is considered ready, ask:
@@ -95,5 +82,3 @@ Before a game is considered ready, ask:
 - Does replay vary the thinking, not just the wording of scenarios?
 - Is the content appropriate for an all-ages audience?
 - Does the game meet WCAG 2.2 AA before release?
-- Does the desktop layout use wider screens intentionally rather than merely stretching the mobile stack?
-- Does the game feel visually related to the KCW main site without losing the identity of its own mechanic?
