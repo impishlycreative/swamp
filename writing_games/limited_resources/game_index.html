@@ -1,1 +1,448 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Limited Resources — Writing Game</title><style>:root{--bg:#f7f2ea;--ink:#28241f;--card:#fff;--accent:#8a6238;--line:#dfd3c4}*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--ink)}main{max-width:1100px;margin:auto;padding:16px}.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}h1{font-size:clamp(2rem,7vw,3.5rem);margin:.1em 0}.tag,.label{font-size:.78rem;text-transform:uppercase;font-weight:800;letter-spacing:.07em;color:var(--accent)}.problem,.event{border:2px solid var(--accent);border-radius:16px;padding:18px;font-weight:800;background:#fff}.resources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}.resource{border:1px solid var(--line);border-radius:14px;padding:14px}.count{font-size:1.6rem;font-weight:900;color:var(--accent)}select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;background:#fff}.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{min-height:46px;border:0;border-radius:12px;padding:11px 16px;background:var(--accent);color:#fff;font:inherit;font-weight:800;cursor:pointer}button.secondary{background:#e8ddd0;color:var(--ink)}button:disabled{opacity:.4}@media(max-width:650px){main{padding:10px}.resources{grid-template-columns:1fr}button{width:100%}}</style></head><body><main><section class="panel"><div class="tag">Core concept: sacrifice and trade-offs</div><h1>Limited Resources</h1><p><strong>Goal:</strong> Make scarcity alter the character’s strategy. Every response must spend a concrete resource, so choices made early remove options later.</p></section><section class="panel"><label class="label" for="scenario">Choose problem</label><select id="scenario"></select><div class="problem" style="margin-top:12px"><div class="label">Goal</div><div id="problem"></div></div><div class="resources" id="resources"></div><div class="event" style="margin-top:14px"><div class="label">Round <span id="round">1</span> of 4</div><div id="event" aria-live="polite"></div><p id="spendRule"></p></div><div class="controls"><button id="next" disabled>Respond and continue</button><button id="random" class="secondary">Random problem</button><button id="restart" class="secondary">Restart</button></div></section><section class="panel"><h2>Completion test</h2><p>The later problem should feel harder because of what you spent earlier. If scarcity only changes numbers on the screen, rewrite the scene so the depleted resource removes a real option.</p></section></main><script>const scenarios=[{g:'Reach a nearby town before nightfall with an injured companion.',r:[['Phone battery',2],['Daylight',1],['Trust of companion',1],['Safe route options',2]],e:['The marked road is blocked and you must choose whether to call for directions, spend daylight searching, or risk a route.','Your companion wants to stop and rest just as the remaining daylight becomes critical.','The phone finds a weak signal, but using it heavily may leave no battery for an emergency.','Final trade-off: reach town only by spending two remaining resources. Decide what the character is willing to exhaust.']},{g:'Keep a public event running after the organizer disappears.',r:[['Available volunteers',2],['Time extensions',1],['Backup equipment',1],['Credibility with audience',2]],e:['A required station is suddenly unstaffed.','A piece of equipment fails while guests are already arriving.','A promised activity cannot happen as advertised and someone important wants an explanation.','Final trade-off: solve the largest failure by spending two remaining resources and accept what can no longer be protected.']},{g:'Get into a locked building before someone leaves.',r:[['Favors owed',2],['Minutes before departure',1],['Credibility with staff',1],['Alternate entrances',2]],e:['The entrance you expected to use is locked from inside.','A staff member offers help only if you explain why you need access.','Security begins closing alternate entrances one by one.','Final trade-off: gain access by spending two remaining resources, knowing one exhausted option will matter on the way out.']},{g:'Convince a frightened witness to stay long enough to talk.',r:[['Trust',2],['Time before they leave',1],['Useful facts you can reveal',1],['People willing to help',2]],e:['The witness says they are leaving unless given one reason to stay.','Someone they distrust appears nearby and increases their fear.','The witness asks a question whose honest answer may damage trust.','Final trade-off: keep them talking by spending two resources and accept which relationship or informational advantage is lost.']},{g:'Recover a missing item before its absence is noticed.',r:[['Minutes',2],['Plausible excuses',1],['People you can ask',1],['Private places to search',2]],e:['The obvious location is empty and someone else enters the area.','A person who might know something wants to know why you are asking.','The owner announces they will need the item sooner than expected.','Final trade-off: spend two remaining resources to find or replace the item, accepting what the search exposes.']},{g:'Protect a secret while helping someone who keeps asking questions.',r:[['Trust',2],['Safe lies',1],['Topic changes',1],['Opportunities to leave',2]],e:['The person asks a direct question that is close to the truth.','A third person adds a detail that makes your earlier answer suspicious.','The person offers help, but only if you explain what is really wrong.','Final trade-off: spend two remaining resources to preserve either the secret or the relationship, but not both intact.']},{g:'Finish an important repair before the power or light runs out.',r:[['Battery power',2],['Working tools',1],['Time before darkness',1],['Replacement parts',2]],e:['The first repair reveals a second fault.','The best tool jams and can be freed only by spending time or battery.','A replacement part almost fits, but making it work consumes another resource.','Final trade-off: finish by spending two remaining resources and decide what failure risk the character accepts.']},{g:'Keep a small business running through a day of cascading failures.',r:[['Staff energy',2],['Cash reserve',1],['Customer goodwill',1],['Backup supplies',2]],e:['A delivery does not arrive before opening.','A staff member must leave unexpectedly during the busiest period.','A customer discovers a mistake just as another line starts building.','Final trade-off: spend two remaining resources to protect the business’s most important priority and let another one fail visibly.']},{g:'Get three people with different priorities to agree before a deadline.',r:[['Goodwill',2],['Private concessions',1],['Minutes remaining',1],['Leverage',2]],e:['Two participants reject the same proposal for opposite reasons.','One participant threatens to leave unless offered something concrete.','A new fact makes the current compromise worse for the third person.','Final trade-off: spend two remaining resources to close a deal and accept which relationship or advantage is depleted.']},{g:'Get an injured person to safety without attracting unwanted attention.',r:[['Energy',2],['Hidden routes',1],['Trust of injured person',1],['Useful cover stories',2]],e:['The easiest route becomes crowded.','The injured person can no longer move at the same pace.','Someone nearby notices something is wrong and offers help.','Final trade-off: spend two remaining resources to reach safety and accept whether secrecy, speed, or trust is exhausted.']}];const $=id=>document.getElementById(id);let round=0,state=[],spentThis=0,required=1;scenarios.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+x.g;$('scenario').appendChild(o)});function renderResources(){const w=$('resources');w.innerHTML='';state.forEach((r,i)=>{const d=document.createElement('div');d.className='resource';d.innerHTML='<div class="label">'+r[0]+'</div><div class="count">'+r[1]+'</div>';const b=document.createElement('button');b.textContent='Spend 1';b.disabled=r[1]<=0;b.addEventListener('click',()=>spend(i));d.appendChild(b);w.appendChild(d)})}function spend(i){if(state[i][1]<=0)return;state[i][1]--;spentThis++;renderResources();$('next').disabled=spentThis<required}function show(){const x=scenarios[$('scenario').value];$('problem').textContent=x.g;$('round').textContent=round+1;$('event').textContent=x.e[round];required=round===3?2:1;spentThis=0;$('spendRule').innerHTML='<strong>To continue:</strong> spend '+required+' resource point'+(required>1?'s':'')+' in a way that appears in the scene.';$('next').disabled=true;renderResources()}function reset(random=false){if(random)$('scenario').value=Math.floor(Math.random()*scenarios.length);round=0;state=scenarios[$('scenario').value].r.map(x=>[x[0],x[1]]);show()}$('scenario').addEventListener('change',()=>reset(false));$('next').addEventListener('click',()=>{if(round<3){round++;show()}else{$('event').textContent='Complete — at least one early expenditure should have removed an option you wanted later.';$('spendRule').textContent='Round complete.';$('next').disabled=true}});$('random').addEventListener('click',()=>reset(true));$('restart').addEventListener('click',()=>reset(false));reset(false);</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Limited Resources — Writing Game</title>
+<style>
+:root{--bg:#f7f2ea;--ink:#28241f;--muted:#6f665d;--card:#fff;--accent:#8a6238;--accent2:#5e4330;--line:#dfd3c4;--soft:#f0e6da;--danger:#8b3d32}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:1120px;margin:auto;padding:16px}.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
+h1{font-size:clamp(2rem,7vw,3.5rem);margin:.1em 0}h2{margin:.2em 0 .65em}.tag,.label{font-size:.78rem;text-transform:uppercase;font-weight:850;letter-spacing:.07em;color:var(--accent)}
+.goal,.event,.echo{border-radius:16px;padding:18px}.goal,.event{border:2px solid var(--accent);background:#fff}.goal{font-weight:800}.echo{margin-top:12px;background:var(--soft);border-left:5px solid var(--accent2)}
+.assets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:14px 0}.asset{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;min-height:84px}.asset.spent{opacity:.48;text-decoration:line-through;background:#eee}.asset .state{font-size:.8rem;font-weight:800;margin-top:7px;color:var(--accent2)}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.choice{border:1px solid var(--line);border-radius:15px;padding:15px;background:#fff}.choice h3{margin:0 0 7px;font-size:1.05rem}.choice p{margin:6px 0;color:var(--muted)}.choice .cost{font-weight:800;color:var(--accent2)}.choice button{width:100%;margin-top:10px}
+.choice.unavailable{opacity:.52}.choice.unavailable button{cursor:not-allowed}.result{margin-top:14px;border:1px dashed var(--accent);border-radius:14px;padding:14px;background:#fff}
+.history{display:grid;gap:8px}.history-item{border-left:4px solid var(--line);padding:8px 12px;background:#faf8f5;border-radius:8px}
+select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;background:#fff}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{min-height:46px;border:0;border-radius:12px;padding:11px 16px;background:var(--accent);color:#fff;font:inherit;font-weight:800;cursor:pointer}
+button.secondary{background:#e8ddd0;color:var(--ink)}button:disabled{opacity:.4}.hidden{display:none}
+@media(max-width:800px){.assets{grid-template-columns:repeat(2,1fr)}.choices{grid-template-columns:1fr}}
+@media(max-width:650px){main{padding:10px}.assets{grid-template-columns:1fr}.controls button{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<section class="panel">
+  <div class="tag">Core concept: choices create consequences</div>
+  <h1>Limited Resources</h1>
+  <p><strong>Goal:</strong> Solve the immediate problem by sacrificing something you may desperately want later. Every option works now. The game remembers what you gave up and makes that loss matter.</p>
+</section>
+
+<section class="panel">
+  <label class="label" for="scenario">Choose problem</label>
+  <select id="scenario"></select>
+  <div class="goal" style="margin-top:12px"><div class="label">Goal</div><div id="goal"></div></div>
+
+  <div class="label" style="margin-top:14px">What you still have</div>
+  <div class="assets" id="assets"></div>
+
+  <div class="event">
+    <div class="label">Pressure <span id="round">1</span> of 4</div>
+    <h2 id="eventTitle"></h2>
+    <div id="eventText"></div>
+  </div>
+
+  <div id="echo" class="echo hidden"></div>
+
+  <div class="choices" id="choices"></div>
+  <div id="result" class="result hidden"></div>
+
+  <div class="controls">
+    <button id="continue" class="hidden">Live with it →</button>
+    <button id="random" class="secondary">Random problem</button>
+    <button id="restart" class="secondary">Restart</button>
+  </div>
+</section>
+
+<section class="panel hidden" id="ending">
+  <div class="tag">Debrief</div>
+  <h2>What survived?</h2>
+  <div id="endingText"></div>
+  <div class="history" id="history"></div>
+  <p><strong>Writing test:</strong> Could the final scene have happened the same way if you made different early choices? If yes, the consequences were not strong enough.</p>
+</section>
+</main>
+
+<script>
+const scenarios = [
+{
+title:"Injured companion in the woods",
+goal:"Get an injured friend to a nearby town before dark.",
+assets:[["phone","Phone battery"],["daylight","Daylight"],["trust","Your friend's trust"],["flare","Emergency flare"],["strength","Your own strength"]],
+stages:[
+{t:"The trail is gone",p:"A washout has erased the marked route. You need a way around it now.",o:[
+["phone","Call for directions","You get a reliable route immediately.","Your phone will be nearly dead when you next need outside help.","The call gets you moving, but the battery warning turns red."],
+["daylight","Scout for another path","You find a passable route without involving anyone else.","You burn precious daylight doing it.","You find the route, but the sun is much lower than before."],
+["trust","Take the dangerous crossing","It is fast and gets you back onto the trail.","Your friend stops trusting your judgement after the frightening crossing.","You make it across. Your friend says, ‘I’m not doing that again.’"],
+["flare","Fire the emergency flare","It reveals your position and gives you a clear landmark to navigate toward.","Your only distress signal is gone.","The flare works beautifully. Then it burns out."],
+["strength","Carry your friend across the washout","You avoid the detour completely.","You exhaust the strength you may need later.","You get across, but your arms are shaking by the time you set them down."]]},
+{t:"They cannot keep walking",p:"Your friend collapses and says they need to stop.",o:[
+["strength","Carry them","You keep moving at once.","You will have little physical reserve left for the final stretch.","You lift them. It works, but every step now costs you."],
+["trust","Order them to keep moving","Fear and urgency get them onto their feet.","They may stop cooperating the next time you ask for something dangerous.","They move, angry and scared."],
+["phone","Call for medical guidance","You learn how to stabilize the injury while moving.","You may not have enough charge left for rescue later.","The advice helps. The battery does not."],
+["daylight","Let them rest","Their condition improves enough to continue.","Darkness will catch you sooner.","Ten minutes helps them. It hurts the clock."],
+["flare","Use the flare as a signal for help","Someone may notice and come toward you.","You lose the one signal that could matter more later.","You launch it and hope somebody saw."]]},
+{t:"A storm moves in",p:"Heavy rain cuts visibility and the trail starts turning to mud.",o:[
+["daylight","Wait for the worst of it to pass","You avoid the most dangerous part of the storm.","You surrender the remaining safe light.","The rain eases. So does the light."],
+["phone","Use the phone GPS continuously","You can navigate despite the visibility.","The battery will not survive much longer.","The blue dot keeps you on course while the percentage falls."],
+["trust","Ask your friend to trust a risky shortcut","The shortcut saves significant time.","If it goes badly, their cooperation is finished.","They agree, reluctantly."],
+["strength","Force your way through the flooded section","You stay on the shortest route.","You spend the last of your physical reserve.","You muscle through, already knowing you could not do it twice."],
+["flare","Use the flare to mark your position","It may draw help through the storm.","You no longer have a distress signal for the final emergency.","The red glow cuts through the rain—and then disappears."]]},
+{t:"The road is close",p:"You can see the road below, but your friend suddenly cannot stand. A vehicle may pass soon.",o:[
+["flare","Signal the road","The flare gives you the best chance of being seen from below.","You commit your last emergency signal now.","You fire it toward the road and wait for an answer."],
+["phone","Call emergency services","A call can bring help directly to you.","This only works if you preserved enough battery.","You make the call and give your position."],
+["strength","Carry them down the slope","You can reach the road without waiting for anyone.","This only works if you preserved enough strength.","You get them onto your back and start down."],
+["trust","Convince them to make one last painful attempt","They may be able to descend under their own power.","This only works if they still believe your judgement.","They look at you, decide whether they still trust you, and move."],
+["daylight","Pick the safest slow route down","You minimize the risk of worsening the injury.","This only works if you still have enough light to see the descent.","You take the careful route while you can still see it."]]}
+]},
+{
+title:"Public event without its organizer",
+goal:"Keep a public event running after the organizer suddenly disappears.",
+assets:[["staff","Volunteer energy"],["cash","Emergency cash"],["goodwill","Audience goodwill"],["backup","Backup equipment"],["truth","Credibility"]],
+stages:[
+{t:"A station is unstaffed",p:"Guests are arriving and a required station has nobody running it.",o:[
+["staff","Pull two volunteers from other jobs","The station opens immediately.","The rest of the event becomes thinly staffed.","The line starts moving, while two other areas lose help."],
+["cash","Hire last-minute help","The station is covered professionally.","Your emergency budget is largely gone.","A contractor agrees—at a painful price."],
+["goodwill","Ask guests to tolerate self-service","The station functions with minimal staffing.","You spend some of the audience’s patience.","Most people cooperate. A few are already annoyed."],
+["backup","Cannibalize the backup setup","You automate enough of the station to run it.","Your fallback equipment is no longer available elsewhere.","It works, but the backup table is now empty."],
+["truth","Claim the change was planned","People stop asking questions.","Your credibility is now tied to that lie.","The explanation lands. You will have to live with it."]]},
+{t:"The main equipment fails",p:"The program is underway when the main equipment abruptly dies.",o:[
+["backup","Swap in the backup unit","The program resumes quickly.","There is now no technical fallback left.","The audience applauds when the replacement comes online."],
+["cash","Rent a replacement immediately","You restore full capability.","The emergency money disappears.","The courier asks for payment up front."],
+["goodwill","Turn the failure into an audience participation segment","You keep everyone occupied without equipment.","You spend more patience and goodwill.","People play along—for now."],
+["staff","Send volunteers to manually recreate the missing function","You keep the program moving.","Your already stretched people become exhausted.","The improvised workaround succeeds, barely."],
+["truth","Explain exactly what happened","People become more forgiving.","You expose how fragile the event really is.","The room softens, but confidence in the event takes a hit."]]},
+{t:"A promised feature is unavailable",p:"A guest realizes the advertised headline activity cannot happen and demands an explanation.",o:[
+["goodwill","Offer the audience a substitute experience","Most accept the trade.","You consume the remaining tolerance for disappointment.","The substitute wins them over, but you have no room for another letdown."],
+["cash","Refund or compensate affected guests","You neutralize the complaint.","Your cash cushion disappears.","The complaint stops immediately when money enters the conversation."],
+["truth","Admit the organizer vanished and you are improvising","The explanation is believable.","You risk exposing the event’s instability.","People appreciate the honesty, even if some start worrying."],
+["staff","Put your strongest volunteer in front of the room","A capable person stabilizes the audience.","You remove your best problem-solver from backstage.","The room settles; backstage gets worse."],
+["backup","Repurpose the last backup system into a replacement activity","You deliver something tangible.","No backup remains for the closing program.","The substitute works. The safety net is gone."]]},
+{t:"The closing program begins",p:"A final failure hits just as the largest audience of the day gathers.",o:[
+["truth","Tell the room what has happened","Honesty can keep the crowd with you.","This only works if your credibility survived earlier choices.","You step up and tell them the truth."],
+["goodwill","Ask the audience for one final act of patience","The crowd may carry the event across the finish line.","This only works if you preserved goodwill.","You ask them to stay with you."],
+["staff","Deploy every rested volunteer","People can brute-force the final program.","This only works if your volunteers still have something left.","The team fans out and starts fixing everything at once."],
+["backup","Bring out the untouched fallback system","A functioning backup can save the ending.","This only works if you resisted using it earlier.","The backup comes out of storage."],
+["cash","Buy the fix","A last-minute purchase solves the immediate failure.","This only works if the emergency budget survived.","You authorize the expense without blinking."]]}
+]},
+{
+title:"Locked building before departure",
+goal:"Get into a locked building before the person you need leaves.",
+assets:[["time","Time"],["favor","A favour owed"],["cred","Credibility with staff"],["entrance","Secret entrance"],["noise","Ability to stay unnoticed"]],
+stages:[
+{t:"The expected door is locked",p:"Your normal way in is locked from inside.",o:[
+["time","Wait for someone to exit","You get a clean opening.","You lose valuable minutes.","Eventually the door opens. The clock has moved."],
+["favor","Call someone who owes you","They can arrange entry.","The favour is spent.","They sigh, then tell you where to go."],
+["cred","Talk your way past reception","Staff let you through.","You stake your reputation on the explanation.","Reception waves you in and remembers your face."],
+["entrance","Use the secret side entrance","You bypass staff entirely.","That route is exposed and cannot be relied on again.","The side door works. A camera pivots toward it."],
+["noise","Force a service door","You get inside immediately.","You attract attention you may need to avoid later.","The latch gives with a metallic crack."]]},
+{t:"Security starts closing the building",p:"Lights go off floor by floor and security begins sweeping rooms.",o:[
+["cred","Tell security you have permission","They give you a short window.","Your story is now on record.","The guard notes your name and gives you five minutes."],
+["time","Hide until the sweep passes","You stay unseen.","You lose more of the shrinking window.","The footsteps pass. So does another chunk of time."],
+["noise","Create a distraction on another floor","Security moves away from you.","You lose the ability to remain unnoticed.","The alarmed shout sends them in the opposite direction."],
+["favor","Ask your contact to delay closing","You gain room to move.","The favour is consumed publicly.","A radio message changes the guard’s route."],
+["entrance","Move through the service route","You avoid the sweep.","The route becomes unavailable for your exit.","You slip through the service corridor as a door locks behind you."]]},
+{t:"The person starts to leave",p:"You see them gathering their things much earlier than expected.",o:[
+["time","Rush straight to them","You reach them before they leave.","You give up any time to prepare or investigate.","You arrive breathless and unprepared."],
+["cred","Have staff ask them to wait","They pause because the request seems official.","Your credibility is spent on the intervention.","A receptionist catches them at the elevator."],
+["favor","Use your contact to block their departure","They are delayed.","The favour becomes impossible to conceal.","The elevator is suddenly ‘out of service.’"],
+["noise","Cause a problem that stops everyone leaving","You buy time fast.","You attract broad attention.","The exit area locks down."],
+["entrance","Cut through the restricted shortcut","You get ahead of them.","The shortcut is exposed and no longer secret.","You emerge in front of them from a door you should not know about."]]},
+{t:"You have what you came for",p:"Now you need to leave without turning success into a bigger problem.",o:[
+["entrance","Use the still-secret exit","You disappear without crossing security.","This only works if the route remained secret.","You slip out through the route nobody watched."],
+["cred","Walk out openly","Staff have no reason to stop you.","This only works if your credibility survived.","You nod to reception and keep walking."],
+["noise","Blend into a quiet exit","No one notices one more person leaving.","This only works if you did not attract attention earlier.","You move with the last few people out."],
+["time","Wait until the moment is safe","Patience gives you a clean exit.","This only works if you preserved enough time.","You wait for the patrol to pass."],
+["favor","Have your contact escort you out","Their authority gets you through.","This only works if you did not spend the favour earlier.","Your contact appears and says, ‘They’re with me.’"]]}
+]},
+{
+title:"Frightened witness",
+goal:"Keep a frightened witness talking long enough to learn what they know.",
+assets:[["trust","Trust"],["time","Time"],["fact","A fact you can safely reveal"],["ally","A trusted ally"],["privacy","Privacy"]],
+stages:[
+{t:"They stand up to leave",p:"The witness says there is no reason to stay.",o:[
+["fact","Reveal one protected fact","It proves you know enough to be worth talking to.","You lose information you could have traded later.","They sit back down."],
+["trust","Promise you will protect them","The promise buys cooperation.","Your credibility now depends on keeping that promise.","They study you, then remain seated."],
+["time","Let them leave and follow gently","You avoid pressuring them.","You lose much of your opportunity to talk.","You catch up outside, with less time."],
+["ally","Bring in someone they trust","The ally reassures them.","You use your strongest relationship card early.","Their shoulders relax when they see the familiar face."],
+["privacy","Move somewhere isolated","They feel safer speaking.","You give up the safety of a public setting.","The door closes behind you."]]},
+{t:"Someone they fear appears",p:"The witness spots a person across the room and begins to panic.",o:[
+["privacy","Move them somewhere unseen","The immediate threat disappears.","You lose your best private location for later.","You get them behind a closed door."],
+["ally","Have your ally intervene","The feared person is kept away.","Your ally becomes exposed to the conflict.","The ally steps between them."],
+["trust","Ask the witness to stay because you can protect them","They remain with you.","You place enormous weight on their trust in you.","They stay, but only because you asked."],
+["time","Wait until the person leaves","The threat passes without confrontation.","The interview window shrinks badly.","You wait in silence while minutes disappear."],
+["fact","Reveal why the person cannot act openly","The information calms them.","You spend another valuable piece of knowledge.","Fear turns into wary attention."]]},
+{t:"They ask the dangerous question",p:"The witness asks something whose truthful answer may make them stop talking.",o:[
+["trust","Answer honestly","You preserve the relationship through honesty.","The truth may hurt, and trust must carry the damage.","They flinch but keep listening."],
+["fact","Trade a different fact instead","You redirect them with something useful.","You spend information you cannot use later.","They accept the trade—for now."],
+["privacy","Ask to move before answering","You delay the answer and reduce risk.","You use up your remaining safe place.","They agree to relocate."],
+["ally","Have the ally answer","The answer comes from someone they already believe.","You make the ally part of the secret.","The ally takes over the conversation."],
+["time","Refuse for now and keep them focused","You preserve the sensitive answer.","You burn precious minutes arguing about it.","The conversation continues, but slower."]]},
+{t:"They finally offer the key detail",p:"They will tell you everything—but only if they feel safe enough to finish.",o:[
+["trust","Ask them to trust you one final time","The relationship carries the disclosure.","This only works if trust survived.","They decide whether your word still means something."],
+["privacy","Give them a truly private place to finish","Safety lets them speak freely.","This only works if privacy remains available.","The room becomes quiet enough for the truth."],
+["ally","Leave them with the trusted ally","They can talk to someone familiar.","This only works if the ally has not already been exposed or spent.","You step back and let the ally take over."],
+["time","Give them all the time they need","Removing the clock lets the story come out.","This only works if you preserved time.","You stop pushing and let silence do the work."],
+["fact","Prove the last missing piece first","A protected fact convinces them you understand.","This only works if you preserved one.","You reveal what you held back."]]}
+]},
+{
+title:"Missing item before anyone notices",
+goal:"Recover a missing item before its owner realizes it is gone.",
+assets:[["time","Time"],["excuse","Plausible excuse"],["helper","A person you can ask"],["privacy","Private search access"],["replacement","Replacement option"]],
+stages:[
+{t:"The obvious location is empty",p:"The item is not where it should be, and someone is approaching.",o:[
+["privacy","Search the restricted storage area","You can check the most likely hidden location.","You lose your private access once someone notices the door opened.","You search fast and come up empty."],
+["excuse","Stay and pretend you belong there","You keep searching without leaving.","You spend your cleanest explanation.","The person accepts your story."],
+["helper","Ask the approaching person for help","You gain another set of eyes.","Someone else now knows the item is missing.","They start searching with you."],
+["time","Leave and return when the area clears","You preserve secrecy.","You lose valuable minutes.","You come back to an empty room and a shorter clock."],
+["replacement","Start arranging a substitute now","You create a fallback immediately.","Your replacement option is committed before you know whether it is needed.","A substitute is put on hold for you."]]},
+{t:"A possible witness wants an explanation",p:"Someone may know where the item went, but asks why you are looking for it.",o:[
+["excuse","Use your best cover story","They answer without becoming suspicious.","The excuse cannot safely be reused.","They point you toward another room."],
+["helper","Bring your helper into the conversation","The second person makes your search seem legitimate.","Your helper becomes publicly tied to the problem.","Together you get the information."],
+["time","Talk around the question until they volunteer something","You avoid revealing the problem.","You burn time.","Eventually they mention seeing the item moved."],
+["replacement","Claim you are comparing it with a replacement","The explanation makes your questions plausible.","Your replacement plan is exposed.","They accept the story and give you a lead."],
+["privacy","Offer to explain somewhere private","They follow you and talk freely.","You spend your safe private location.","Behind a closed door, they tell you what they saw."]]},
+{t:"The owner needs it early",p:"You learn the owner will ask for the item much sooner than expected.",o:[
+["replacement","Put the substitute in place","You prevent immediate discovery.","You commit to the substitute and whatever differences it has.","The replacement buys you a little breathing room."],
+["time","Abandon caution and search at full speed","You cover more ground immediately.","You consume the remaining time buffer.","You tear through the likely places."],
+["helper","Send someone else to delay the owner","You gain a little time.","Your helper becomes part of the deception.","They intercept the owner with a distraction."],
+["excuse","Prepare an explanation for the delay","You can survive the first question.","You spend your last plausible excuse.","The story is ready when the owner asks."],
+["privacy","Use restricted access to check the last likely location","You get one final clean search.","You sacrifice your remaining private access.","You unlock the door nobody else can open."]]},
+{t:"The owner asks for it",p:"The search ends now. You need something convincing in your hands or a reason the owner accepts.",o:[
+["replacement","Hand over the substitute","The immediate problem disappears.","This only works if the replacement option survived.","You present the substitute and watch their reaction."],
+["excuse","Explain why the item is temporarily unavailable","A believable story can buy more time.","This only works if your best excuse remains unused.","You give the explanation without hesitation."],
+["helper","Have your helper produce the item or corroborate your story","Another person can make the ending credible.","This only works if they are still available and uninvolved.","Your helper steps in at exactly the right moment."],
+["privacy","Reveal that the item was secured somewhere private","A controlled explanation can account for its absence.","This only works if private access remained uncompromised.","You lead the owner to the secure location."],
+["time","Use the last few minutes for one final retrieval","You may still recover the original.","This only works if you preserved time.","You make one last run for it."]]}
+]},
+{
+title:"Protect a secret while helping someone",
+goal:"Help someone through a crisis without revealing the secret at the center of it.",
+assets:[["trust","Their trust"],["lie","One safe lie"],["exit","Chance to leave"],["ally","Someone who can cover for you"],["evidence","Control of the evidence"]],
+stages:[
+{t:"They ask the direct question",p:"Their first question lands dangerously close to the truth.",o:[
+["lie","Use the one lie you know will hold up","The question goes away for now.","You lose your safest deception.","They accept the answer."],
+["trust","Refuse, but ask them to trust you","You avoid lying.","The relationship absorbs the strain.","They let it go, reluctantly."],
+["exit","Leave before the conversation deepens","You avoid the question entirely.","You lose your clean escape route.","You get out, but they remember you left."],
+["ally","Have someone interrupt","The conversation is broken cleanly.","Your ally is now involved.","The interruption arrives at the perfect moment."],
+["evidence","Show them a harmless piece of evidence","It steers their interpretation away from the secret.","You lose control of evidence you may need later.","They focus on the wrong explanation."]]},
+{t:"A third person contradicts you",p:"Someone adds a detail that makes your earlier behaviour look suspicious.",o:[
+["lie","Patch the contradiction with the safe lie","The new detail fits your story.","The lie is now fully committed and cannot solve anything else.","The inconsistency disappears."],
+["ally","Have your ally support your version","The contradiction loses force.","Your ally becomes part of the deception.","They back you without blinking."],
+["trust","Admit you withheld something but not what","Honesty about the omission preserves some credibility.","You spend trust without revealing the secret.","They are hurt, but they keep listening."],
+["evidence","Produce evidence that redirects suspicion","The contradiction becomes less important.","You expose a piece of evidence you controlled.","Attention shifts away from you."],
+["exit","End the conversation abruptly","You stop the questioning before it gets worse.","You burn your opportunity to leave gracefully later.","You walk away under suspicion."]]},
+{t:"They offer to help",p:"They can solve your immediate problem, but only if you explain what is really happening.",o:[
+["trust","Ask them to help without knowing why","They may act on faith.","You put almost all remaining trust at risk.","They agree, but they want answers later."],
+["lie","Give them the safe false explanation","They help for the wrong reason.","The lie becomes harder to unwind.","They act immediately."],
+["ally","Route the help through your ally","You get assistance without answering directly.","Your ally becomes deeply entangled.","The ally takes over coordination."],
+["evidence","Give them only the evidence needed to act","They can help without the whole truth.","You lose control over something revealing.","They see enough to understand the task."],
+["exit","Decline the help and leave","The secret stays protected.","You give up the easiest solution and your clean exit.","You walk away from the offer."]]},
+{t:"The secret is about to surface",p:"One final question or discovery could expose everything.",o:[
+["lie","Use the untouched safe lie","A strong lie can still close the door.","This only works if you preserved it.","You answer immediately and hold eye contact."],
+["trust","Tell them to believe you without explanation","The relationship itself becomes the shield.","This only works if enough trust survived.","They decide whether knowing you is enough."],
+["ally","Let your ally take responsibility","A trusted third party can redirect the truth.","This only works if the ally stayed out of the earlier mess.","They step forward and absorb the attention."],
+["evidence","Remove or reinterpret the decisive evidence","Control of the evidence can protect the secret.","This only works if you still control it.","The dangerous clue disappears from the conversation."],
+["exit","Leave before the final discovery","Distance can keep the truth unresolved.","This only works if you preserved a clean exit.","You leave before they can ask the last question."]]}
+]},
+{
+title:"Critical repair before darkness",
+goal:"Finish an important field repair before power and light run out.",
+assets:[["battery","Battery power"],["tool","Best tool"],["light","Daylight"],["part","Spare part"],["margin","Safety margin"]],
+stages:[
+{t:"A second fault appears",p:"Opening the machine reveals another failure you did not plan for.",o:[
+["battery","Run a powered diagnostic","You identify both faults accurately.","You spend much of your remaining battery.","The diagnostic gives you the answer—and a low-power warning."],
+["tool","Use the best tool to strip the assembly quickly","You reach the second fault immediately.","The tool is stressed and may not survive another heavy job.","You get inside fast."],
+["light","Inspect it carefully by hand","You preserve equipment and parts.","You consume valuable daylight.","You finally spot the problem."],
+["part","Replace the whole suspect component","You bypass diagnosis entirely.","Your only spare is gone.","The replacement clicks into place."],
+["margin","Make a provisional repair","You save time and resources now.","You give up your safety margin; another problem could become dangerous.","The machine runs, but you know the fix is fragile."]]},
+{t:"The best tool jams",p:"The tool locks halfway through the repair.",o:[
+["battery","Power it free","The tool returns to service.","Battery reserve falls sharply.","The motor whines and the jam breaks loose."],
+["light","Disassemble it manually","You recover the tool without damaging it.","You lose more daylight.","Small parts spread across the work surface as the sun drops."],
+["tool","Force the tool","You finish the current step immediately.","You sacrifice the tool for the rest of the job.","It works once more and then gives a terrible snap."],
+["part","Use the spare part as a workaround","You bypass the jammed section.","The spare part is consumed in an improvised role.","The ugly workaround holds."],
+["margin","Skip the step","The repair keeps moving.","You reduce the final repair’s reliability.","You mark the skipped step and continue."]]},
+{t:"The replacement does not quite fit",p:"The needed replacement is close, but not compatible without modification.",o:[
+["tool","Machine the part to fit","You create a clean adaptation.","You risk or consume your best remaining tool.","Metal filings cover the bench."],
+["battery","Heat or power the part into shape","You make it fit quickly.","The remaining battery drains.","The part finally seats."],
+["light","Modify it slowly by hand","You preserve equipment.","The light disappears while you work.","By the time it fits, you are squinting."],
+["part","Cannibalize the spare","You get the correct pieces.","You lose the spare for any later failure.","The spare becomes donor material."],
+["margin","Install it imperfectly","The machine may run now.","You surrender the safety margin completely.","It fits well enough to test, but not well enough to trust."]]},
+{t:"Power-up",p:"The repair is assembled. One final problem appears during startup.",o:[
+["battery","Run a full diagnostic cycle","Testing can identify the startup fault safely.","This only works if enough battery survived.","The diagnostic begins."],
+["tool","Open it one last time and correct the fault","A functioning tool can finish the job properly.","This only works if the best tool survived.","You reach for the tool."],
+["light","Inspect the failure point visually","Good light may reveal the simple cause.","This only works if daylight remains.","You lean in and look."],
+["part","Replace the failed component cleanly","A spare can eliminate the final fault.","This only works if the spare survived.","You open the parts case."],
+["margin","Accept the risk and run it","You can finish without another intervention.","This only works if you preserved enough safety margin.","You make the decision to trust the repair."]]}
+]},
+{
+title:"Small business cascading failures",
+goal:"Keep a small business operating through a day of escalating failures.",
+assets:[["staff","Staff energy"],["cash","Cash reserve"],["goodwill","Customer goodwill"],["stock","Backup supplies"],["reputation","Reputation"]],
+stages:[
+{t:"The delivery does not arrive",p:"You open with key stock missing and customers already coming in.",o:[
+["stock","Use the backup supplies","You can operate normally at first.","Your fallback inventory disappears.","The shelves look normal—for now."],
+["cash","Buy emergency stock locally","You replace most of the missing items.","Your cash reserve takes a heavy hit.","You return with enough to open."],
+["goodwill","Ask customers to accept substitutions","You stretch what you have.","You spend patience early in the day.","Most customers agree, some reluctantly."],
+["staff","Have staff improvise alternatives","You create workable substitutes.","The team starts the day already tired.","They make it work, but the pace is brutal."],
+["reputation","Advertise the shortage openly","Expectations reset before people arrive.","You publicly expose the supply failure.","Customers know exactly what is missing."]]},
+{t:"A staff member leaves",p:"The busiest period begins just as one person has to go home.",o:[
+["staff","Ask everyone else to work harder","You keep every function open.","The remaining team burns through its energy.","They cover the gap, but nobody gets a break."],
+["cash","Call in paid emergency help","The workload stabilizes.","Your reserve cash disappears.","Someone agrees to come in for premium pay."],
+["goodwill","Slow service and ask customers for patience","You protect the staff.","You consume customer goodwill.","The line grows, but most people wait."],
+["stock","Cut part of the menu or service","Operations become manageable.","You sacrifice backup stock and variety.","The simplified offering keeps the line moving."],
+["reputation","Close one visible service area","You concentrate staff where they matter most.","The failure becomes publicly visible.","A sign goes up explaining the closure."]]},
+{t:"A customer finds a serious mistake",p:"The complaint lands while another line starts building.",o:[
+["goodwill","Ask for a chance to make it right personally","A sincere recovery may keep the customer.","You spend the remaining patience of the room.","You stop everything and address them directly."],
+["cash","Refund generously","The complaint ends quickly.","Cash reserve drops again.","The customer accepts the refund."],
+["staff","Put your best person on the complaint","You resolve it competently.","The main operation loses its strongest worker.","The complaint gets full attention while the queue worsens."],
+["reputation","Own the mistake publicly","Transparency protects long-term trust.","You make the failure visible to everyone.","The room hears you accept responsibility."],
+["stock","Replace the order completely","You solve the customer’s problem.","You consume scarce backup inventory.","A fresh replacement goes out immediately."]]},
+{t:"The final rush arrives",p:"A larger-than-expected rush hits before closing. You need one thing to carry you through.",o:[
+["staff","Lean on a rested team","People can absorb the rush.","This only works if staff energy survived.","The team looks at the line and gets moving."],
+["cash","Buy whatever you need right now","Money can solve the most urgent bottleneck.","This only works if the reserve survived.","You make the expensive call."],
+["goodwill","Ask customers to work with you","Patient customers can tolerate delays and substitutions.","This only works if goodwill survived.","You explain the situation and ask for patience."],
+["stock","Open the untouched backup stock","Inventory can carry the closing rush.","This only works if it survived earlier failures.","You bring out the reserve boxes."],
+["reputation","Use the trust the business has earned","People may accept an imperfect ending from a business they believe in.","This only works if the reputation remained intact.","You make a public promise and the room listens."]]}
+]},
+{
+title:"Three-way agreement before a deadline",
+goal:"Get three people with different priorities to agree before the deadline.",
+assets:[["time","Time"],["goodwill","Goodwill"],["concession","Private concession"],["leverage","Leverage"],["trust","Trust"]],
+stages:[
+{t:"Opposite objections",p:"Two people reject the same proposal for completely opposite reasons.",o:[
+["time","Meet with them separately","You can understand both objections.","You lose a large part of the deadline window.","Two private conversations clarify the real conflict."],
+["goodwill","Ask both to stay flexible","The relationship keeps them at the table.","You spend goodwill before the hard bargaining begins.","They agree to keep talking."],
+["concession","Quietly offer one side something extra","One objection disappears.","Your best private concession is gone.","One participant suddenly becomes much easier to work with."],
+["leverage","Make the cost of failure explicit","Both take the deadline seriously.","You expose your leverage early.","The room gets quieter."],
+["trust","Share information you had held back","Transparency changes the discussion.","You spend some of the trust advantage you built.","They see the problem differently."]]},
+{t:"Someone threatens to leave",p:"One participant stands up and says they are done unless something changes.",o:[
+["goodwill","Appeal to the relationship","They sit back down.","You spend goodwill keeping them engaged.","They return to the chair, still angry."],
+["concession","Give them the private concession","They remain at the table.","Your strongest bargaining chip disappears.","They sit down immediately."],
+["leverage","Show why walking away hurts them","They stay because leaving is worse.","Your leverage is now fully visible.","They stop moving toward the door."],
+["time","Call a break","Tempers cool.","The clock becomes dangerous.","Everyone leaves the room for ten minutes."],
+["trust","Tell them what you are genuinely trying to protect","The honesty changes the tone.","You make yourself vulnerable.","They listen instead of leaving."]]},
+{t:"A new fact changes the deal",p:"Fresh information makes the current compromise much worse for the third participant.",o:[
+["trust","Disclose everything and reopen the deal","Nobody can accuse you of hiding the problem.","You put trust ahead of momentum.","The room resets around the new fact."],
+["time","Recalculate the agreement from scratch","You can build a fairer solution.","You burn the remaining clock.","Everyone starts rewriting numbers."],
+["goodwill","Ask the third person to absorb the hit","They may accept it for the group.","You consume the remaining goodwill.","They agree to consider it, unhappily."],
+["concession","Compensate them privately","You restore balance.","The concession disappears.","The third participant’s position improves immediately."],
+["leverage","Pressure the other two to improve the offer","You force movement quickly.","You spend your remaining leverage.","The other two finally shift."]]},
+{t:"Final signature",p:"The deadline is minutes away. One last obstacle prevents agreement.",o:[
+["time","Use the remaining minutes to solve it properly","A little time can still produce a clean fix.","This only works if time survived.","You keep everyone at the table and work the problem."],
+["goodwill","Ask everyone to accept an imperfect deal","Relationships can bridge the last gap.","This only works if goodwill survived.","You ask them to sign despite the flaw."],
+["concession","Use the untouched concession","A targeted give can close the final gap.","This only works if you preserved it.","You place the concession on the table."],
+["leverage","Apply the pressure you held in reserve","The final holdout may move.","This only works if leverage survived.","You explain exactly what happens if they refuse."],
+["trust","Ask them to sign based on your word about the unresolved point","Trust can carry uncertainty.","This only works if trust survived.","You give your word and slide the agreement across."]]}
+]},
+{
+title:"Move an injured person unnoticed",
+goal:"Get an injured person to safety without attracting unwanted attention.",
+assets:[["energy","Energy"],["route","Hidden route"],["trust","Their trust"],["cover","Cover story"],["helper","Unnoticed helper"]],
+stages:[
+{t:"The easy route becomes crowded",p:"The safest path fills with people who would ask questions.",o:[
+["route","Use the hidden route","You avoid the crowd completely.","Your secret route is exposed to the injured person and may not be usable again.","You disappear into the service passage."],
+["cover","Walk through openly with a cover story","Nobody stops you.","Your best explanation is spent.","You smile, explain, and keep moving."],
+["energy","Take the long physical detour","You avoid attention without revealing anything.","You burn energy early.","The detour works, but both of you are breathing hard."],
+["trust","Ask the injured person to act normal through the crowd","You pass without drawing concern.","They have to trust your judgement despite the pain.","They nod and force themselves upright."],
+["helper","Send someone ahead to clear the path","The crowd thins enough to move.","Your helper becomes involved and visible.","A small distraction opens a lane."]]},
+{t:"They cannot keep pace",p:"The injured person slows sharply and says they cannot continue like this.",o:[
+["energy","Support or carry them","You keep moving.","You spend most of your physical reserve.","You take their weight and push forward."],
+["trust","Ask them for one more hard effort","They keep going because they believe you.","You draw heavily on their trust.","They grit their teeth and move."],
+["helper","Bring in the unnoticed helper","A second person makes movement easier.","The helper is now exposed.","Together you lift and move faster."],
+["route","Cut through the hidden shortcut","You remove distance from the trip.","The route is consumed and may trap you if needed later.","You take the shortcut."],
+["cover","Stop somewhere public and use the cover story","You can rest without immediate suspicion.","Your explanation becomes known to bystanders.","You settle them down while people watch."]]},
+{t:"Someone offers help",p:"A stranger notices the injury and starts asking concerned questions.",o:[
+["cover","Give the prepared explanation","The stranger accepts it and moves on.","Your cover story is now public.","They wish you luck and leave."],
+["trust","Let the injured person answer","Their performance can deflect suspicion.","You rely on them despite pain and fear.","They force a smile and answer convincingly."],
+["helper","Have your helper handle the stranger","You keep focused on the injured person.","Your helper becomes memorable.","The helper intercepts the questions."],
+["route","Disappear into the hidden route","You avoid the conversation entirely.","You consume the concealed path.","You turn a corner and vanish from view."],
+["energy","Move quickly before questions continue","You escape the interaction.","You spend physical reserve on speed.","You accelerate until the stranger gives up."]]},
+{t:"Safety is close",p:"The last stretch is exposed and the injured person is nearly done.",o:[
+["energy","Carry them across the exposed stretch","Speed and strength can finish it.","This only works if energy survived.","You lift them and go."],
+["route","Use the untouched hidden route","Secrecy solves the final exposure.","This only works if the route survived.","You open the concealed way."],
+["trust","Ask them to make one last controlled crossing","Cooperation can keep attention away.","This only works if their trust survived.","They look at you and try."],
+["cover","Use the intact cover story at the checkpoint","A believable explanation can get you through openly.","This only works if the cover story survived.","You approach as though you belong there."],
+["helper","Let the still-unnoticed helper create a diversion","A clean distraction can open the final path.","This only works if the helper stayed out of sight.","The helper moves ahead and creates your opening."]]}
+]},
+{
+title:"Stranded vehicle in a winter storm",
+goal:"Get two people to shelter before conditions become dangerous.",
+assets:[["fuel","Fuel"],["phone","Phone charge"],["heat","Warmth"],["trust","Passenger trust"],["gear","Emergency gear"]],
+stages:[
+{t:"The car will not restart",p:"The vehicle dies on a little-used road as snow starts building.",o:[
+["phone","Call roadside assistance now","Help is officially on the way.","The call and location sharing consume much of the remaining charge.","You get a confirmation number and a low-battery warning."],
+["fuel","Use the reserve fuel and try again","The engine may run long enough to move.","Your backup fuel disappears.","The engine catches and sputters."],
+["heat","Stay in the car and conserve energy","You buy time safely.","You begin spending the warmth you need for a longer wait.","The cabin feels safe—for now."],
+["trust","Convince your passenger to leave the car with you","You can start toward known shelter immediately.","You stake their trust on your judgement.","They follow, but they are clearly afraid."],
+["gear","Use the emergency kit to stabilize the car and signal","You improve visibility and safety.","You consume gear you may need if you have to walk.","The reflective markers and supplies go into use."]]},
+{t:"The weather worsens",p:"Snow turns heavy and visibility drops to almost nothing.",o:[
+["gear","Use the emergency gear for travel","You can move more safely outside.","The kit is consumed for this stage of the journey.","You bundle up and mark your path."],
+["phone","Use maps and GPS continuously","You can navigate despite the whiteout.","The phone charge falls rapidly.","The map keeps you oriented while the battery drains."],
+["heat","Wait in the sheltered vehicle","You avoid the whiteout.","You consume more warmth and time.","The windows frost while you wait."],
+["trust","Ask your passenger to follow a route they cannot see","You can keep moving toward shelter.","Their willingness now depends on faith in you.","They take your arm and follow."],
+["fuel","Run the engine intermittently for heat","The cabin warms and visibility improves.","The remaining fuel falls toward empty.","The heater finally pushes warm air again."]]},
+{t:"Your passenger gets dangerously cold",p:"Shivering becomes clumsy movement and confused answers.",o:[
+["heat","Give them your warmest layers","You improve their condition immediately.","You give up your own warmth.","Their shaking eases while you start feeling the cold."],
+["gear","Use the emergency blanket and hand warmers","You stabilize them efficiently.","The emergency gear is gone.","The blanket crackles around them."],
+["phone","Call emergency services","Professional help may be redirected to you.","The phone may not survive another use.","The call connects."],
+["fuel","Use the last fuel for sustained heat","The cabin becomes safer for them.","You give up mobility and future heat.","The engine runs steadily as the gauge drops."],
+["trust","Keep them moving despite their protests","Activity may keep them warm enough to continue.","You risk destroying their trust if it feels cruel or unsafe.","You get them moving again."]]},
+{t:"Shelter is within reach",p:"You finally see lights, but reaching them requires one last decision.",o:[
+["phone","Call the shelter and guide rescuers to you","Communication can close the final gap.","This only works if charge survived.","The call goes through."],
+["fuel","Drive the final distance","Fuel can turn the last stretch into minutes.","This only works if fuel survived.","The engine turns over."],
+["heat","Wait safely for the storm to ease","Stored warmth can make patience possible.","This only works if warmth survived.","You decide not to gamble on the whiteout."],
+["trust","Lead your passenger through the final stretch","They must still believe your judgement.","This only works if trust survived.","They look at you and take your hand."],
+["gear","Use the remaining gear to make the crossing safely","The right equipment can turn the exposed stretch manageable.","This only works if the gear survived.","You open the kit and prepare."]]}
+]},
+{
+title:"Apartment fire evacuation",
+goal:"Get yourself and a neighbour out of a smoke-filled apartment building.",
+assets:[["time","Time"],["air","Clean air"],["route","Known escape route"],["strength","Strength"],["alarm","Ability to alert others"]],
+stages:[
+{t:"The hallway fills with smoke",p:"Your normal route is still passable, but worsening fast.",o:[
+["route","Take the known stairwell immediately","You move toward the exit with confidence.","You commit the familiar route before knowing whether it stays open.","You enter the stairwell."],
+["time","Check the alternate corridor first","You learn more before committing.","You spend precious time.","You return with a better picture and less time."],
+["air","Push through the smoke quickly","You gain distance immediately.","You consume clean breathing capacity.","Your throat burns as you move."],
+["strength","Force open the jammed fire door","You create another path.","You burn physical reserve.","The door finally tears free."],
+["alarm","Stop to alert the neighbour","You bring another person into the evacuation.","You spend time and your chance to move unnoticed and fast.","Pounding on the door gets an answer."]]},
+{t:"The neighbour freezes",p:"The neighbour panics and refuses to enter the smoky stairwell.",o:[
+["time","Talk them through it","You regain their cooperation.","You spend critical time.","Their breathing slows enough to listen."],
+["strength","Physically guide them forward","You keep moving.","You spend strength managing another person.","You get them into motion."],
+["air","Give them your better mask or cloth","They tolerate the smoke better.","You give up protection for your own breathing.","They take it and move."],
+["route","Use the alternate escape route","You avoid the stairwell they fear.","You consume your known fallback route.","You turn toward the service stairs."],
+["alarm","Call out for another neighbour to help","You gain support.","You spend the chance to keep movement simple and quiet.","Another door opens."]]},
+{t:"The lower stairwell is blocked",p:"Heat and smoke make the next flight unusable.",o:[
+["route","Switch to the preserved alternate route","You bypass the blockage.","This depends on still having a known route available.","You turn away from the heat."],
+["strength","Force open the emergency access door","You create a new path.","You spend what remains of your strength.","The latch gives."],
+["time","Backtrack and search carefully","You may find a safer way.","You burn the remaining time buffer.","You climb back up."],
+["air","Cross the smoky landing quickly","You may reach the other stairs directly.","You consume more breathable reserve.","You crouch low and move."],
+["alarm","Shout for firefighters or neighbours","Someone may direct you to a viable exit.","You reveal your exact position and spend precious seconds.","A voice answers from below."]]},
+{t:"The exit is visible",p:"You can see outside, but the final corridor is full of smoke and debris.",o:[
+["air","Make the final push","Breathing reserve can carry you through.","This only works if enough clean air capacity survived.","You lower yourself and move."],
+["strength","Clear the obstruction","Physical reserve can open the path.","This only works if strength survived.","You start moving debris."],
+["time","Wait for a safer opening","A little time may let smoke shift or help arrive.","This only works if time survived.","You hold position."],
+["alarm","Signal rescuers from your position","Being heard can bring the route to you.","This only works if your ability to alert others survived.","You make as much noise as you can."],
+["route","Use the still-known clear exit","Route knowledge can avoid the worst corridor.","This only works if you preserved it.","You take the turn you remembered."]]}
+]}
+];
+
+const $=id=>document.getElementById(id);
+let s=0, round=0, available=new Set(), history=[], lastEcho="", locked=false;
+function current(){return scenarios[s]}
+function labelFor(key){return current().assets.find(a=>a[0]===key)?.[1]||key}
+function fillScenarioList(){scenarios.forEach((x,i)=>{const o=document.createElement("option");o.value=i;o.textContent=(i+1)+". "+x.title;$("scenario").appendChild(o)})}
+function renderAssets(){const box=$("assets");box.innerHTML="";current().assets.forEach(([key,label])=>{const d=document.createElement("div");d.className="asset"+(available.has(key)?"":" spent");d.innerHTML=`<div class="label">${label}</div><div class="state">${available.has(key)?"AVAILABLE":"SACRIFICED"}</div>`;box.appendChild(d);});}
+function renderStage(){locked=false;const stage=current().stages[round];$("goal").textContent=current().goal;$("round").textContent=round+1;$("eventTitle").textContent=stage.t;$("eventText").textContent=stage.p;renderAssets();if(lastEcho){$("echo").classList.remove("hidden");$("echo").innerHTML=`<div class="label">Your earlier choice follows you</div>${lastEcho}`;}else $("echo").classList.add("hidden");$("result").classList.add("hidden");$("continue").classList.add("hidden");const box=$("choices");box.innerHTML="";stage.o.forEach(([key,title,now,cost,after])=>{const usable=available.has(key);const card=document.createElement("div");card.className="choice"+(usable?"":" unavailable");card.innerHTML=`<h3>${title}</h3><p><strong>Solves now:</strong> ${now}</p><p class="cost"><strong>Costs:</strong> ${labelFor(key)}</p>${usable?"":`<p><strong>Unavailable:</strong> You already sacrificed ${labelFor(key)}.</p>`}`;const b=document.createElement("button");b.textContent=usable?"Choose this":"No longer available";b.disabled=!usable;b.addEventListener("click",()=>choose(key,title,now,cost,after));card.appendChild(b);box.appendChild(card);});}
+function choose(key,title,now,cost,after){if(locked||!available.has(key))return;locked=true;available.delete(key);history.push({round:round+1,title,key,cost,after});lastEcho=`<strong>${labelFor(key)} is gone.</strong> ${cost}`;$("result").classList.remove("hidden");$("result").innerHTML=`<div class="label">Immediate result</div><strong>${title}</strong><p>${after}</p><p>You solved this pressure. You also gave up <strong>${labelFor(key)}</strong>.</p>`;renderAssets();[...$("choices").querySelectorAll("button")].forEach(b=>b.disabled=true);$("continue").textContent=round===3?"See what survived →":"Live with it →";$("continue").classList.remove("hidden");}
+function finish(){$("ending").classList.remove("hidden");const survivors=current().assets.filter(([k])=>available.has(k)).map(a=>a[1]);$("endingText").innerHTML=`<p>You reached the end with <strong>${survivors.join(", ")||"nothing"}</strong> still intact.</p><p>The important part is not whether you “won.” It is whether your final options were shaped by what you sacrificed earlier.</p>`;$("history").innerHTML=history.map(h=>`<div class="history-item"><strong>Pressure ${h.round}: ${h.title}</strong><br>Sacrificed ${labelFor(h.key)}. ${h.cost}</div>`).join("");$("ending").scrollIntoView({behavior:"smooth",block:"start"});}
+function reset(random=false){if(random){s=Math.floor(Math.random()*scenarios.length);$("scenario").value=s}else{s=Number($("scenario").value)||0}round=0;history=[];lastEcho="";available=new Set(current().assets.map(a=>a[0]));$("ending").classList.add("hidden");renderStage();}
+$("scenario").addEventListener("change",()=>reset(false));
+$("continue").addEventListener("click",()=>{if(round<3){round++;renderStage()}else finish()});
+$("random").addEventListener("click",()=>reset(true));
+$("restart").addEventListener("click",()=>reset(false));
+fillScenarioList();reset(false);
+</script>
+</body>
+</html>
