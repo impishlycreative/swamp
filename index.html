@@ -6,167 +6,34 @@
   <title>Swamp Writing Games</title>
   <meta name="description" content="Interactive writing games for practicing story pressure, conflict, character, point of view, pacing, subtext, description, revision, and other storytelling skills.">
   <style>
-    :root{
-      --bg:#f3f0e8;
-      --ink:#24211d;
-      --muted:#6e675f;
-      --card:#fffdf8;
-      --line:#d9d1c5;
-      --accent:#4f6d54;
-      --accent-soft:#e4ece5;
-      --focus:#1c6aa6;
-    }
-    *{box-sizing:border-box}
-    html{color-scheme:light}
-    body{
-      margin:0;
-      font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:var(--bg);
-      color:var(--ink);
-    }
-    main{max-width:1100px;margin:0 auto;padding:24px}
-    .hero{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:22px;
-      padding:clamp(22px,5vw,42px);
-      margin-bottom:20px;
-    }
-    .eyebrow{
-      margin:0 0 6px;
-      color:var(--accent);
-      font-size:.8rem;
-      font-weight:800;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
-    h1{
-      margin:0;
-      font-size:clamp(2.2rem,7vw,4.4rem);
-      line-height:1;
-    }
-    .intro{
-      max-width:800px;
-      margin:18px 0 0;
-      font-size:clamp(1rem,2vw,1.15rem);
-      color:var(--muted);
-    }
-    .note{
-      margin:0 0 24px;
-      padding:15px 18px;
-      border-left:5px solid var(--accent);
-      border-radius:12px;
-      background:var(--card);
-    }
-    .group{margin:30px 0}
-    .group-heading{margin:0 0 14px}
-    .group-heading h2{margin:0 0 4px;font-size:1.65rem}
-    .group-heading p{margin:0;color:var(--muted);max-width:760px}
-    .games{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:14px;
-    }
-    .game{
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-      min-height:235px;
-      padding:20px;
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:var(--card);
-    }
-    .meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
-    .tag{
-      display:inline-block;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:3px 8px;
-      font-size:.74rem;
-      font-weight:800;
-      letter-spacing:.04em;
-      text-transform:uppercase;
-      background:#fff;
-    }
-    .tag.timed{border-color:var(--accent);color:var(--accent)}
-    .game h3{margin:3px 0 8px;font-size:1.45rem;line-height:1.15}
-    .game p{margin:0 0 18px;color:var(--muted)}
-    .game a{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:46px;
-      margin-top:auto;
-      padding:11px 16px;
-      border-radius:12px;
-      background:var(--accent);
-      color:#fff;
-      font-weight:800;
-      text-decoration:none;
-    }
-    .game a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
-    @media(hover:hover) and (pointer:fine){
-      .game{transition:transform .16s ease,border-color .16s ease}
-      .game:hover{transform:translateY(-2px);border-color:#b9c7bb}
-      .game a:hover{filter:brightness(.94)}
-    }
-    footer{
-      margin-top:28px;
-      padding:14px 4px 4px;
-      color:var(--muted);
-      font-size:.92rem;
-      text-align:center;
-    }
-    @media(max-width:700px){
-      main{padding:12px}
-      .games{grid-template-columns:1fr}
-      .hero{border-radius:18px}
-      .game{min-height:0}
-    }
-    @media(prefers-reduced-motion:reduce){
-      .game{transition:none}
-    }
+    :root{--bg:#f3f0e8;--ink:#24211d;--muted:#6e675f;--card:#fffdf8;--line:#d9d1c5;--accent:#4f6d54;--accent-soft:#e4ece5;--focus:#1c6aa6}
+    *{box-sizing:border-box}html{color-scheme:light}body{margin:0;font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}main{max-width:1100px;margin:0 auto;padding:24px}.hero{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,5vw,42px);margin-bottom:20px}.eyebrow{margin:0 0 6px;color:var(--accent);font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}h1{margin:0;font-size:clamp(2.2rem,7vw,4.4rem);line-height:1}.intro{max-width:800px;margin:18px 0 0;font-size:clamp(1rem,2vw,1.15rem);color:var(--muted)}.note{margin:0 0 24px;padding:15px 18px;border-left:5px solid var(--accent);border-radius:12px;background:var(--card)}.group{margin:30px 0}.group-heading{margin:0 0 14px}.group-heading h2{margin:0 0 4px;font-size:1.65rem}.group-heading p{margin:0;color:var(--muted);max-width:760px}.games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.game{display:flex;flex-direction:column;min-width:0;min-height:235px;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card)}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:.74rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:#fff}.tag.timed{border-color:var(--accent);color:var(--accent)}.game h3{margin:3px 0 8px;font-size:1.45rem;line-height:1.15}.game p{margin:0 0 18px;color:var(--muted)}.game a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;margin-top:auto;padding:11px 16px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;text-decoration:none}.game a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(hover:hover) and (pointer:fine){.game{transition:transform .16s ease,border-color .16s ease}.game:hover{transform:translateY(-2px);border-color:#b9c7bb}.game a:hover{filter:brightness(.94)}}footer{margin-top:28px;padding:14px 4px 4px;color:var(--muted);font-size:.92rem;text-align:center}@media(max-width:700px){main{padding:12px}.games{grid-template-columns:1fr}.hero{border-radius:18px}.game{min-height:0}}@media(prefers-reduced-motion:reduce){.game{transition:none}}
   </style>
 </head>
 <body>
   <main>
-    <section class="hero">
-      <p class="eyebrow">Kemptville Creative Writers · Swamp</p>
-      <h1>Writing Games</h1>
-      <p class="intro">Short writing games built to teach by doing. Most take about five minutes, work solo or alongside a group, and keep your actual writing in your own notebook or document.</p>
-    </section>
-
+    <section class="hero"><p class="eyebrow">Kemptville Creative Writers · Swamp</p><h1>Writing Games</h1><p class="intro">Short writing games built to teach by doing. Most take about five minutes, work solo or alongside a group, and keep your actual writing in your own notebook or document.</p></section>
     <div class="note"><strong>How to use them:</strong> Pick a skill you want to practise, open the game, read the learning goal, and write outside the site. The games provide prompts, pressure, structure, and constraints; they do not judge your prose.</div>
-
     <section class="group" aria-labelledby="scene-games">
-      <div class="group-heading">
-        <h2 id="scene-games">Story, conflict &amp; consequence</h2>
-        <p>Games that work on goals, obstacles, pressure, choices, causality, conflict, reveals, and scene-level consequences.</p>
-      </div>
+      <div class="group-heading"><h2 id="scene-games">Story, conflict &amp; consequence</h2><p>Games that work on goals, obstacles, pressure, choices, causality, conflict, reveals, and scene-level consequences.</p></div>
       <div class="games">
-        <article class="game"><div class="meta"><span class="tag timed">Timed</span><span class="tag">Complication</span></div><h3>Ambush</h3><p>Adapt to complications and reversals while keeping the same scene coherent and the character's choices meaningful.</p><a href="writing_games/ambush/game_index.html">Play Ambush</a></article>
-        <article class="game"><div class="meta"><span class="tag">Character choice</span></div><h3>Worst Possible Choice</h3><p>Make a bad decision believable through desire, fear, pride, loyalty, misinformation, or desperation.</p><a href="writing_games/worst_possible_choice/game_index.html">Play Worst Possible Choice</a></article>
-        <article class="game"><div class="meta"><span class="tag">Stakes</span></div><h3>Escalation</h3><p>Raise stakes by increasing cost, urgency, and consequence instead of piling on unrelated chaos.</p><a href="writing_games/escalation/game_index.html">Play Escalation</a></article>
-        <article class="game"><div class="meta"><span class="tag">Conflict</span></div><h3>Character Collision</h3><p>Create active conflict between characters whose goals cannot both succeed at the same time.</p><a href="writing_games/character_collision/game_index.html">Play Character Collision</a></article>
-        <article class="game"><div class="meta"><span class="tag">Causality</span></div><h3>Cause &amp; Effect</h3><p>Build scenes where each new beat grows from an earlier action or decision rather than simply happening next.</p><a href="writing_games/cause_effect/game_index.html">Play Cause &amp; Effect</a></article>
-        <article class="game"><div class="meta"><span class="tag">Trade-offs</span></div><h3>Limited Resources</h3><p>Practise sacrifice and harder choices by making useful options finite.</p><a href="writing_games/limited_resources/game_index.html">Play Limited Resources</a></article>
-        <article class="game"><div class="meta"><span class="tag">Reveal</span></div><h3>Revelation</h3><p>Introduce new information that changes how an earlier action, relationship, object, or assumption is understood.</p><a href="writing_games/revelation/game_index.html">Play Revelation</a></article>
-        <article class="game"><div class="meta"><span class="tag">Goal &amp; obstacle</span></div><h3>Goal Under Pressure</h3><p>Keep a character actively pursuing one goal while increasingly meaningful obstacles force new tactics and costs.</p><a href="writing_games/goal_under_pressure/game_index.html">Play Goal Under Pressure</a></article>
+        <article class="game"><div class="meta"><span class="tag timed">Timed</span><span class="tag">Complication</span></div><h3>Ambush</h3><p>Adapt to an obstacle, reversal, cost, and forced choice while keeping the same scene coherent.</p><a href="writing_games/ambush/game_index.html">Play Ambush</a></article>
+        <article class="game"><div class="meta"><span class="tag">Character choice</span></div><h3>Worst Possible Choice</h3><p>Build motivation and pressure that make a damaging decision understandable, then follow its direct consequence.</p><a href="writing_games/worst_possible_choice/game_index.html">Play Worst Possible Choice</a></article>
+        <article class="game"><div class="meta"><span class="tag">Stakes</span></div><h3>Escalation</h3><p>Raise stakes through scenario-specific chains that increase cost, urgency, exposure, and consequence.</p><a href="writing_games/escalation/game_index.html">Play Escalation</a></article>
+        <article class="game"><div class="meta"><span class="tag">Conflict</span></div><h3>Character Collision</h3><p>Develop incompatible goals through tactic, counter-tactic, escalation, and a costly outcome.</p><a href="writing_games/character_collision/game_index.html">Play Character Collision</a></article>
+        <article class="game"><div class="meta"><span class="tag">Causality</span></div><h3>Cause &amp; Effect</h3><p>Move from guided consequences to constructing your own causal chain without falling into “and then.”</p><a href="writing_games/cause_effect/game_index.html">Play Cause &amp; Effect</a></article>
+        <article class="game"><div class="meta"><span class="tag">Trade-offs</span></div><h3>Limited Resources</h3><p>Spend concrete, scenario-specific resources so early choices remove options you need later.</p><a href="writing_games/limited_resources/game_index.html">Play Limited Resources</a></article>
+        <article class="game"><div class="meta"><span class="tag">Goal &amp; obstacle</span></div><h3>Goal Under Pressure</h3><p>Force tactic changes through time pressure, failure, relationship complications, and a final costly choice.</p><a href="writing_games/goal_under_pressure/game_index.html">Play Goal Under Pressure</a></article>
         <article class="game"><div class="meta"><span class="tag timed">Timed</span><span class="tag">Tension</span></div><h3>Story Pressure</h3><p>Keep one scene moving as escalating pressure narrows choices, raises costs, and forces adaptation.</p><a href="writing_games/story_pressure/game_index.html">Play Story Pressure</a></article>
         <article class="game"><div class="meta"><span class="tag">Consequences</span></div><h3>Choice Cost</h3><p>Explore how one decision can solve a problem while creating practical, relational, internal, moral, or delayed costs.</p><a href="writing_games/choice_cost/game_index.html">Play Choice Cost</a></article>
         <article class="game"><div class="meta"><span class="tag">Reinterpretation</span></div><h3>Reveal Reframe</h3><p>Use a reveal to change the meaning of details already written instead of merely adding a surprise.</p><a href="writing_games/reveal_reframe/game_index.html">Play Reveal Reframe</a></article>
       </div>
     </section>
-
     <section class="group" aria-labelledby="craft-games">
-      <div class="group-heading">
-        <h2 id="craft-games">Voice, technique &amp; revision</h2>
-        <p>Games that isolate particular craft choices so you can feel what changes when you alter point of view, subtext, description, pacing, foreshadowing, voice, or compression.</p>
-      </div>
+      <div class="group-heading"><h2 id="craft-games">Voice, technique &amp; revision</h2><p>Games that isolate particular craft choices so you can feel what changes when you alter point of view, subtext, description, pacing, foreshadowing, voice, or compression.</p></div>
       <div class="games">
-        <article class="game"><div class="meta"><span class="tag">Constraint</span></div><h3>Constraint</h3><p>Use deliberate restrictions to interrupt habitual choices and force alternative writing techniques.</p><a href="writing_games/constraint/game_index.html">Play Constraint</a></article>
-        <article class="game"><div class="meta"><span class="tag">Motivation</span><span class="tag">Subtext</span></div><h3>Hidden Motive</h3><p>Let an unstated motive shape what a character says, notices, avoids, and chooses.</p><a href="writing_games/hidden_motive/game_index.html">Play Hidden Motive</a></article>
+        <article class="game"><div class="meta"><span class="tag">Constraint</span></div><h3>Constraint</h3><p>Move from a single restriction to deliberate substitution, pressure, and a combined craft challenge.</p><a href="writing_games/constraint/game_index.html">Play Constraint</a></article>
+        <article class="game"><div class="meta"><span class="tag">Motivation</span><span class="tag">Subtext</span></div><h3>Hidden Motive</h3><p>Begin on the surface, reveal the private motive to the writer, then pressure it until it leaks through behaviour.</p><a href="writing_games/hidden_motive/game_index.html">Play Hidden Motive</a></article>
         <article class="game"><div class="meta"><span class="tag">Point of view</span></div><h3>POV Shift</h3><p>Run the same event through different minds to practise selection, interpretation, bias, and omission.</p><a href="writing_games/pov_shift/game_index.html">Play POV Shift</a></article>
         <article class="game"><div class="meta"><span class="tag">Dialogue</span><span class="tag">Subtext</span></div><h3>Subtext Signal</h3><p>Write dialogue in which hidden wants and fears shape the exchange without being directly stated.</p><a href="writing_games/subtext_signal/game_index.html">Play Subtext Signal</a></article>
         <article class="game"><div class="meta"><span class="tag">Description</span></div><h3>Sensory Lens</h3><p>Choose details for mood, character, and meaning rather than cataloguing everything that is present.</p><a href="writing_games/sensory_lens/game_index.html">Play Sensory Lens</a></article>
@@ -176,8 +43,7 @@
         <article class="game"><div class="meta"><span class="tag">Revision</span><span class="tag">Emphasis</span></div><h3>Scene Compression</h3><p>Cut the same event from full treatment to three sentences to one while preserving what matters.</p><a href="writing_games/scene_compression/game_index.html">Play Scene Compression</a></article>
       </div>
     </section>
-
-    <footer>20 Swamp writing practice games · One canonical game index</footer>
+    <footer>19 active Swamp writing practice games · Revelation merged into Reveal Reframe · One canonical game index</footer>
   </main>
 </body>
 </html>
