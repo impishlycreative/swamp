@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Swamp Writing Games</title>
-  <meta name="description" content="A collection of interactive writing games for practicing core storytelling skills.">
+  <meta name="description" content="Interactive writing games for practicing story pressure, conflict, character, point of view, pacing, subtext, description, revision, and other storytelling skills.">
   <style>
     :root{
       --bg:#f3f0e8;
@@ -14,6 +14,7 @@
       --line:#d9d1c5;
       --accent:#4f6d54;
       --accent-soft:#e4ece5;
+      --focus:#1c6aa6;
     }
     *{box-sizing:border-box}
     html{color-scheme:light}
@@ -45,11 +46,22 @@
       line-height:1;
     }
     .intro{
-      max-width:760px;
+      max-width:800px;
       margin:18px 0 0;
       font-size:clamp(1rem,2vw,1.15rem);
       color:var(--muted);
     }
+    .note{
+      margin:0 0 24px;
+      padding:15px 18px;
+      border-left:5px solid var(--accent);
+      border-radius:12px;
+      background:var(--card);
+    }
+    .group{margin:30px 0}
+    .group-heading{margin:0 0 14px}
+    .group-heading h2{margin:0 0 4px;font-size:1.65rem}
+    .group-heading p{margin:0;color:var(--muted);max-width:760px}
     .games{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
@@ -59,20 +71,26 @@
       display:flex;
       flex-direction:column;
       min-width:0;
-      min-height:220px;
+      min-height:235px;
       padding:20px;
       border:1px solid var(--line);
       border-radius:18px;
       background:var(--card);
     }
-    .number{
-      color:var(--accent);
-      font-size:.78rem;
+    .meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+    .tag{
+      display:inline-block;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:3px 8px;
+      font-size:.74rem;
       font-weight:800;
-      letter-spacing:.08em;
+      letter-spacing:.04em;
       text-transform:uppercase;
+      background:#fff;
     }
-    .game h2{margin:6px 0 8px;font-size:1.5rem;line-height:1.15}
+    .tag.timed{border-color:var(--accent);color:var(--accent)}
+    .game h3{margin:3px 0 8px;font-size:1.45rem;line-height:1.15}
     .game p{margin:0 0 18px;color:var(--muted)}
     .game a{
       display:inline-flex;
@@ -87,14 +105,14 @@
       font-weight:800;
       text-decoration:none;
     }
-    .game a:focus-visible{outline:3px solid #1f3f28;outline-offset:3px}
+    .game a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
     @media(hover:hover) and (pointer:fine){
       .game{transition:transform .16s ease,border-color .16s ease}
       .game:hover{transform:translateY(-2px);border-color:#b9c7bb}
       .game a:hover{filter:brightness(.94)}
     }
     footer{
-      margin-top:18px;
+      margin-top:28px;
       padding:14px 4px 4px;
       color:var(--muted);
       font-size:.92rem;
@@ -106,89 +124,60 @@
       .hero{border-radius:18px}
       .game{min-height:0}
     }
+    @media(prefers-reduced-motion:reduce){
+      .game{transition:none}
+    }
   </style>
 </head>
 <body>
   <main>
     <section class="hero">
-      <p class="eyebrow">Swamp</p>
+      <p class="eyebrow">Kemptville Creative Writers · Swamp</p>
       <h1>Writing Games</h1>
-      <p class="intro">Choose a game to practice a specific storytelling skill. Each game is self-contained, works on desktop and mobile, and focuses on giving the writer useful pressure or structure without trying to judge the prose.</p>
+      <p class="intro">Short writing games built to teach by doing. Most take about five minutes, work solo or alongside a group, and keep your actual writing in your own notebook or document.</p>
     </section>
 
-    <section class="games" aria-label="Writing games">
-      <article class="game">
-        <div class="number">Game 01</div>
-        <h2>Ambush</h2>
-        <p>Practice adapting to complications and reversals while keeping a scene coherent.</p>
-        <a href="writing_games/ambush/game_index.html">Play Ambush</a>
-      </article>
+    <div class="note"><strong>How to use them:</strong> Pick a skill you want to practise, open the game, read the learning goal, and write outside the site. The games provide prompts, pressure, structure, and constraints; they do not judge your prose.</div>
 
-      <article class="game">
-        <div class="number">Game 02</div>
-        <h2>Constraint</h2>
-        <p>Use deliberate restrictions to force different craft choices and new solutions.</p>
-        <a href="writing_games/constraint/game_index.html">Play Constraint</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 03</div>
-        <h2>Worst Possible Choice</h2>
-        <p>Make a bad decision believable through motivation, fear, pride, loyalty, or desperation.</p>
-        <a href="writing_games/worst_possible_choice/game_index.html">Play Worst Possible Choice</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 04</div>
-        <h2>Escalation</h2>
-        <p>Raise stakes by increasing cost, urgency, and consequence rather than adding random chaos.</p>
-        <a href="writing_games/escalation/game_index.html">Play Escalation</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 05</div>
-        <h2>Hidden Motive</h2>
-        <p>Let an unstated motive shape what a character says, notices, avoids, and chooses.</p>
-        <a href="writing_games/hidden_motive/game_index.html">Play Hidden Motive</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 06</div>
-        <h2>Character Collision</h2>
-        <p>Create conflict through competing goals, values, and needs instead of argument alone.</p>
-        <a href="writing_games/character_collision/game_index.html">Play Character Collision</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 07</div>
-        <h2>Cause &amp; Effect</h2>
-        <p>Build scenes where each new beat follows from an earlier action or decision.</p>
-        <a href="writing_games/cause_effect/game_index.html">Play Cause &amp; Effect</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 08</div>
-        <h2>Limited Resources</h2>
-        <p>Practice sacrifice and trade-offs by making useful options finite.</p>
-        <a href="writing_games/limited_resources/game_index.html">Play Limited Resources</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 09</div>
-        <h2>Revelation</h2>
-        <p>Introduce new information that changes the meaning of something already established.</p>
-        <a href="writing_games/revelation/game_index.html">Play Revelation</a>
-      </article>
-
-      <article class="game">
-        <div class="number">Game 10</div>
-        <h2>Goal Under Pressure</h2>
-        <p>Keep a character actively pursuing a goal while meaningful obstacles force new tactics.</p>
-        <a href="writing_games/goal_under_pressure/game_index.html">Play Goal Under Pressure</a>
-      </article>
+    <section class="group" aria-labelledby="scene-games">
+      <div class="group-heading">
+        <h2 id="scene-games">Story, conflict &amp; consequence</h2>
+        <p>Games that work on goals, obstacles, pressure, choices, causality, conflict, reveals, and scene-level consequences.</p>
+      </div>
+      <div class="games">
+        <article class="game"><div class="meta"><span class="tag timed">Timed</span><span class="tag">Complication</span></div><h3>Ambush</h3><p>Adapt to complications and reversals while keeping the same scene coherent and the character's choices meaningful.</p><a href="writing_games/ambush/game_index.html">Play Ambush</a></article>
+        <article class="game"><div class="meta"><span class="tag">Character choice</span></div><h3>Worst Possible Choice</h3><p>Make a bad decision believable through desire, fear, pride, loyalty, misinformation, or desperation.</p><a href="writing_games/worst_possible_choice/game_index.html">Play Worst Possible Choice</a></article>
+        <article class="game"><div class="meta"><span class="tag">Stakes</span></div><h3>Escalation</h3><p>Raise stakes by increasing cost, urgency, and consequence instead of piling on unrelated chaos.</p><a href="writing_games/escalation/game_index.html">Play Escalation</a></article>
+        <article class="game"><div class="meta"><span class="tag">Conflict</span></div><h3>Character Collision</h3><p>Create active conflict between characters whose goals cannot both succeed at the same time.</p><a href="writing_games/character_collision/game_index.html">Play Character Collision</a></article>
+        <article class="game"><div class="meta"><span class="tag">Causality</span></div><h3>Cause &amp; Effect</h3><p>Build scenes where each new beat grows from an earlier action or decision rather than simply happening next.</p><a href="writing_games/cause_effect/game_index.html">Play Cause &amp; Effect</a></article>
+        <article class="game"><div class="meta"><span class="tag">Trade-offs</span></div><h3>Limited Resources</h3><p>Practise sacrifice and harder choices by making useful options finite.</p><a href="writing_games/limited_resources/game_index.html">Play Limited Resources</a></article>
+        <article class="game"><div class="meta"><span class="tag">Reveal</span></div><h3>Revelation</h3><p>Introduce new information that changes how an earlier action, relationship, object, or assumption is understood.</p><a href="writing_games/revelation/game_index.html">Play Revelation</a></article>
+        <article class="game"><div class="meta"><span class="tag">Goal &amp; obstacle</span></div><h3>Goal Under Pressure</h3><p>Keep a character actively pursuing one goal while increasingly meaningful obstacles force new tactics and costs.</p><a href="writing_games/goal_under_pressure/game_index.html">Play Goal Under Pressure</a></article>
+        <article class="game"><div class="meta"><span class="tag timed">Timed</span><span class="tag">Tension</span></div><h3>Story Pressure</h3><p>Keep one scene moving as escalating pressure narrows choices, raises costs, and forces adaptation.</p><a href="writing_games/story_pressure/game_index.html">Play Story Pressure</a></article>
+        <article class="game"><div class="meta"><span class="tag">Consequences</span></div><h3>Choice Cost</h3><p>Explore how one decision can solve a problem while creating practical, relational, internal, moral, or delayed costs.</p><a href="writing_games/choice_cost/game_index.html">Play Choice Cost</a></article>
+        <article class="game"><div class="meta"><span class="tag">Reinterpretation</span></div><h3>Reveal Reframe</h3><p>Use a reveal to change the meaning of details already written instead of merely adding a surprise.</p><a href="writing_games/reveal_reframe/game_index.html">Play Reveal Reframe</a></article>
+      </div>
     </section>
 
-    <footer>Swamp writing practice games</footer>
+    <section class="group" aria-labelledby="craft-games">
+      <div class="group-heading">
+        <h2 id="craft-games">Voice, technique &amp; revision</h2>
+        <p>Games that isolate particular craft choices so you can feel what changes when you alter point of view, subtext, description, pacing, foreshadowing, voice, or compression.</p>
+      </div>
+      <div class="games">
+        <article class="game"><div class="meta"><span class="tag">Constraint</span></div><h3>Constraint</h3><p>Use deliberate restrictions to interrupt habitual choices and force alternative writing techniques.</p><a href="writing_games/constraint/game_index.html">Play Constraint</a></article>
+        <article class="game"><div class="meta"><span class="tag">Motivation</span><span class="tag">Subtext</span></div><h3>Hidden Motive</h3><p>Let an unstated motive shape what a character says, notices, avoids, and chooses.</p><a href="writing_games/hidden_motive/game_index.html">Play Hidden Motive</a></article>
+        <article class="game"><div class="meta"><span class="tag">Point of view</span></div><h3>POV Shift</h3><p>Run the same event through different minds to practise selection, interpretation, bias, and omission.</p><a href="writing_games/pov_shift/game_index.html">Play POV Shift</a></article>
+        <article class="game"><div class="meta"><span class="tag">Dialogue</span><span class="tag">Subtext</span></div><h3>Subtext Signal</h3><p>Write dialogue in which hidden wants and fears shape the exchange without being directly stated.</p><a href="writing_games/subtext_signal/game_index.html">Play Subtext Signal</a></article>
+        <article class="game"><div class="meta"><span class="tag">Description</span></div><h3>Sensory Lens</h3><p>Choose details for mood, character, and meaning rather than cataloguing everything that is present.</p><a href="writing_games/sensory_lens/game_index.html">Play Sensory Lens</a></article>
+        <article class="game"><div class="meta"><span class="tag timed">Timed</span><span class="tag">Pacing</span></div><h3>Pacing Pulse</h3><p>Accelerate and slow the same scene deliberately by changing what receives space and emphasis.</p><a href="writing_games/pacing_pulse/game_index.html">Play Pacing Pulse</a></article>
+        <article class="game"><div class="meta"><span class="tag">Foreshadowing</span></div><h3>Foreshadow Seed</h3><p>Plant an ordinary detail, echo it naturally, and later make it matter without announcing the clue.</p><a href="writing_games/foreshadow_seed/game_index.html">Play Foreshadow Seed</a></article>
+        <article class="game"><div class="meta"><span class="tag">Character voice</span></div><h3>Character Filter</h3><p>Create voice through what a character notices, compares, judges, values, and ignores.</p><a href="writing_games/character_filter/game_index.html">Play Character Filter</a></article>
+        <article class="game"><div class="meta"><span class="tag">Revision</span><span class="tag">Emphasis</span></div><h3>Scene Compression</h3><p>Cut the same event from full treatment to three sentences to one while preserving what matters.</p><a href="writing_games/scene_compression/game_index.html">Play Scene Compression</a></article>
+      </div>
+    </section>
+
+    <footer>20 Swamp writing practice games · One canonical game index</footer>
   </main>
 </body>
 </html>
