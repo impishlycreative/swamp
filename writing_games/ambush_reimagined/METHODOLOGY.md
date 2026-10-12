@@ -24,6 +24,38 @@ A cold reader should not have to invent the missing explanation for the scenario
 ### Human-logic rule
 Information must reach characters through a believable source. Characters may be mistaken, deceptive, or uncertain, but the scenario must distinguish an established fact from an assumption, inference, rumour, or claim. A reveal should change the scene because of what it means to the characters, not because the writer withheld basic context from the player.
 
+### Reason-for-now rule
+Every important condition in the setup and every ambush must have a credible reason for existing **now**.
+
+Do not create a dilemma by hiding an obvious problem from characters who reasonably would have noticed, planned for, or resolved it earlier. If competent people already knew about a constraint, the scenario must explain why their earlier plan was reasonable.
+
+When an ambush creates a new problem, identify the causal change that made the old plan stop working. Useful causes include:
+
+- a previously valid option is removed;
+- a separate plan or route fails;
+- new information changes the meaning of an existing fact;
+- a resource becomes unavailable;
+- responsibility changes hands;
+- a deadline, rule, relationship, or external condition changes;
+- something that was legitimately unknown becomes knowable.
+
+The writer should be able to answer: **Why was this not already a problem five minutes ago?**
+
+If the answer is only “the player did not know yet,” that is insufficient unless the characters also had a believable reason not to know.
+
+### Prior-plan rule
+When people, resources, passengers, obligations, or risks suddenly enter the active conflict, establish what was supposed to happen to them before the ambush.
+
+For example, if extra evacuees suddenly need seats on a shuttle, the scenario should establish that they were assigned to another shuttle or otherwise had a credible evacuation plan. The ambush then breaks that prior plan and transfers the problem to the current scene.
+
+This produces a clean causal chain:
+
+**valid prior plan → specific change/failure → old plan no longer works → new pressure or choice**
+
+Avoid:
+
+**unexplained person/problem appears → characters somehow never planned for it → dilemma exists only because the writer withheld logic**
+
 ### Cold-read test
 Before accepting a scenario, an editor should be able to answer without inventing facts:
 
@@ -31,6 +63,9 @@ Before accepting a scenario, an editor should be able to answer without inventin
 - What does each relevant character know?
 - How do they know it?
 - Why is the current assumption reasonable?
+- What was the prior plan for each important person, resource, obligation, or risk?
+- Why was the coming problem not already a problem earlier?
+- What changed now?
 - What specifically changes when the ambush lands?
 - Why does that change pressure, choices, relationships, information, or consequences?
 
