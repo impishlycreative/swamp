@@ -108,3 +108,25 @@ For Ambush scenario work, use:
 **Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation**
 
 The Continuity Auditor check is mandatory for new or revised scenarios before they are accepted into the permanent pool.
+
+## Full scenario audit — 2026-10-12
+
+The complete permanent Ambush pool was reviewed using the Continuity Auditor rules.
+
+- **36 scenarios reviewed**
+- **20 scenarios repaired for continuity, causal timing, information flow, prior-plan logic, or operational plausibility**
+- **16 scenarios passed without substantive continuity repair**
+- **0 scenarios remain exempt from the Continuity Auditor check**
+
+Common defects repaired in this pass included:
+
+- information appearing at a convenient moment without a trigger;
+- discoveries with no reason to happen during the current scene;
+- problems that competent characters should have planned for earlier;
+- missing prior plans for people or resources that suddenly become important;
+- assumptions that lacked a reasonable factual basis;
+- evidence whose source, timing, or meaning was unclear;
+- hidden facts that could not plausibly have remained hidden;
+- causal chains where the ambush did not actually produce the new problem.
+
+Representative repairs include the evacuation children having confirmed seats on another shuttle until that shuttle is grounded; the salvage-vessel distress beacon becoming reachable only after the salvage terminal creates a communications path; the ceremonial-sword tradition surviving because the shrine was inaccessible for generations; the ancient inscription being uncovered by current altar repairs; and the terraforming dependency being discovered by the first joint restart test.
