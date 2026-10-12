@@ -1,0 +1,23 @@
+Constraint — Goal and Examples Review
+
+Review method
+Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
+
+Goal
+The game is meant to teach deliberate craft substitution. Instead of relying on a familiar technique, the writer must keep the same scene working after that technique is restricted or removed. The important learning outcome is not simply “write under a rule”; it is “notice what function the removed technique served, then replace that function with another craft tool.”
+
+How the mechanic is supposed to meet the goal
+Each example contains a scene, a named craft focus, and four increasingly difficult stages. Stage 1 removes one comfortable option. Stage 2 points toward a substitute technique. Stage 3 adds story pressure while the restriction remains in force. Stage 4 combines restrictions so the writer has to preserve meaning under tighter conditions. The completion test asks the writer to identify what replaced the forbidden technique.
+
+How the examples support the goal
+The current bank contains 30 complete challenges. They cover subtext, characterization through action, purposeful description, dialogue tactics, controlled exposition, point of view, relationship tension, physical state, guilt, dramatic irony, selective attention, apology, externalized interiority, social context, competence, mixed emotion, memory, stalling, concrete-topic subtext, uncertainty, atmosphere, contradictory behaviour, limited knowledge, public pressure, suspense, clear exposition, reframing detail, parallel action, and meaningful silence.
+
+The strongest examples remove a technique that has a clear narrative function and then force the writer to replace that function. For example, hiding an injury without naming pain forces body language and consequence to carry information; explaining bad news without a long exposition block forces information to be paced through reaction; and showing distrust without accusation forces verification, withholding, positioning, and contingency planning.
+
+Review
+This game meets its learning goal well. The examples are structurally varied rather than simple noun swaps, and the four-stage progression makes the restriction do instructional work.
+
+The main weakness is that some Stage 2 instructions explicitly name the replacement technique. That is useful scaffolding for beginners, but it also means the game sometimes supplies part of the reasoning the learner should eventually perform. This is acceptable at the current level, but harder variants could state the function that must survive without naming the replacement method.
+
+Verdict
+PASS. The 30 examples are meaningfully distinct and directly exercise the intended skill.
