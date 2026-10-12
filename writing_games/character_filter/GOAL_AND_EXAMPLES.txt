@@ -4,28 +4,30 @@ Review method
 Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
 
 Goal
-The game is meant to teach character voice through perception. The learner should see that voice is not limited to dialogue or slang: a character becomes distinct through what they notice, compare, value, fear, judge, ignore, and treat as important.
+The game teaches character voice through perception. The learner should see that voice is not limited to dialogue or slang: a character becomes distinct through what they notice, compare, value, fear, judge, ignore, and treat as important.
 
-How the mechanic is supposed to meet the goal
-A neutral subject is held constant while the learner writes it through three different character filters. Each round also supplies a “voice move” such as comparing the subject to the character’s past, noticing cost, anticipating failure, judging usefulness, fixating on a flaw, or treating a detail as evidence of something larger.
+How the mechanic meets the goal
+The game now has two modes.
 
-The intended learning effect is contrast. The porch, phone screen, hotel room, family photograph, vending machine, or other ordinary subject should feel different because a different mind is looking at it.
+Controlled comparison is the default. It keeps the neutral subject and one perceptual “voice move” fixed while three different character filters describe the same thing. That isolates the character filter, so the learner can compare how different values and assumptions change perception.
+
+Challenge mode varies both the character filter and the voice move. It remains available as a harder exercise after the learner understands the controlled comparison.
+
+The game also now states its scope explicitly: it teaches perceptual voice. Syntax, diction, rhythm, metaphor, and other prose-level choices contribute to full narrative voice but are outside this particular exercise.
 
 How the examples support the goal
-The bank contains 10 neutral subjects, 10 character filters, and 10 voice moves, creating far more than 30 possible combinations. The subjects are deliberately ordinary so the character rather than the event supplies the interest.
+The bank contains 10 neutral subjects, 10 character filters, and 10 voice moves, producing far more than 30 coherent exercises.
 
-The character filters represent different worldviews and priorities: distrust of perfection, nostalgia, efficiency, pessimism, delight in messiness, sensitivity to money, jealousy, status awareness, fear of judgment, and tool-oriented practicality.
+The subjects are deliberately ordinary—a porch, lost-and-found table, cracked phone screen, hotel room, muddy boots, birthday cake, parking lot, family photograph, vending machine, and row of houses—so the mind looking at the object supplies the difference.
 
-The voice moves direct attention toward the kinds of choices that create narrative voice: cost, risk, social interpretation, tiny flaws, usefulness, unfair judgment, evidence of prior use, personal comparison, and symbolic meaning.
+The filters represent distinct priorities and worldviews: distrust of perfection, nostalgia, efficiency, pessimism, delight in messiness, sensitivity to money, jealousy, status awareness, fear of judgment, and practical tool-oriented thinking.
+
+The voice moves direct attention toward cost, risk, social interpretation, tiny flaws, usefulness, prior use, personal comparison, unfair judgment, and symbolic meaning.
+
+In controlled mode, one voice move is held constant across all three characters. This makes it much easier to see how perception itself creates distinct narrative voice.
 
 Review
-The game succeeds at its narrow goal: demonstrating that selection and interpretation create character voice even without dialogue.
-
-There is one important comparison problem. Both the character filter and the voice move change from round to round. If the prose changes, the learner cannot cleanly tell how much of the difference came from the character and how much came from the craft instruction.
-
-For the clearest introductory version, the same voice move should be used for all three characters. A harder version can vary both dimensions. The current random combinations are still generally coherent and useful, so this is a pedagogical-control issue rather than a continuity failure.
-
-A second limitation is scope: the game teaches perceptual voice, not the full range of voice created by syntax, diction, rhythm, metaphor, and sentence structure. The current title and explanation mostly acknowledge that focus.
+The previous comparison problem has been corrected. Introductory play no longer changes both the character and perceptual technique at the same time. The harder compounded version remains available separately.
 
 Verdict
-PASS WITH RESERVATION. The combinatorial bank exceeds 30 meaningful exercises, but introductory comparisons would be stronger if the perceptual move stayed constant while only the character changed.
+PASS. The game now isolates the intended variable clearly while retaining a large example space and an explicit advanced mode.
