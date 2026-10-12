@@ -1,11 +1,82 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Foreshadow Seed</title><style>:root{--bg:#f5f1e8;--card:#fffdf8;--ink:#24211d;--muted:#655f57;--line:#cfc6bb;--accent:#7b3428}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}main{max-width:1280px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}h1{font-size:clamp(2rem,7vw,3.4rem);margin:.1em 0}.tag,.label{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}.label{font-size:.8rem}.box{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;margin:10px 0}.big{font-size:1.12rem;font-weight:750}.controls{display:flex;gap:10px;flex-wrap:wrap}button{min-height:46px;border:0;border-radius:12px;padding:11px 16px;background:var(--accent);color:#fff;font:inherit;font-weight:800;cursor:pointer}button.secondary{background:#ded6cc;color:var(--ink)}button:disabled{opacity:.5}button:focus-visible{outline:3px solid #1c6aa6;outline-offset:3px}/* desktop-game-layout-v2:foreshadow_seed */
-
-@media (min-width:900px){
-  main{max-width:1280px;padding:28px 32px}
-  .hero,.panel{padding:24px 28px}
-  .hero p{max-width:82ch}
-  .controls{align-items:center}
-  .box,.char,.shared,.collision,.active{min-width:0}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Foreshadow Seed</title>
+<style>
+:root{--bg:#f5f1e8;--card:#fffdf8;--ink:#24211d;--muted:#655f57;--line:#cfc6bb;--accent:#7b3428}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1280px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
+h1{font-size:clamp(2rem,7vw,3.4rem);margin:.1em 0}.tag,.label{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}.label{font-size:.8rem}
+.box{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;margin:10px 0}.big{font-size:1.12rem;font-weight:750}
+.controls{display:flex;gap:10px;flex-wrap:wrap}button,select{min-height:46px;font:inherit;border-radius:12px}button{border:0;padding:11px 16px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}button.secondary{background:#ded6cc;color:var(--ink)}button:disabled{opacity:.5}
+select{width:100%;padding:8px 10px;border:1px solid var(--line);background:#fff}button:focus-visible,select:focus-visible{outline:3px solid #1c6aa6;outline-offset:3px}
+@media (min-width:900px){main{max-width:1280px;padding:28px 32px}.controls{align-items:center}}
+@media (min-width:1100px){main>.card:nth-of-type(2){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}main>.card:nth-of-type(2)>.selector,main>.card:nth-of-type(2)>.controls,main>.card:nth-of-type(2)>p{grid-column:1/-1}}
+@media(max-width:620px){button,select{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<section class="card">
+  <div class="tag">Core concept: foreshadowing</div>
+  <h1>Foreshadow Seed</h1>
+  <p><strong>What you are learning:</strong> Foreshadowing works when an early detail has a believable present purpose before a later event gives it new meaning. Plant it naturally, echo it without announcing the answer, then pay it off without adding a coincidence just to make the clue work.</p>
+  <p>Write elsewhere. This page supplies a curated reveal-detail relationship so your job is subtle placement, not inventing missing logic.</p>
+</section>
+<section class="card">
+  <div class="selector">
+    <label class="label" for="seed">Choose seed</label>
+    <select id="seed"></select>
+  </div>
+  <div class="box"><div class="label">Future reveal</div><div id="reveal" class="big"></div></div>
+  <div class="box"><div class="label">Ordinary detail</div><div id="detail" class="big"></div></div>
+  <div class="box"><div class="label">Why the detail belongs in the scene now</div><div id="present" class="big"></div></div>
+  <div class="box"><div class="label">Current task</div><div id="task" class="big" aria-live="polite"></div></div>
+  <p id="instruction">Write the requested moment in your own document.</p>
+  <div class="controls">
+    <button id="next">Next step</button>
+    <button id="random" class="secondary">Random seed</button>
+    <button id="restart" class="secondary">Restart seed</button>
+  </div>
+</section>
+</main>
+<script>
+const seeds=[{"reveal":"The trusted guide has never been here before.","detail":"a trail map folded along the wrong route","present":"The guide keeps the map out because weather has damaged several trail markers."},{"reveal":"The trusted guide has never been here before.","detail":"a local place-name pronounced two different ways","present":"The group is comparing the name on a sign with the name printed on their permit."},{"reveal":"The trusted guide has never been here before.","detail":"fresh pencil notes copied onto an old guidebook page","present":"The guide says they updated the book after checking current conditions."},{"reveal":"The missing item was deliberately hidden.","detail":"dust disturbed beneath an otherwise unused cabinet","present":"Someone drops a pen nearby and notices the floor while retrieving it."},{"reveal":"The missing item was deliberately hidden.","detail":"one storage label written in newer ink","present":"The character is reorganizing supplies and briefly checks the shelf labels."},{"reveal":"The missing item was deliberately hidden.","detail":"a key ring with one empty hook","present":"The keys are handled during an ordinary closing routine."},{"reveal":"A harmless-looking room is about to become inaccessible.","detail":"a door that takes two tries to latch","present":"Someone closes it to keep noise from the hallway out."},{"reveal":"A harmless-looking room is about to become inaccessible.","detail":"a maintenance notice partly covered by a newer flyer","present":"The character reads the wall while waiting for someone else to arrive."},{"reveal":"A harmless-looking room is about to become inaccessible.","detail":"a keycard reader that flashes yellow before green","present":"The character uses the room normally and assumes the reader is simply slow."},{"reveal":"The person everyone is waiting for has already arrived in disguise.","detail":"a coat hung on the wrong hook","present":"Someone moves coats to make room for late arrivals."},{"reveal":"The person everyone is waiting for has already arrived in disguise.","detail":"a familiar ring briefly visible beneath work gloves","present":"The disguised person helps carry boxes and removes one glove for grip."},{"reveal":"The person everyone is waiting for has already arrived in disguise.","detail":"a cup prepared exactly the way the missing person always takes it","present":"A volunteer makes drinks for everyone and leaves the cup on a side table."},{"reveal":"The main character has misunderstood who sent the message.","detail":"a phrase in the message that one other person often uses","present":"The wording sounds ordinary enough to pass without comment at first."},{"reveal":"The main character has misunderstood who sent the message.","detail":"a timestamp that overlaps the supposed sender's documented absence","present":"The character notices the time only while checking when to reply."},{"reveal":"The main character has misunderstood who sent the message.","detail":"a reply address that differs by one character from the usual one","present":"The message is read quickly on a small screen, where the difference is easy to miss."},{"reveal":"A storm will cut off the only road out.","detail":"water already gathering in the lowest roadside ditch","present":"The character notices it while parking and worries only about muddy shoes."},{"reveal":"A storm will cut off the only road out.","detail":"a road crew stacking temporary barricades near the bridge","present":"The crew appears to be preparing for routine overnight work."},{"reveal":"A storm will cut off the only road out.","detail":"a weather radio mentioning upstream rainfall rather than local rain","present":"The broadcast plays quietly in the background during another conversation."},{"reveal":"The apparent accident was caused intentionally.","detail":"a safety guard reset more neatly than the surrounding equipment","present":"The character checks the machine after the incident but has no reason yet to suspect sabotage."},{"reveal":"The apparent accident was caused intentionally.","detail":"a broken fastener placed on a workbench instead of left where it failed","present":"Someone clears debris and notices it among ordinary tools."},{"reveal":"The apparent accident was caused intentionally.","detail":"a warning light that had been covered with removable tape","present":"The tape looks like leftover maintenance marking until later evidence changes its meaning."},{"reveal":"A character who seems confident is planning to leave.","detail":"a desk drawer already missing personal items","present":"Another character borrows a stapler and notices the empty space."},{"reveal":"A character who seems confident is planning to leave.","detail":"a calendar with no personal notes after Friday","present":"Someone checks the calendar only to confirm an upcoming appointment."},{"reveal":"A character who seems confident is planning to leave.","detail":"a reusable mug washed and left upside down instead of beside the computer","present":"The office is being tidied before a meeting, so the change seems trivial."},{"reveal":"The object everyone is searching for has been in plain sight.","detail":"a display item sitting slightly off-centre","present":"Someone straightens the display without realizing why the object feels different."},{"reveal":"The object everyone is searching for has been in plain sight.","detail":"a familiar container that is unexpectedly heavier","present":"The character moves it while clearing space for the search."},{"reveal":"The object everyone is searching for has been in plain sight.","detail":"a handwritten label covering an older printed label","present":"The container is passed around for an unrelated reason before anyone reads beneath it."},{"reveal":"Someone has been listening to a supposedly private conversation.","detail":"a chair turned toward the hallway instead of the window","present":"A character moves around it while closing the room."},{"reveal":"Someone has been listening to a supposedly private conversation.","detail":"a radio playing slightly louder than necessary outside the door","present":"The sound is treated as ordinary background noise from the next room."},{"reveal":"Someone has been listening to a supposedly private conversation.","detail":"a fresh scuff beside an air vent grille","present":"The scuff is noticed while retrieving something dropped near the wall."}];
+const tasks=[
+  'PLANT: include the detail for its ordinary present-scene reason while attention is mainly elsewhere.',
+  'ECHO: bring the same detail back for another immediate reason. Add weight, but do not explain what it will mean later.',
+  'CONNECT: let the reveal happen. Make the earlier detail newly understandable without inventing a new coincidence.'
+];
+let i=0;
+const $=id=>document.getElementById(id);
+seeds.forEach((x,n)=>{const o=document.createElement('option');o.value=n;o.textContent=(n+1)+'. '+x.reveal;$('seed').appendChild(o)});
+function show(){
+  const x=seeds[Number($('seed').value)];
+  $('reveal').textContent=x.reveal;
+  $('detail').textContent=x.detail;
+  $('present').textContent=x.present;
+  if(i>=3){
+    $('task').textContent='Complete — the detail had a present purpose, gained weight, and paid off.';
+    $('instruction').textContent='Check that the reveal changed the meaning of the earlier detail rather than depending on a new coincidence.';
+    $('next').disabled=true;
+    return;
+  }
+  $('task').textContent=tasks[i];
+  $('instruction').textContent='Write the requested moment in your own document.';
+  $('next').textContent=i===2?'Finish':'Next step';
+  $('next').disabled=false;
 }
-@media (min-width:1100px){main>.panel:nth-of-type(2){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}main>.panel:nth-of-type(2)>h2,main>.panel:nth-of-type(2)>.controls{grid-column:1/-1}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}}
-@media(max-width:620px){button{width:100%}}</style></head><body><main><section class="card"><div class="tag">Core concept: foreshadowing</div><h1>Foreshadow Seed</h1><p><strong>What you are learning:</strong> Foreshadowing works when an early detail feels natural before it gains later meaning. You will plant, echo, and finally connect one ordinary detail to a future reveal without making the clue announce itself.</p><p>Write elsewhere. This page only supplies the exercise.</p></section><section class="card"><div class="box"><div class="label">Future reveal</div><div id="reveal" class="big"></div></div><div class="box"><div class="label">Ordinary detail</div><div id="detail" class="big"></div></div><div class="box"><div class="label">Current task</div><div id="task" class="big" aria-live="polite"></div></div><p id="instruction">Write the requested moment in your own document.</p><div class="controls"><button id="next">Next step</button><button id="new" class="secondary">New random seed</button></div></section></main><script>const reveals=['The trusted guide has never been here before.','The missing item was deliberately hidden.','A harmless-looking room is about to become inaccessible.','The person everyone is waiting for has already arrived in disguise.','The main character has misunderstood who sent the message.','A storm will cut off the only road out.','The apparent accident was caused intentionally.','A character who seems confident is planning to leave.','The object everyone is searching for has been in plain sight.','Someone has been listening to a supposedly private conversation.'];const details=['a bent umbrella stand','a clock that runs five minutes slow','mud on one clean shoe','a half-finished cup of tea','a window that will not latch','a coat hung on the wrong hook','a dead phone charger','a handwritten receipt','a chair turned toward the hallway','a radio playing slightly too loudly'];const tasks=['Plant it: include the detail naturally while attention is on something else.','Echo it: bring the detail back for a different immediate reason, adding a little weight but no explanation.','Connect it: let the reveal happen and make the earlier detail suddenly matter.'];let i=0;const $=id=>document.getElementById(id);function pick(a){return a[Math.floor(Math.random()*a.length)]}function reset(){$('reveal').textContent=pick(reveals);$('detail').textContent=pick(details);i=0;show()}function show(){if(i>=3){$('task').textContent='Complete — planted, echoed, and paid off.';$('instruction').textContent='The activity is complete.';$('next').disabled=true;return}$('task').textContent=tasks[i];$('next').textContent=i===2?'Finish':'Next step';$('next').disabled=false}$('next').addEventListener('click',()=>{i++;show()});$('new').addEventListener('click',reset);reset();</script></body></html>
+function reset(random=false){
+  if(random)$('seed').value=Math.floor(Math.random()*seeds.length);
+  i=0;show();
+}
+$('seed').addEventListener('change',()=>reset(false));
+$('next').addEventListener('click',()=>{i++;show()});
+$('random').addEventListener('click',()=>reset(true));
+$('restart').addEventListener('click',()=>reset(false));
+reset(false);
+</script>
+</body>
+</html>
