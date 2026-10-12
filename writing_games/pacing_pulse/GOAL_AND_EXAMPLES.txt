@@ -4,24 +4,34 @@ Review method
 Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
 
 Goal
-The game is meant to teach deliberate control of narrative pacing. The learner should experience that pace changes when prose changes what receives space, how directly events are connected, how much reflection is allowed, and how quickly the writing moves between meaningful beats.
+The game teaches deliberate control of narrative pacing. The learner should experience that pace changes because prose changes what receives space, what gets compressed, how directly cause leads to effect, how long attention remains on a detail, and where reflection enters or disappears.
 
-How the mechanic is supposed to meet the goal
-The learner keeps one scene going while four timed phases alternate between FAST and SLOW instructions. The fast phases emphasize action, short decisions, immediate cause-and-effect, and omitted transitions. The slow phases emphasize significant detail, hesitation, sensory attention, contradiction, and reconsideration.
+How the mechanic meets the goal
+The timer now has one explicit job: it tells the learner when to change craft instructions. The interface states directly that this is not a typing-speed exercise and that the learner may write at any comfortable physical speed.
+
+The game also no longer uses only one fixed FAST → SLOW → FAST → SLOW sequence. It now includes six pacing plans:
+- Contrast rhythm
+- Suspense expansion
+- Action compression
+- Aftermath deceleration
+- Attention zoom
+- Decision rhythm
+
+Each plan contains four phase instructions that alter selection, compression, transition, detail, hesitation, consequence, aftermath, or decision emphasis. A random-plan mode is the default, while a specific plan can be selected for deliberate practice.
 
 How the examples support the goal
-The bank contains 30 scene seeds. They include urgent situations, waiting situations, physical tasks, relationship tension, uncertainty, performance pressure, travel problems, weather threats, mistakes, missing objects, and moments of anticipation.
+The bank contains 30 scene seeds. They include urgent physical tasks, waiting, interpersonal tension, uncertainty, performance pressure, travel problems, weather threats, mistakes, missing objects, and anticipation.
 
-This variety matters because pacing should not be confused with genre. A tense scene can be slowed to intensify a detail; a quiet scene can be accelerated through decisive action. The examples provide both naturally fast and naturally slow material, so the writer has to apply the pacing instruction rather than simply follow the scene's default rhythm.
+This range is useful because the game should teach that pacing is a prose decision rather than a property of genre. A tense scene can be slowed to increase pressure. A quiet scene can accelerate through decisive action. An aftermath can be deliberately expanded, while routine motion can be compressed.
 
-Examples such as carrying a full glass before a toast, dealing with closing train doors, testing a repaired engine before the owner returns, waiting for a disputed ruling, or receiving “We need to talk” all support meaningful shifts between action and attention.
+The six pacing plans multiply the learning paths rather than merely changing the story wrapper. For example, the same missing-key scene can be used to practise contrast rhythm, suspense expansion, action compression, or decision rhythm, and each plan asks for a genuinely different treatment of the same material.
 
 Review
-The game meets the basic pacing goal and now has 30 distinct scene seeds.
+The two earlier reservations have been addressed.
 
-There are two reservations. First, the timer can accidentally suggest that writing quickly equals fast-paced prose. The craft instructions help prevent that confusion, but the distinction should remain explicit. Second, every scene uses the same FAST → SLOW → FAST → SLOW sequence, so replay changes the story wrapper more than the learning path.
+First, the interface now explicitly separates writing speed from narrative speed. The status text and instructions reinforce that the clock changes the craft condition; it does not reward fast typing.
 
-A stronger future version could have several pacing plans: action compression, suspense expansion, dialogue acceleration, aftermath slowing, and mixed rhythm. That would vary the actual pacing problem rather than only the scene seed.
+Second, replay now varies the actual pacing problem through six distinct plans instead of always following one identical sequence.
 
 Verdict
-PASS WITH RESERVATION. The 30 examples are suitable, but the fixed four-phase learning path limits pedagogical variety.
+PASS. The game now has 30 scene seeds, multiple learning paths, and a clearer distinction between timed phase changes and prose pacing.
