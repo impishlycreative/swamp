@@ -9,6 +9,37 @@ The timer is tension, not the lesson. The learning depends on whether the ambush
 ## Professor
 The learning objective is causal adaptation under changed story conditions. The debrief requires the group to identify setup, changed conditions, and persistent consequence so the exercise transfers back to scene construction.
 
+## Continuity Auditor
+Continuity Auditor is the plot-hole and causal-logic reviewer. It tests the scenario before final editorial polish.
+
+Responsibilities:
+
+- track who knows what, when they learned it, and whether they could reasonably know it;
+- track where important people, objects, resources, obligations, and risks were before the current scene;
+- ask why the problem exists now rather than earlier;
+- identify obvious problems that competent characters would reasonably have noticed, planned for, or resolved already;
+- verify that prior plans were valid before a specific change caused them to fail;
+- verify that every reveal has a believable source and timing;
+- check timelines, travel time, access, injuries, resources, ownership, procedures, responsibilities, and physical possibility;
+- distinguish deliberate mystery from missing authorial logic;
+- reject conveniently timed information, coincidences, or irrational behaviour that exist mainly to force the plot forward.
+
+Core questions:
+
+- What had to be true before this scene for this to happen now?
+- Who knew about it, and when?
+- Why did they not deal with it earlier?
+- What was the prior plan?
+- What specifically changed?
+- Does that change actually cause the new problem?
+- Why is this happening now rather than five minutes earlier or later?
+
+Preferred causal pattern:
+
+**valid prior state/plan → specific change or discovery → old plan no longer works → new pressure, choice, or consequence**
+
+Continuity Auditor may mark a scenario **Pass**, **Repair**, or **Reject**. Reject means the causal setup is unsound and should not proceed to final editorial review until repaired.
+
 ## Editor
 Each scenario must contain an explicit goal, pressure, assumption, and causal ambush. Ambushes must be tied to prior facts rather than unrelated disasters.
 
@@ -70,3 +101,10 @@ Before accepting a scenario, an editor should be able to answer without inventin
 - Why does that change pressure, choices, relationships, information, or consequences?
 
 Scenario structures should vary rather than simply changing nouns, and concise prose should still include every fact required to understand the conflict.
+
+## Review pipeline
+For Ambush scenario work, use:
+
+**Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation**
+
+The Continuity Auditor check is mandatory for new or revised scenarios before they are accepted into the permanent pool.
