@@ -1,0 +1,33 @@
+Scene Compression — Goal and Examples Review
+
+Review method
+Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
+
+Goal
+The game is meant to teach revision by compression. The learner should discover what a scene actually needs by rewriting the same event with progressively less space while preserving its essential effect.
+
+How the mechanic is supposed to meet the goal
+The current structure uses three cuts: a full “Director’s Cut,” a three-sentence “Trailer Cut,” and a one-sentence “Postcard Cut.” A “must survive” element is also supplied so the learner has to preserve something important while removing material.
+
+The intended lesson is that compression is not simply shortening. It is deciding what carries the scene’s emotional, causal, relational, or imagistic weight and protecting that while less important material disappears.
+
+How the examples are supposed to support the goal
+The bank contains 10 events: arriving late to a family dinner, losing and finding a parent, missing a winning shot, returning a damaged borrowed item, receiving unexpectedly good news, being caught in a downpour, dropping an object on train tracks, recovering from a forgotten line onstage, discovering an animal in a garage, and arriving after someone has left.
+
+The preservation targets include the emotional turn, a vivid physical detail, dialogue, cause and effect, a mistaken assumption, a realization, a setting image, the cost of what happened, a relationship signal, and an unanswered question.
+
+These are all legitimate things a writer may decide must survive revision.
+
+Review
+The current implementation does not reliably teach the stated lesson because the “must survive” element changes on every cut.
+
+If the full version must preserve the emotional turn, the three-sentence version must preserve a physical detail, and the one-sentence version must preserve an unanswered question, the learner is not testing how the same essential element survives compression. They are solving three different writing problems while also changing length.
+
+That confounds the exercise and weakens the comparison.
+
+There is also a compatibility problem. Some preservation targets do not naturally exist in every event. A “mistaken assumption” may not be present in the good-news envelope scene, and an “unanswered question” may not be central to the player missing an easy shot. The learner then has to invent new story material instead of revising the supplied event.
+
+A stronger structure would pair each event with one appropriate essential element and hold that element constant through all three cuts. Another valid design would let the learner choose the essential element once at the start. The bank should then contain at least 30 curated event/essential-element pairs if this remains a scenario-based revision game.
+
+Verdict
+NEEDS REVISION. The three-level compression structure is strong, but changing the preservation target between cuts undermines the core comparison, and random event/target combinations are not reliably meaningful.
