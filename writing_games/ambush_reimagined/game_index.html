@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambush — Reimagined</title>
+<style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#1f2328;--muted:#656d76;--line:#d8d2c4;--accent:#7a2f2f;--accent-soft:#ead8d8;--ok:#345c45;--warn:#9a641c;--danger:#8c2626;--focus:#0b57d0}
+*{box-sizing:border-box}body{margin:0;font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--ink);line-height:1.5}.wrap{max-width:1100px;margin:0 auto;padding:24px}.mast{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}.eyebrow{font:700 12px/1.2 Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}h1{font-size:clamp(2rem,5vw,4rem);line-height:.95;margin:6px 0 0}.subtitle{max-width:520px;color:var(--muted);font-family:Arial,sans-serif}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}.panel{background:var(--panel);border:1px solid var(--line);padding:20px}.panel h2{margin-top:0;font-size:1.35rem}.scenario{font-size:clamp(1.15rem,2vw,1.45rem);min-height:150px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.chip{border-top:3px solid var(--ink);padding-top:8px}.chip strong{display:block;font:700 11px Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em}.chip span{display:block;margin-top:4px}.controls{display:flex;flex-wrap:wrap;gap:10px}.controls button,.controls select{font:700 15px Arial,sans-serif;min-height:46px;border:1px solid var(--ink);background:white;color:var(--ink);padding:10px 14px;border-radius:0}.controls button.primary{background:var(--ink);color:white}.controls button.ambush{background:var(--accent);color:white;border-color:var(--accent)}button:focus,select:focus{outline:3px solid var(--focus);outline-offset:2px}.timerWrap{display:flex;align-items:center;gap:14px;margin-top:18px}.timer{width:112px;height:112px;border-radius:50%;border:8px solid var(--line);display:grid;place-items:center;font:700 2rem Arial,sans-serif;position:relative}.timer.pulse{border-color:var(--accent);animation:pulse .8s infinite}@keyframes pulse{50%{transform:scale(1.045)}}@media(prefers-reduced-motion:reduce){.timer.pulse{animation:none}}.timerLabel{font-family:Arial,sans-serif;color:var(--muted)}.stateList{display:grid;gap:12px}.stateItem{border-left:4px solid var(--line);padding-left:12px}.stateItem.changed{border-color:var(--accent)}.stateItem strong{font-family:Arial,sans-serif;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em}.ambushCard{margin-top:16px;border:2px solid var(--accent);background:var(--accent-soft);padding:16px;display:none}.ambushCard.show{display:block}.ambushCard h3{margin:0 0 6px}.reflection{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}.reflection ul{padding-left:20px}.small{font-family:Arial,sans-serif;font-size:.92rem;color:var(--muted)}.status{margin-top:12px;font-family:Arial,sans-serif;font-weight:700}.status.ok{color:var(--ok)}.status.warn{color:var(--warn)}.status.danger{color:var(--danger)}.footer{margin-top:22px;font:13px Arial,sans-serif;color:var(--muted)}@media(max-width:760px){.grid{grid-template-columns:1fr}.mast{align-items:flex-start;flex-direction:column}.meta{grid-template-columns:1fr}.timer{width:96px;height:96px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+<header class="mast">
+<div><div class="eyebrow">KCW Writing Lab</div><h1>Ambush</h1></div>
+<div class="subtitle">Adapt a scene when a credible complication attacks one of its assumptions. The point is not surprise for its own sake; the point is causal adaptation.</div>
+</header>
+<div class="grid">
+<main class="panel">
+<h2>1. Establish the scene</h2>
+<div id="scenario" class="scenario" aria-live="polite"></div>
+<div class="meta">
+<div class="chip"><strong>Immediate goal</strong><span id="goal"></span></div>
+<div class="chip"><strong>Pressure</strong><span id="pressure"></span></div>
+<div class="chip"><strong>Known assumption</strong><span id="assumption"></span></div>
+</div>
+<div class="controls">
+<label class="small">Ambush delay <select id="delay"><option value="15">15 sec</option><option value="30" selected>30 sec</option><option value="45">45 sec</option><option value="60">60 sec</option></select></label>
+<button class="primary" id="start">Start round</button><button id="pause" disabled>Pause</button><button id="newScene">New scene</button>
+</div>
+<div class="timerWrap"><div class="timer" id="timer" aria-live="polite">30</div><div class="timerLabel">Before the ambush lands, the group begins the scene aloud or in notes. Establish what the characters are trying to do.</div></div>
+<div class="ambushCard" id="ambushCard" aria-live="assertive"><div class="eyebrow">Ambush</div><h3 id="ambushTitle"></h3><div id="ambushText"></div><div class="small" id="ambushWhy" style="margin-top:8px"></div></div>
+<div class="controls" style="margin-top:16px"><button class="ambush" id="reveal" disabled>Reveal ambush now</button><button id="resolve" disabled>Record adaptation</button><button id="finish" disabled>Finish round</button></div>
+<div class="status" id="status"></div>
+</main>
+<aside class="panel">
+<h2>Story state</h2>
+<p class="small">These are conditions, not a “quality score.” The ambush should change at least one of them.</p>
+<div class="stateList">
+<div class="stateItem" id="stateGoal"><strong>Goal viability</strong><div id="goalState"></div></div>
+<div class="stateItem" id="stateInfo"><strong>Information</strong><div id="infoState"></div></div>
+<div class="stateItem" id="stateRelation"><strong>Relationship pressure</strong><div id="relationState"></div></div>
+<div class="stateItem" id="stateResource"><strong>Resources / options</strong><div id="resourceState"></div></div>
+</div>
+<div class="reflection" id="reflection" hidden>
+<h2>Debrief</h2>
+<ul>
+<li>Which assumption did the ambush attack?</li>
+<li>What did the characters now have to do differently?</li>
+<li>What earlier detail made the complication believable?</li>
+<li>Did the scene gain pressure, change direction, or merely become noisier?</li>
+<li>What consequence should carry into the next scene?</li>
+</ul>
+</div>
+</aside>
+</div>
+<div class="footer">Design rule: the complication must arise from information already present or plausibly latent in the scenario. Random disasters are not automatically good ambushes.</div>
+</div>
+<script>
+(()=>{
+const scenes=[
+{scene:'A museum team has one hour to open a new exhibit. The interactive display failed its safety test yesterday, but the sponsor has already advertised it as the centrepiece.',goal:'Open on time without publicly embarrassing the sponsor.',pressure:'Visitors and press are already gathering outside.',assumption:'The failed display can simply remain switched off.',state:['possible','partial','strained','limited'],ambush:{title:'The sponsor arrives early with a camera crew.',text:'They want to film the display being switched on live. Refusing now risks exposing that the team knew the advertised centrepiece was unsafe.',why:'This complication grows from the sponsor relationship and the prior safety failure; it attacks the assumption that the team can quietly hide the problem.',changes:[1,1,1,0]}},
+{scene:'Two siblings are clearing their late father’s workshop before the property sale. One wants to discard an unfinished cabinet; the other insists it must be kept because their father worked on it during his final months.',goal:'Finish clearing the workshop before the buyer arrives.',pressure:'Anything left behind becomes the buyer’s property at noon.',assumption:'The cabinet has only sentimental value.',state:['possible','incomplete','strained','adequate'],ambush:{title:'A hidden envelope falls from the cabinet frame.',text:'Inside is a paid invoice showing their father was restoring the cabinet for someone else, with delivery promised this week.',why:'The cabinet already mattered; the new information changes ownership and responsibility rather than adding an unrelated crisis.',changes:[1,1,1,1]}},
+{scene:'A community theatre director must choose who performs tonight after the lead actor loses their voice. The understudy knows the role but has never rehearsed the final scene with the cast.',goal:'Put on the performance without cancelling.',pressure:'The audience is arriving and refunds would wipe out the production’s remaining budget.',assumption:'The understudy is the only realistic replacement.',state:['possible','known','cooperative','limited'],ambush:{title:'The understudy admits they injured their ankle that afternoon.',text:'They can perform standing scenes but cannot safely execute the final scene’s staircase fall.',why:'The complication targets the existing fallback plan and forces adaptation inside the same production problem.',changes:[1,0,1,1]}},
+{scene:'A project lead is preparing to tell a client that a contractor caused a critical data error. A teammate privately knows the teammate—not the contractor—made the original mistake and wants the contractor blamed anyway.',goal:'Explain the failure before the client meeting ends.',pressure:'The client may terminate the contract if the cause is not identified today.',assumption:'The contractor can plausibly be blamed because the client has not seen the internal logs.',state:['possible','uneven','fractured','adequate'],ambush:{title:'The client asks to see the raw audit log.',text:'The log records the teammate’s account making the change before the contractor touched the file.',why:'The risk of discovery is concrete and follows from the existing data system; the hidden truth can no longer remain abstract.',changes:[1,1,1,0]}},
+{scene:'A parent and teenager are driving through a winter storm to reach the last ferry home. The teenager insisted on a shortcut because the highway was backed up.',goal:'Reach the ferry before the final departure.',pressure:'Missing it means spending the night without a hotel reservation.',assumption:'The shortcut is slower terrain but still passable.',state:['possible','partial','strained','adequate'],ambush:{title:'A plow has closed the road ahead after a tree came down.',text:'Turning back now may miss the ferry, but continuing would require using an unmaintained side road neither of them knows.',why:'The weather and shortcut already establish the vulnerability; the road closure converts it into a consequential choice.',changes:[1,1,1,1]}}
+];
+const labels={goal:['stable','harder','threatened'],info:['clear','changed','uncertain'],relation:['steady','strained','volatile'],resource:['adequate','limited','critical']};
+let idx=-1,remaining=30,tick=null,running=false,revealed=false,current=null;
+const $=id=>document.getElementById(id);
+function pick(){let n;do{n=Math.floor(Math.random()*scenes.length)}while(scenes.length>1&&n===idx);idx=n;current=scenes[n];revealed=false;stop();remaining=+$('delay').value;$('timer').textContent=remaining;$('timer').classList.remove('pulse');$('ambushCard').classList.remove('show');$('reflection').hidden=true;$('resolve').disabled=true;$('finish').disabled=true;$('reveal').disabled=true;$('pause').disabled=true;$('start').disabled=false;$('status').textContent='';$('scenario').textContent=current.scene;$('goal').textContent=current.goal;$('pressure').textContent=current.pressure;$('assumption').textContent=current.assumption;setState(false)}
+function setState(changed){const base=current.state; $('goalState').textContent=changed?labels.goal[Math.min(2,current.ambush.changes[0]+1)]:base[0];$('infoState').textContent=changed?labels.info[Math.min(2,current.ambush.changes[1]+1)]:base[1];$('relationState').textContent=changed?labels.relation[Math.min(2,current.ambush.changes[2]+1)]:base[2];$('resourceState').textContent=changed?labels.resource[Math.min(2,current.ambush.changes[3]+1)]:base[3];['stateGoal','stateInfo','stateRelation','stateResource'].forEach((id,i)=>$(id).classList.toggle('changed',changed&&current.ambush.changes[i]>0))}
+function beep(freq,dur){try{const AC=window.AudioContext||window.webkitAudioContext;const ctx=new AC();const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=freq;g.gain.value=.045;o.connect(g);g.connect(ctx.destination);o.start();setTimeout(()=>{o.stop();ctx.close()},dur)}catch(e){}}
+function start(){if(running)return;running=true;$('start').disabled=true;$('pause').disabled=false;$('reveal').disabled=false;$('status').textContent='Round in progress. Begin the scene.';$('status').className='status ok';tick=setInterval(()=>{remaining--;$('timer').textContent=remaining;if(remaining<=5&&remaining>0){$('timer').classList.add('pulse');beep(500+((5-remaining)*80),100)}if(remaining<=0){beep(900,650);reveal()}},1000)}
+function stop(){if(tick)clearInterval(tick);tick=null;running=false}
+function pause(){if(running){stop();$('pause').textContent='Resume';$('status').textContent='Paused.'}else if(!revealed){running=true;$('pause').textContent='Pause';$('status').textContent='Round resumed.';tick=setInterval(()=>{remaining--;$('timer').textContent=remaining;if(remaining<=5&&remaining>0){$('timer').classList.add('pulse');beep(500+((5-remaining)*80),100)}if(remaining<=0){beep(900,650);reveal()}},1000)}}
+function reveal(){if(revealed)return;stop();revealed=true;$('timer').textContent='!';$('timer').classList.add('pulse');$('ambushTitle').textContent=current.ambush.title;$('ambushText').textContent=current.ambush.text;$('ambushWhy').textContent=current.ambush.why;$('ambushCard').classList.add('show');$('reveal').disabled=true;$('pause').disabled=true;$('resolve').disabled=false;setState(true);$('status').textContent='Adapt the scene. Do not erase what came before; respond to the new condition.';$('status').className='status warn'}
+function resolve(){ $('resolve').disabled=true;$('finish').disabled=false;$('status').textContent='State changed. Decide what consequence must persist beyond this beat.';$('status').className='status ok'}
+function finish(){ $('reflection').hidden=false;$('status').textContent='Round complete. Debrief before starting another.';$('status').className='status ok'}
+$('start').addEventListener('click',start);$('pause').addEventListener('click',pause);$('newScene').addEventListener('click',pick);$('reveal').addEventListener('click',reveal);$('resolve').addEventListener('click',resolve);$('finish').addEventListener('click',finish);$('delay').addEventListener('change',()=>{if(!running&&!revealed){remaining=+$('delay').value;$('timer').textContent=remaining}});pick();
+})();
+</script>
+</body>
+</html>
