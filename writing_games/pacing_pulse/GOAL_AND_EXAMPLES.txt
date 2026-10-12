@@ -1,0 +1,27 @@
+Pacing Pulse — Goal and Examples Review
+
+Review method
+Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
+
+Goal
+The game is meant to teach deliberate control of narrative pacing. The learner should experience that pace changes when prose changes what receives space, how directly events are connected, how much reflection is allowed, and how quickly the writing moves between meaningful beats.
+
+How the mechanic is supposed to meet the goal
+The learner keeps one scene going while four timed phases alternate between FAST and SLOW instructions. The fast phases emphasize action, short decisions, immediate cause-and-effect, and omitted transitions. The slow phases emphasize significant detail, hesitation, sensory attention, contradiction, and reconsideration.
+
+How the examples support the goal
+The bank contains 30 scene seeds. They include urgent situations, waiting situations, physical tasks, relationship tension, uncertainty, performance pressure, travel problems, weather threats, mistakes, missing objects, and moments of anticipation.
+
+This variety matters because pacing should not be confused with genre. A tense scene can be slowed to intensify a detail; a quiet scene can be accelerated through decisive action. The examples provide both naturally fast and naturally slow material, so the writer has to apply the pacing instruction rather than simply follow the scene's default rhythm.
+
+Examples such as carrying a full glass before a toast, dealing with closing train doors, testing a repaired engine before the owner returns, waiting for a disputed ruling, or receiving “We need to talk” all support meaningful shifts between action and attention.
+
+Review
+The game meets the basic pacing goal and now has 30 distinct scene seeds.
+
+There are two reservations. First, the timer can accidentally suggest that writing quickly equals fast-paced prose. The craft instructions help prevent that confusion, but the distinction should remain explicit. Second, every scene uses the same FAST → SLOW → FAST → SLOW sequence, so replay changes the story wrapper more than the learning path.
+
+A stronger future version could have several pacing plans: action compression, suspense expansion, dialogue acceleration, aftermath slowing, and mixed rhythm. That would vary the actual pacing problem rather than only the scene seed.
+
+Verdict
+PASS WITH RESERVATION. The 30 examples are suitable, but the fixed four-phase learning path limits pedagogical variety.
