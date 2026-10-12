@@ -1,0 +1,32 @@
+Foreshadow Seed — Goal and Examples Review
+
+Review method
+Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
+
+Goal
+The game is meant to teach foreshadowing as delayed meaning. An early detail should feel ordinary when first introduced, gain a little weight when echoed, and become significant only when the later reveal makes the earlier detail newly understandable.
+
+How the mechanic is supposed to meet the goal
+The writer is given a future reveal and an ordinary detail. The three stages are Plant, Echo, and Connect. The writer first places the detail naturally while attention is elsewhere, then reuses it for a different immediate reason, then pays it off when the reveal happens.
+
+This is the correct basic learning sequence for foreshadowing because it distinguishes a planted clue from an obvious warning and requires the detail to serve the present scene before it serves the later reveal.
+
+How the examples are supposed to support the goal
+The game currently has 10 future reveals and 10 ordinary details. Reveals include a guide who has never been there before, an intentionally hidden object, an inaccessible room, a disguised arrival, a misunderstood message sender, an approaching storm, a deliberate accident, a character planning to leave, an object hidden in plain sight, and someone listening to a private conversation.
+
+The detail bank contains ordinary physical or environmental information such as a bent umbrella stand, a slow clock, mud on one shoe, unfinished tea, a window that will not latch, a coat on the wrong hook, a dead charger, a receipt, a chair facing a hallway, and a radio playing too loudly.
+
+Review
+The learning goal is sound, but the current example system does not reliably meet it.
+
+The reveal and detail are selected independently. That produces 100 nominal pairings, but many pairings do not naturally support one another. A detail can always be forced to matter if the writer invents enough missing story logic, but then the learner is solving an arbitrary connection problem rather than practicing subtle foreshadowing.
+
+For example, a slow clock can naturally support a timing-related reveal, and a chair facing a hallway can plausibly support someone listening or watching. Other random combinations may require the writer to invent a chain of circumstances just to make the detail relevant. Under the standing rule that the learner should not have to invent missing operational logic supplied by the exercise, those pairings should not count as meaningful examples.
+
+The examples therefore need to be curated as reveal-detail pairs, or tagged into compatibility groups. Each pair should pass three tests:
+1. The detail has an ordinary reason to exist before the reveal.
+2. The echo can increase significance without announcing the answer.
+3. The reveal makes the earlier detail more meaningful without requiring a new coincidence.
+
+Verdict
+NEEDS REVISION. The mechanic is pedagogically strong, but the random reveal/detail pairing means the current bank cannot honestly be treated as 30+ reliably meaningful examples. Curated compatible pairs are needed.
