@@ -1,0 +1,27 @@
+Hidden Motive — Goal and Examples Review
+
+Review method
+Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
+
+Goal
+The game is meant to teach how a private motive changes visible behaviour without being directly confessed. The learner should be able to write a character whose real emotional or practical driver can be sensed through wording, attention, avoidance, body language, timing, and choice while the character continues pursuing an ordinary visible goal.
+
+How the mechanic is supposed to meet the goal
+Each setup separates four things: relationship, visible situation, visible goal, and private motive. The writer first works only with the surface. The motive is then revealed to the writer, not to the other character. Pressure is added, and the final stage asks the writer to let the motive leak through behaviour without naming it.
+
+This staged reveal matters because it teaches the difference between surface objective and underlying motive. The writer must preserve the visible scene while allowing the hidden motive to bend how the character behaves.
+
+How the examples support the goal
+The current bank contains 30 complete setups. They use a wide range of motives: fear of rejection, exhaustion, shame, embarrassment, jealousy, sentiment, guilt, self-protection, financial anxiety, avoidance, ambition, unresolved debt, family attachment, professional insecurity, and fear of exposure.
+
+The examples generally work because the visible goal and hidden motive are related but not identical. A manager can genuinely be evaluating an applicant while also hoping a friend withdraws. A mechanic can honestly advise a customer while privately wanting an old car preserved for sentimental reasons. A neighbour can legitimately argue about procedure while secretly worrying that an opened package will make them look intrusive.
+
+The pressure stages also tend to attack the hidden motive rather than introducing random complications. The teacher offers to call home when the student is hiding a chaotic home life; the contractor finds an old inspection sticker when the homeowner is concealing prior warnings; the event organizer confirms attendance when the owner is avoiding a former partner. These pressures make concealment harder in a causal way.
+
+Review
+This game meets its goal strongly. It is clearly distinct from Subtext Signal because Hidden Motive is broader than dialogue: the motive can leak through action, attention, logistics, silence, physical handling, delegation, and avoidance.
+
+A minor weakness is that the final leakage prompt sometimes suggests several techniques. That is useful scaffolding, but repeated play may become more instructive if some advanced rounds simply state what must remain hidden and let the learner choose how it leaks.
+
+Verdict
+PASS. The 30 examples are varied, causally coherent, and aligned with the intended lesson.
