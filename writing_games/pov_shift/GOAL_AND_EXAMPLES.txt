@@ -1,0 +1,25 @@
+POV Shift — Goal and Examples Review
+
+Review method
+Vale → Skeptic → Professor → Continuity Auditor → Editor → Vale reconciliation.
+
+Goal
+The game is meant to teach that point of view changes a scene even when the external event does not change. Different minds notice different details, assign different meanings, omit different information, and form different conclusions.
+
+How the mechanic is supposed to meet the goal
+A neutral event is held constant while the writer rewrites it through three different witnesses. Each witness is given a viewpoint filter and a craft mission. The exercise therefore asks the learner to alter selection, interpretation, emphasis, and omission rather than changing the underlying facts.
+
+How the examples support the goal
+The bank contains 10 neutral events, 10 viewpoint filters, and 10 missions. This creates far more than 30 possible exercises. The events are deliberately open enough to support several interpretations: a sealed box left in a cafe, a power outage, a dog returning with an unfamiliar glove, a bus stopping early, a shop owner locking customers inside, and similar situations.
+
+The viewpoint filters represent different priorities and assumptions: suspicious, optimistic, responsible, childlike, exhausted, secretive, rule-focused, thrill-seeking, grieving, and practical. The missions then target specific POV effects such as believable misreading, omission, selective urgency, personal comparison, power awareness, avoidance, mistaken conclusions, worldview-supporting details, and making identical facts feel safer or more threatening.
+
+This is good material for demonstrating that POV is not just pronoun choice. The same event can become comic, threatening, sad, practical, or morally charged depending on what the observer notices and believes.
+
+Review
+The game teaches the intended skill, but there is one important pedagogical weakness: the viewpoint filter and the mission both change at the same time. That means the learner cannot always tell whether a different result came from the new character or from the new craft instruction.
+
+For a cleaner comparison, one mode should keep the same mission across all three witnesses. A second, harder mode could deliberately vary both. The current version still produces useful practice, but it confounds two variables.
+
+Verdict
+PASS WITH RESERVATION. The example bank easily exceeds 30 meaningful combinations, but the comparison would teach POV more cleanly if only one variable changed at a time in the introductory mode.
