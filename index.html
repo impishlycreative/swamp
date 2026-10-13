@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Swamp Writing Games</title>
-  <meta name="description" content="Interactive writing games for practicing story pressure, conflict, character, point of view, pacing, subtext, description, revision, and other storytelling skills.">
+  <meta name="description" content="Interactive writing games and persistent story simulations for practicing conflict, character, causality, point of view, pacing, subtext, revision, and other storytelling skills.">
   <style>
     :root{--bg:#f3f0e8;--ink:#24211d;--muted:#6e675f;--card:#fffdf8;--line:#d9d1c5;--accent:#4f6d54;--accent-soft:#e4ece5;--focus:#1c6aa6}
     *{box-sizing:border-box}html{color-scheme:light}body{margin:0;font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}main{max-width:1100px;margin:0 auto;padding:24px}.hero{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,5vw,42px);margin-bottom:20px}.eyebrow{margin:0 0 6px;color:var(--accent);font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}h1{margin:0;font-size:clamp(2.2rem,7vw,4.4rem);line-height:1}.intro{max-width:800px;margin:18px 0 0;font-size:clamp(1rem,2vw,1.15rem);color:var(--muted)}.note{margin:0 0 24px;padding:15px 18px;border-left:5px solid var(--accent);border-radius:12px;background:var(--card)}.group{margin:30px 0}.group-heading{margin:0 0 14px}.group-heading h2{margin:0 0 4px;font-size:1.65rem}.group-heading p{margin:0;color:var(--muted);max-width:760px}.games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.game{display:flex;flex-direction:column;min-width:0;min-height:235px;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card)}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:.74rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:#fff}.tag.timed{border-color:var(--accent);color:var(--accent)}.game h3{margin:3px 0 8px;font-size:1.45rem;line-height:1.15}.game p{margin:0 0 18px;color:var(--muted)}.game a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;margin-top:auto;padding:11px 16px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;text-decoration:none}.game a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(hover:hover) and (pointer:fine){.game{transition:transform .16s ease,border-color .16s ease}.game:hover{transform:translateY(-2px);border-color:#b9c7bb}.game a:hover{filter:brightness(.94)}}footer{margin-top:28px;padding:14px 4px 4px;color:var(--muted);font-size:.92rem;text-align:center}@media(max-width:700px){main{padding:12px}.games{grid-template-columns:1fr}.hero{border-radius:18px}.game{min-height:0}}@media(prefers-reduced-motion:reduce){.game{transition:none}}
@@ -12,8 +12,14 @@
 </head>
 <body>
   <main>
-    <section class="hero"><p class="eyebrow">Kemptville Creative Writers · Swamp</p><h1>Writing Games</h1><p class="intro">Short writing games built to teach by doing. Most take about five minutes, work solo or alongside a group, and keep your actual writing in your own notebook or document.</p></section>
-    <div class="note"><strong>How to use them:</strong> Pick a skill you want to practise, open the game, read the learning goal, and write outside the site. The games provide prompts, pressure, structure, and constraints; they do not judge your prose.</div>
+    <section class="hero"><p class="eyebrow">Kemptville Creative Writers · Swamp</p><h1>Writing Games</h1><p class="intro">Short writing games built to teach by doing, plus persistent simulations that generate characters, history, secrets, conflict, and story material over time.</p></section>
+    <div class="note"><strong>How to use them:</strong> Pick a skill you want to practise, open the game, read the learning goal, and write outside the site. The games provide prompts, pressure, structure, constraints, and simulated story worlds; they do not judge your prose.</div>
+    <section class="group" aria-labelledby="simulation-games">
+      <div class="group-heading"><h2 id="simulation-games">Persistent story simulations</h2><p>Living worlds that remember what happened, track cause and consequence, and produce story material from characters under pressure.</p></div>
+      <div class="games">
+        <article class="game"><div class="meta"><span class="tag">Simulation</span><span class="tag">Persistent</span><span class="tag">Worldbuilding</span></div><h3>Story Universe Simulator</h3><p>Explore Greyhaven as people accumulate secrets, debts, grudges, property history, criminal connections, and causal story threads. Advance time, investigate what happened, or seed new pieces into the world.</p><a href="https://script.google.com/macros/s/AKfycbz2cNRe2JemkajOfbwq1c8kAWY5MSyzV4MoK8Q-OfUNBvfVSep-pWTt1FAxe7zC5lT1CQ/exec">Open Story Universe</a></article>
+      </div>
+    </section>
     <section class="group" aria-labelledby="scene-games">
       <div class="group-heading"><h2 id="scene-games">Story, conflict &amp; consequence</h2><p>Games that work on goals, obstacles, pressure, choices, causality, conflict, reveals, and scene-level consequences.</p></div>
       <div class="games">
@@ -44,7 +50,7 @@
         <article class="game"><div class="meta"><span class="tag">Revision</span><span class="tag">Emphasis</span></div><h3>Scene Compression</h3><p>Cut the same event from full treatment to three sentences to one while preserving what matters.</p><a href="writing_games/scene_compression/game_index.html">Play Scene Compression</a></article>
       </div>
     </section>
-    <footer>20 active Swamp writing practice games · Revelation merged into Reveal Reframe · One canonical game index</footer>
+    <footer>20 active writing practice games · 1 persistent story simulation · Revelation merged into Reveal Reframe</footer>
   </main>
 </body>
 </html>
