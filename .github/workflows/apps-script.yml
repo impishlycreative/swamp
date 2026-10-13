@@ -1,0 +1,225 @@
+name: Apps Script
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "Project folder, for example apps_script/my-project"
+        required: true
+        type: string
+      operation:
+        description: "What to do"
+        required: true
+        default: test
+        type: choice
+        options:
+          - test
+          - push
+          - deploy-new
+          - deploy-update
+          - logs
+      test_function:
+        description: "Optional Apps Script function to run during test (blank = syntax/push test only)"
+        required: false
+        default: ""
+        type: string
+      deployment_id:
+        description: "Required only for deploy-update"
+        required: false
+        default: ""
+        type: string
+      description:
+        description: "Deployment description"
+        required: false
+        default: "Deployed from GitHub Actions"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  apps-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install clasp
+        run: npm install --global @google/clasp@latest
+
+      - name: Restore Google authentication
+        env:
+          CLASP_AUTH_JSON: ${{ secrets.CLASP_AUTH_JSON }}
+        run: |
+          if [ -z "$CLASP_AUTH_JSON" ]; then
+            echo "Missing GitHub Actions secret: CLASP_AUTH_JSON" >&2
+            exit 1
+          fi
+          printf '%s' "$CLASP_AUTH_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Validate project selection
+        env:
+          PROJECT_INPUT: ${{ inputs.project }}
+        run: |
+          case "$PROJECT_INPUT" in
+            apps_script/*) ;;
+            *)
+              echo "Project must be inside apps_script/." >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ "$PROJECT_INPUT" == *".."* ]]; then
+            echo "Project path cannot contain '..'." >&2
+            exit 1
+          fi
+
+          if [ ! -d "$PROJECT_INPUT" ]; then
+            echo "Project folder does not exist: $PROJECT_INPUT" >&2
+            exit 1
+          fi
+
+          if [ ! -f "$PROJECT_INPUT/.clasp.json" ]; then
+            echo "Missing $PROJECT_INPUT/.clasp.json" >&2
+            exit 1
+          fi
+
+          jq -e '.scriptId and (.scriptId | length > 0)' "$PROJECT_INPUT/.clasp.json" >/dev/null || {
+            echo ".clasp.json must contain a scriptId." >&2
+            exit 1
+          }
+
+          echo "PROJECT_DIR=$PROJECT_INPUT" >> "$GITHUB_ENV"
+
+      - name: Run Apps Script operation
+        env:
+          OPERATION: ${{ inputs.operation }}
+          TEST_FUNCTION: ${{ inputs.test_function }}
+          DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+          DEPLOY_DESCRIPTION: ${{ inputs.description }}
+        run: |
+          set -o pipefail
+          LOG_FILE="$RUNNER_TEMP/apps-script.log"
+          : > "$LOG_FILE"
+
+          cd "$PROJECT_DIR"
+          ROOT_DIR="$(jq -r '.rootDir // "."' .clasp.json)"
+          MANIFEST="$ROOT_DIR/appsscript.json"
+
+          run_logged() {
+            "$@" 2>&1 | tee -a "$LOG_FILE"
+          }
+
+          validate_local() {
+            if [ ! -f "$MANIFEST" ]; then
+              echo "Missing Apps Script manifest: $MANIFEST" | tee -a "$LOG_FILE"
+              return 1
+            fi
+
+            echo "Checking appsscript.json..." | tee -a "$LOG_FILE"
+            jq empty "$MANIFEST"
+
+            echo "Checking JavaScript syntax..." | tee -a "$LOG_FILE"
+            while IFS= read -r -d '' file; do
+              case "$file" in
+                *.gs)
+                  tmp="$(mktemp --suffix=.js)"
+                  cp "$file" "$tmp"
+                  node --check "$tmp"
+                  rm -f "$tmp"
+                  ;;
+                *.js)
+                  node --check "$file"
+                  ;;
+              esac
+            done < <(find "$ROOT_DIR" -type f \( -name '*.js' -o -name '*.gs' \) -print0)
+          }
+
+          case "$OPERATION" in
+            test)
+              validate_local
+              echo "Pushing to Apps Script so Google can validate the project..." | tee -a "$LOG_FILE"
+              run_logged clasp push --force
+
+              if [ -n "$TEST_FUNCTION" ]; then
+                echo "Running Apps Script function: $TEST_FUNCTION" | tee -a "$LOG_FILE"
+                set +e
+                OUTPUT="$(clasp run-function "$TEST_FUNCTION" 2>&1)"
+                STATUS=$?
+                set -e
+                printf '%s\n' "$OUTPUT" | tee -a "$LOG_FILE"
+
+                if [ "$STATUS" -ne 0 ] && printf '%s' "$OUTPUT" | grep -Eqi 'API executable.*(not|publish|deploy)|not published/deployed'; then
+                  echo "No API-executable deployment exists yet; creating the first one automatically." | tee -a "$LOG_FILE"
+                  run_logged clasp create-deployment --description "GitHub test bootstrap"
+
+                  set +e
+                  OUTPUT="$(clasp run-function "$TEST_FUNCTION" 2>&1)"
+                  STATUS=$?
+                  set -e
+                  printf '%s\n' "$OUTPUT" | tee -a "$LOG_FILE"
+                fi
+
+                if [ "$STATUS" -ne 0 ]; then
+                  exit "$STATUS"
+                fi
+              fi
+              ;;
+
+            push)
+              validate_local
+              run_logged clasp push --force
+              ;;
+
+            deploy-new)
+              validate_local
+              run_logged clasp push --force
+              run_logged clasp create-deployment --description "$DEPLOY_DESCRIPTION"
+              ;;
+
+            deploy-update)
+              if [ -z "$DEPLOYMENT_ID" ]; then
+                echo "deploy-update requires deployment_id." | tee -a "$LOG_FILE"
+                exit 1
+              fi
+              validate_local
+              run_logged clasp push --force
+              run_logged clasp create-deployment --deploymentId "$DEPLOYMENT_ID" --description "$DEPLOY_DESCRIPTION"
+              ;;
+
+            logs)
+              echo "Fetching recent Apps Script / Cloud Logging output..." | tee -a "$LOG_FILE"
+              run_logged clasp tail-logs --json
+              ;;
+
+            *)
+              echo "Unknown operation: $OPERATION" | tee -a "$LOG_FILE"
+              exit 1
+              ;;
+          esac
+
+      - name: Write run summary
+        if: always()
+        run: |
+          {
+            echo "## Apps Script"
+            echo "- Project: \`${{ inputs.project }}\`"
+            echo "- Operation: \`${{ inputs.operation }}\`"
+            echo "- Result: see this workflow run and the attached \`apps-script-output\` log"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload output and errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-script-output
+          path: ${{ runner.temp }}/apps-script.log
+          if-no-files-found: ignore
+          retention-days: 14
