@@ -1,0 +1,286 @@
+name: Apps Script Voice Commands
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "apps_script/requests/*.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apps-script-voice
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Find voice request
+        id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          mapfile -t REQUESTS < <(git diff --name-only --diff-filter=AM "$BEFORE" "$AFTER" -- 'apps_script/requests/*.json')
+
+          if [ "${#REQUESTS[@]}" -eq 0 ]; then
+            echo "No new Apps Script request was found in this commit." >&2
+            exit 1
+          fi
+
+          if [ "${#REQUESTS[@]}" -ne 1 ]; then
+            echo "Exactly one Apps Script request is allowed per commit." >&2
+            printf 'Found: %s\n' "${REQUESTS[@]}" >&2
+            exit 1
+          fi
+
+          REQUEST_FILE="${REQUESTS[0]}"
+          jq empty "$REQUEST_FILE"
+          echo "request_file=$REQUEST_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install clasp
+        run: npm install --global @google/clasp@latest
+
+      - name: Restore Google authentication
+        env:
+          CLASP_AUTH_JSON: ${{ secrets.CLASP_AUTH_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CLASP_AUTH_JSON" ]; then
+            echo "Missing GitHub Actions secret: CLASP_AUTH_JSON" >&2
+            exit 1
+          fi
+          printf '%s' "$CLASP_AUTH_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Execute voice request
+        id: execute
+        env:
+          REQUEST_FILE: ${{ steps.request.outputs.request_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG_FILE="$RUNNER_TEMP/apps-script-voice.log"
+          : > "$LOG_FILE"
+
+          run_logged() {
+            "$@" 2>&1 | tee -a "$LOG_FILE"
+          }
+
+          PROJECT="$(jq -r '.project // empty' "$REQUEST_FILE")"
+          TITLE="$(jq -r '.title // empty' "$REQUEST_FILE")"
+          OPERATION="$(jq -r '.operation // "push"' "$REQUEST_FILE")"
+          TEST_FUNCTION="$(jq -r '.testFunction // empty' "$REQUEST_FILE")"
+          DEPLOYMENT_ID="$(jq -r '.deploymentId // empty' "$REQUEST_FILE")"
+          DESCRIPTION="$(jq -r '.description // "Voice-requested deployment"' "$REQUEST_FILE")"
+
+          persist_metadata() {
+            pushd "$GITHUB_WORKSPACE" >/dev/null
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "$PROJECT/.clasp.json" 2>/dev/null || true
+            git add "$PROJECT/.deployment.json" 2>/dev/null || true
+
+            if ! git diff --cached --quiet; then
+              git commit -m "Record Apps Script metadata for $(basename "$PROJECT")"
+              git pull --rebase origin master
+              git push origin HEAD:master
+            fi
+            popd >/dev/null
+          }
+
+          case "$PROJECT" in
+            apps_script/*) ;;
+            *)
+              echo "project must be inside apps_script/." | tee -a "$LOG_FILE" >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ "$PROJECT" == *".."* ]] || [[ "$PROJECT" == "apps_script/requests"* ]] || [[ "$PROJECT" == "apps_script/_template"* ]]; then
+            echo "Invalid project path: $PROJECT" | tee -a "$LOG_FILE" >&2
+            exit 1
+          fi
+
+          case "$OPERATION" in
+            push|test|deploy-new|deploy-update|logs) ;;
+            *)
+              echo "Unsupported operation: $OPERATION" | tee -a "$LOG_FILE" >&2
+              exit 1
+              ;;
+          esac
+
+          if [ ! -d "$PROJECT" ]; then
+            echo "Project folder does not exist: $PROJECT" | tee -a "$LOG_FILE" >&2
+            exit 1
+          fi
+
+          if [ -z "$TITLE" ]; then
+            TITLE="$(basename "$PROJECT")"
+          fi
+
+          # Voice commands never require a separate create-project step.
+          # If the project is not linked yet, create the Google project automatically.
+          if [ ! -f "$PROJECT/.clasp.json" ] || ! jq -e '.scriptId and (.scriptId | length > 0)' "$PROJECT/.clasp.json" >/dev/null 2>&1; then
+            if [ "$OPERATION" = "logs" ] || [ "$OPERATION" = "deploy-update" ]; then
+              echo "$OPERATION requires an existing linked Apps Script project." | tee -a "$LOG_FILE" >&2
+              exit 1
+            fi
+
+            echo "No Script ID exists. Creating Apps Script project '$TITLE' automatically." | tee -a "$LOG_FILE"
+            TEMP_PROJECT="$(mktemp -d)"
+            mkdir -p "$TEMP_PROJECT/src"
+
+            (
+              cd "$TEMP_PROJECT"
+              run_logged clasp create-script --title "$TITLE" --type standalone --rootDir src --json
+            )
+
+            if [ ! -f "$TEMP_PROJECT/.clasp.json" ]; then
+              echo "clasp did not create .clasp.json." | tee -a "$LOG_FILE" >&2
+              exit 1
+            fi
+
+            cp "$TEMP_PROJECT/.clasp.json" "$PROJECT/.clasp.json"
+            TMP_CONFIG="$(mktemp)"
+            jq '.rootDir = "src"' "$PROJECT/.clasp.json" > "$TMP_CONFIG"
+            mv "$TMP_CONFIG" "$PROJECT/.clasp.json"
+            echo "Created and linked Script ID $(jq -r '.scriptId' "$PROJECT/.clasp.json")." | tee -a "$LOG_FILE"
+
+            # Save the link now so a later test/deploy failure cannot orphan the Google project.
+            persist_metadata
+          fi
+
+          cd "$PROJECT"
+          ROOT_DIR="$(jq -r '.rootDir // "."' .clasp.json)"
+          MANIFEST="$ROOT_DIR/appsscript.json"
+
+          validate_local() {
+            if [ ! -f "$MANIFEST" ]; then
+              echo "Missing Apps Script manifest: $MANIFEST" | tee -a "$LOG_FILE" >&2
+              return 1
+            fi
+
+            echo "Checking appsscript.json..." | tee -a "$LOG_FILE"
+            jq empty "$MANIFEST"
+
+            echo "Checking JavaScript syntax..." | tee -a "$LOG_FILE"
+            while IFS= read -r -d '' file; do
+              case "$file" in
+                *.gs)
+                  tmp="$(mktemp --suffix=.js)"
+                  cp "$file" "$tmp"
+                  node --check "$tmp"
+                  rm -f "$tmp"
+                  ;;
+                *.js)
+                  node --check "$file"
+                  ;;
+              esac
+            done < <(find "$ROOT_DIR" -type f \( -name '*.js' -o -name '*.gs' \) -print0)
+          }
+
+          case "$OPERATION" in
+            push)
+              validate_local
+              run_logged clasp push --force
+              ;;
+
+            test)
+              validate_local
+              run_logged clasp push --force
+
+              if [ -n "$TEST_FUNCTION" ]; then
+                echo "Running test function: $TEST_FUNCTION" | tee -a "$LOG_FILE"
+                set +e
+                OUTPUT="$(clasp run-function "$TEST_FUNCTION" 2>&1)"
+                STATUS=$?
+                set -e
+                printf '%s\n' "$OUTPUT" | tee -a "$LOG_FILE"
+
+                if [ "$STATUS" -ne 0 ] && printf '%s' "$OUTPUT" | grep -Eqi 'API executable.*(not|publish|deploy)|not published/deployed'; then
+                  echo "Creating the first deployment required for remote execution." | tee -a "$LOG_FILE"
+                  run_logged clasp create-deployment --description "Voice test bootstrap"
+                  set +e
+                  OUTPUT="$(clasp run-function "$TEST_FUNCTION" 2>&1)"
+                  STATUS=$?
+                  set -e
+                  printf '%s\n' "$OUTPUT" | tee -a "$LOG_FILE"
+                fi
+
+                if [ "$STATUS" -ne 0 ]; then
+                  exit "$STATUS"
+                fi
+              fi
+              ;;
+
+            deploy-new)
+              validate_local
+              run_logged clasp push --force
+              DEPLOY_JSON="$(clasp create-deployment --description "$DESCRIPTION" --json)"
+              printf '%s\n' "$DEPLOY_JSON" | tee -a "$LOG_FILE"
+              printf '%s\n' "$DEPLOY_JSON" > .deployment.json
+              cd "$GITHUB_WORKSPACE"
+              persist_metadata
+              cd "$PROJECT"
+              ;;
+
+            deploy-update)
+              validate_local
+              run_logged clasp push --force
+
+              if [ -z "$DEPLOYMENT_ID" ] && [ -f .deployment.json ]; then
+                DEPLOYMENT_ID="$(jq -r '.deploymentId // empty' .deployment.json)"
+              fi
+
+              if [ -z "$DEPLOYMENT_ID" ]; then
+                echo "No deploymentId was supplied and no saved deployment exists." | tee -a "$LOG_FILE" >&2
+                exit 1
+              fi
+
+              DEPLOY_JSON="$(clasp create-deployment --deploymentId "$DEPLOYMENT_ID" --description "$DESCRIPTION" --json)"
+              printf '%s\n' "$DEPLOY_JSON" | tee -a "$LOG_FILE"
+              printf '%s\n' "$DEPLOY_JSON" > .deployment.json
+              cd "$GITHUB_WORKSPACE"
+              persist_metadata
+              cd "$PROJECT"
+              ;;
+
+            logs)
+              run_logged clasp tail-logs --json
+              ;;
+          esac
+
+          cd "$GITHUB_WORKSPACE"
+          {
+            echo "## Apps Script voice request"
+            echo "- Request: \`$REQUEST_FILE\`"
+            echo "- Project: \`$PROJECT\`"
+            echo "- Operation: \`$OPERATION\`"
+            echo "- Script ID: \`$(jq -r '.scriptId' "$PROJECT/.clasp.json")\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload output and errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-script-voice-output
+          path: ${{ runner.temp }}/apps-script-voice.log
+          if-no-files-found: ignore
+          retention-days: 14
