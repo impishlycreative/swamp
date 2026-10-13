@@ -90,6 +90,21 @@ jobs:
           DEPLOYMENT_ID="$(jq -r '.deploymentId // empty' "$REQUEST_FILE")"
           DESCRIPTION="$(jq -r '.description // "Voice-requested deployment"' "$REQUEST_FILE")"
 
+          persist_metadata() {
+            pushd "$GITHUB_WORKSPACE" >/dev/null
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "$PROJECT/.clasp.json" 2>/dev/null || true
+            git add "$PROJECT/.deployment.json" 2>/dev/null || true
+
+            if ! git diff --cached --quiet; then
+              git commit -m "Record Apps Script metadata for $(basename "$PROJECT")"
+              git pull --rebase origin master
+              git push origin HEAD:master
+            fi
+            popd >/dev/null
+          }
+
           case "$PROJECT" in
             apps_script/*) ;;
             *)
@@ -147,6 +162,9 @@ jobs:
             jq '.rootDir = "src"' "$PROJECT/.clasp.json" > "$TMP_CONFIG"
             mv "$TMP_CONFIG" "$PROJECT/.clasp.json"
             echo "Created and linked Script ID $(jq -r '.scriptId' "$PROJECT/.clasp.json")." | tee -a "$LOG_FILE"
+
+            # Save the link now so a later test/deploy failure cannot orphan the Google project.
+            persist_metadata
           fi
 
           cd "$PROJECT"
@@ -218,6 +236,9 @@ jobs:
               DEPLOY_JSON="$(clasp create-deployment --description "$DESCRIPTION" --json)"
               printf '%s\n' "$DEPLOY_JSON" | tee -a "$LOG_FILE"
               printf '%s\n' "$DEPLOY_JSON" > .deployment.json
+              cd "$GITHUB_WORKSPACE"
+              persist_metadata
+              cd "$PROJECT"
               ;;
 
             deploy-update)
@@ -236,6 +257,9 @@ jobs:
               DEPLOY_JSON="$(clasp create-deployment --deploymentId "$DEPLOYMENT_ID" --description "$DESCRIPTION" --json)"
               printf '%s\n' "$DEPLOY_JSON" | tee -a "$LOG_FILE"
               printf '%s\n' "$DEPLOY_JSON" > .deployment.json
+              cd "$GITHUB_WORKSPACE"
+              persist_metadata
+              cd "$PROJECT"
               ;;
 
             logs)
@@ -244,19 +268,6 @@ jobs:
           esac
 
           cd "$GITHUB_WORKSPACE"
-
-          # Persist only generated project metadata. Request files are immutable audit records.
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$PROJECT/.clasp.json" 2>/dev/null || true
-          git add "$PROJECT/.deployment.json" 2>/dev/null || true
-
-          if ! git diff --cached --quiet; then
-            git commit -m "Record Apps Script metadata for $(basename "$PROJECT")"
-            git pull --rebase origin master
-            git push origin HEAD:master
-          fi
-
           {
             echo "## Apps Script voice request"
             echo "- Request: \`$REQUEST_FILE\`"
