@@ -1,0 +1,7 @@
+# Never commit clasp / Google OAuth credentials
+.clasprc.json
+client_secret.json
+credentials.json
+
+# Local Node tooling
+node_modules/
