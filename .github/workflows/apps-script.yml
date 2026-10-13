@@ -13,11 +13,17 @@ on:
         default: test
         type: choice
         options:
+          - create-project
           - test
           - push
           - deploy-new
           - deploy-update
           - logs
+      project_title:
+        description: "Name for a brand-new Apps Script project (create-project only)"
+        required: false
+        default: ""
+        type: string
       test_function:
         description: "Optional Apps Script function to run during test (blank = syntax/push test only)"
         required: false
@@ -34,8 +40,9 @@ on:
         default: "Deployed from GitHub Actions"
         type: string
 
+# create-project writes the new Script ID back into that project's .clasp.json.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apps-script:
@@ -67,6 +74,7 @@ jobs:
       - name: Validate project selection
         env:
           PROJECT_INPUT: ${{ inputs.project }}
+          OPERATION: ${{ inputs.operation }}
         run: |
           case "$PROJECT_INPUT" in
             apps_script/*) ;;
@@ -86,21 +94,29 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f "$PROJECT_INPUT/.clasp.json" ]; then
-            echo "Missing $PROJECT_INPUT/.clasp.json" >&2
-            exit 1
-          fi
+          if [ "$OPERATION" = "create-project" ]; then
+            if [ -f "$PROJECT_INPUT/.clasp.json" ]; then
+              echo "This folder is already linked to an Apps Script project." >&2
+              exit 1
+            fi
+          else
+            if [ ! -f "$PROJECT_INPUT/.clasp.json" ]; then
+              echo "Missing $PROJECT_INPUT/.clasp.json" >&2
+              exit 1
+            fi
 
-          jq -e '.scriptId and (.scriptId | length > 0)' "$PROJECT_INPUT/.clasp.json" >/dev/null || {
-            echo ".clasp.json must contain a scriptId." >&2
-            exit 1
-          }
+            jq -e '.scriptId and (.scriptId | length > 0)' "$PROJECT_INPUT/.clasp.json" >/dev/null || {
+              echo ".clasp.json must contain a scriptId." >&2
+              exit 1
+            }
+          fi
 
           echo "PROJECT_DIR=$PROJECT_INPUT" >> "$GITHUB_ENV"
 
       - name: Run Apps Script operation
         env:
           OPERATION: ${{ inputs.operation }}
+          PROJECT_TITLE: ${{ inputs.project_title }}
           TEST_FUNCTION: ${{ inputs.test_function }}
           DEPLOYMENT_ID: ${{ inputs.deployment_id }}
           DEPLOY_DESCRIPTION: ${{ inputs.description }}
@@ -109,13 +125,47 @@ jobs:
           LOG_FILE="$RUNNER_TEMP/apps-script.log"
           : > "$LOG_FILE"
 
-          cd "$PROJECT_DIR"
-          ROOT_DIR="$(jq -r '.rootDir // "."' .clasp.json)"
-          MANIFEST="$ROOT_DIR/appsscript.json"
-
           run_logged() {
             "$@" 2>&1 | tee -a "$LOG_FILE"
           }
+
+          if [ "$OPERATION" = "create-project" ]; then
+            TITLE="$PROJECT_TITLE"
+            if [ -z "$TITLE" ]; then
+              TITLE="$(basename "$PROJECT_DIR")"
+            fi
+
+            echo "Creating new Apps Script project: $TITLE" | tee -a "$LOG_FILE"
+            TEMP_PROJECT="$(mktemp -d)"
+            mkdir -p "$TEMP_PROJECT/src"
+
+            (
+              cd "$TEMP_PROJECT"
+              run_logged clasp create-script --title "$TITLE" --type standalone --rootDir src
+            )
+
+            if [ ! -f "$TEMP_PROJECT/.clasp.json" ]; then
+              echo "clasp did not create .clasp.json." | tee -a "$LOG_FILE"
+              exit 1
+            fi
+
+            cp "$TEMP_PROJECT/.clasp.json" "$PROJECT_DIR/.clasp.json"
+            TMP_CONFIG="$(mktemp)"
+            jq '.rootDir = "src"' "$PROJECT_DIR/.clasp.json" > "$TMP_CONFIG"
+            mv "$TMP_CONFIG" "$PROJECT_DIR/.clasp.json"
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "$PROJECT_DIR/.clasp.json"
+            git commit -m "Link $(basename "$PROJECT_DIR") to Apps Script"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+
+            echo "New Script ID saved to $PROJECT_DIR/.clasp.json" | tee -a "$LOG_FILE"
+          fi
+
+          cd "$PROJECT_DIR"
+          ROOT_DIR="$(jq -r '.rootDir // "."' .clasp.json)"
+          MANIFEST="$ROOT_DIR/appsscript.json"
 
           validate_local() {
             if [ ! -f "$MANIFEST" ]; then
@@ -143,6 +193,12 @@ jobs:
           }
 
           case "$OPERATION" in
+            create-project)
+              validate_local
+              echo "Pushing the new project to Apps Script..." | tee -a "$LOG_FILE"
+              run_logged clasp push --force
+              ;;
+
             test)
               validate_local
               echo "Pushing to Apps Script so Google can validate the project..." | tee -a "$LOG_FILE"
