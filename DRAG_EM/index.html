@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>DRAG_EM</title>
+  <meta name="description" content="A browser space-combat prototype about grappling, dragging, and slinging asteroids into hostile targets.">
+  <style>
+    :root{color-scheme:dark;--hud:#b7f7ff;--muted:#7d9ba0;--danger:#ff8c8c;--good:#9fffb0}
+    *{box-sizing:border-box}html,body{margin:0;background:#000;color:#fff;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow:hidden}body{min-height:100vh}
+    canvas{display:block;width:100vw;height:100vh;background:#000;touch-action:none}
+    #hud{position:fixed;inset:0;pointer-events:none;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:start;gap:10px;text-shadow:0 0 8px #000;font-size:13px}
+    #left,#right{background:rgba(0,0,0,.36);border:1px solid rgba(183,247,255,.16);padding:9px 11px;border-radius:8px;backdrop-filter:blur(2px)}
+    #right{text-align:right;max-width:420px}.title{color:var(--hud);font-weight:800;letter-spacing:.18em}.good{color:var(--good)}.bad{color:var(--danger)}.muted{color:var(--muted)}
+    #message{position:fixed;left:50%;top:12%;transform:translateX(-50%);max-width:min(720px,90vw);padding:10px 14px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(0,0,0,.55);text-align:center;pointer-events:none;opacity:0;transition:opacity .2s}
+    #message.show{opacity:1}
+    #help{position:fixed;left:12px;bottom:12px;max-width:min(690px,calc(100vw - 24px));padding:9px 11px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.13);border-radius:8px;font-size:12px;color:#cfd7d9;pointer-events:none}
+    @media(max-width:760px){#hud{grid-template-columns:1fr;font-size:11px}#right{text-align:left;max-width:none}#help{font-size:10px}}
+  </style>
+</head>
+<body>
+  <canvas id="game" aria-label="DRAG_EM space game"></canvas>
+  <div id="hud"><div id="left"></div><div id="right"></div></div>
+  <div id="message"></div>
+  <div id="help">W/S thrust · A/D turn · Q/E strafe · SPACE laser · G grapple/release · R reel in · F pay out · B build Sling Array at beacon · X fire relativistic sling when charged · N restart</div>
+  <script src="app.js"></script>
+</body>
+</html>
