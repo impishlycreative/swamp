@@ -2,27 +2,230 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>DRAG_EM</title>
-  <meta name="description" content="A browser space-combat prototype about grappling, dragging, and slinging asteroids into hostile targets.">
+  <meta name="description" content="A mobile-first browser space game about grappling, pushing, dragging, and slinging asteroids into hostile targets.">
   <style>
-    :root{color-scheme:dark;--hud:#b7f7ff;--muted:#7d9ba0;--danger:#ff8c8c;--good:#9fffb0}
-    *{box-sizing:border-box}html,body{margin:0;background:#000;color:#fff;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow:hidden}body{min-height:100vh}
-    canvas{display:block;width:100vw;height:100vh;background:#000;touch-action:none}
-    #hud{position:fixed;inset:0;pointer-events:none;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:start;gap:10px;text-shadow:0 0 8px #000;font-size:13px}
-    #left,#right{background:rgba(0,0,0,.36);border:1px solid rgba(183,247,255,.16);padding:9px 11px;border-radius:8px;backdrop-filter:blur(2px)}
-    #right{text-align:right;max-width:420px}.title{color:var(--hud);font-weight:800;letter-spacing:.18em}.good{color:var(--good)}.bad{color:var(--danger)}.muted{color:var(--muted)}
-    #message{position:fixed;left:50%;top:12%;transform:translateX(-50%);max-width:min(720px,90vw);padding:10px 14px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(0,0,0,.55);text-align:center;pointer-events:none;opacity:0;transition:opacity .2s}
-    #message.show{opacity:1}
-    #help{position:fixed;left:12px;bottom:12px;max-width:min(690px,calc(100vw - 24px));padding:9px 11px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.13);border-radius:8px;font-size:12px;color:#cfd7d9;pointer-events:none}
-    @media(max-width:760px){#hud{grid-template-columns:1fr;font-size:11px}#right{text-align:left;max-width:none}#help{font-size:10px}}
+    :root {
+      color-scheme: dark;
+      --cyan: #86f3ff;
+      --cyan-dim: rgba(134,243,255,.24);
+      --panel: rgba(0,0,0,.5);
+      --danger: #ff8585;
+      --good: #9cffae;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#000; color:#fff; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; touch-action:none; overscroll-behavior:none; }
+    body { position:fixed; inset:0; user-select:none; -webkit-user-select:none; }
+    canvas { position:absolute; inset:0; display:block; width:100%; height:100%; background:#000; touch-action:none; }
+
+    #hud {
+      position:fixed;
+      left:calc(8px + var(--safe-left));
+      right:calc(8px + var(--safe-right));
+      top:calc(7px + var(--safe-top));
+      pointer-events:none;
+      text-shadow:0 1px 5px #000, 0 0 8px #000;
+      z-index:3;
+      font-size:clamp(9px,1.45vw,13px);
+    }
+    #hud-row { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    #hud-primary, #hud-secondary, #objective {
+      border:1px solid rgba(134,243,255,.15);
+      background:rgba(0,0,0,.34);
+      border-radius:7px;
+      padding:5px 7px;
+      backdrop-filter:blur(2px);
+    }
+    #hud-primary b { color:var(--cyan); letter-spacing:.12em; }
+    #hud-secondary { text-align:right; max-width:58%; color:#c9dcdf; }
+    #objective { margin-top:5px; display:inline-block; max-width:min(700px,78vw); color:#d9f7fb; }
+
+    #message {
+      position:fixed;
+      z-index:5;
+      left:50%;
+      top:calc(15% + var(--safe-top));
+      transform:translateX(-50%) translateY(-5px);
+      width:max-content;
+      max-width:min(78vw,720px);
+      padding:8px 12px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:9px;
+      background:rgba(0,0,0,.7);
+      text-align:center;
+      font-size:clamp(11px,1.5vw,14px);
+      pointer-events:none;
+      opacity:0;
+      transition:opacity .18s ease, transform .18s ease;
+    }
+    #message.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    #restart-btn {
+      position:fixed;
+      z-index:6;
+      top:calc(58px + var(--safe-top));
+      right:calc(8px + var(--safe-right));
+      min-width:64px;
+      height:30px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:7px;
+      color:#d5d5d5;
+      background:rgba(0,0,0,.45);
+      font:700 10px/1 inherit;
+      letter-spacing:.06em;
+      touch-action:none;
+    }
+
+    #touch-controls {
+      position:fixed;
+      z-index:4;
+      left:0; right:0;
+      bottom:0;
+      height:clamp(128px,31vh,185px);
+      padding-left:calc(10px + var(--safe-left));
+      padding-right:calc(10px + var(--safe-right));
+      padding-bottom:calc(8px + var(--safe-bottom));
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      pointer-events:none;
+    }
+
+    #joystick {
+      pointer-events:auto;
+      position:relative;
+      width:clamp(118px,22vw,164px);
+      height:clamp(118px,22vw,164px);
+      border:2px solid rgba(134,243,255,.28);
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(134,243,255,.08), rgba(0,0,0,.25) 63%, rgba(0,0,0,.52));
+      box-shadow:inset 0 0 28px rgba(134,243,255,.06);
+      touch-action:none;
+    }
+    #joystick::after {
+      content:"MOVE";
+      position:absolute;
+      left:50%; bottom:14%; transform:translateX(-50%);
+      font-size:10px; letter-spacing:.16em; color:rgba(190,245,250,.45);
+      pointer-events:none;
+    }
+    #joystick.active { border-color:rgba(134,243,255,.55); }
+    #stick-knob {
+      position:absolute;
+      left:50%; top:50%;
+      width:clamp(42px,8vw,58px);
+      height:clamp(42px,8vw,58px);
+      margin-left:calc(clamp(42px,8vw,58px) / -2);
+      margin-top:calc(clamp(42px,8vw,58px) / -2);
+      border:2px solid rgba(190,250,255,.68);
+      border-radius:50%;
+      background:rgba(70,185,198,.22);
+      box-shadow:0 0 18px rgba(80,225,240,.14);
+      pointer-events:none;
+      will-change:transform;
+    }
+
+    #action-pad {
+      pointer-events:none;
+      display:grid;
+      grid-template-columns:repeat(3, minmax(54px,72px));
+      grid-template-rows:repeat(2, minmax(54px,72px));
+      gap:7px;
+      align-items:stretch;
+    }
+    .action {
+      pointer-events:auto;
+      min-width:54px;
+      min-height:54px;
+      border:1px solid rgba(134,243,255,.32);
+      border-radius:16px;
+      color:#e6fdff;
+      background:rgba(6,25,29,.62);
+      box-shadow:inset 0 0 18px rgba(134,243,255,.04), 0 2px 9px rgba(0,0,0,.4);
+      font:800 clamp(9px,1.25vw,12px)/1.05 inherit;
+      letter-spacing:.04em;
+      touch-action:none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .action:active, .action.active { background:rgba(65,196,212,.32); border-color:rgba(173,250,255,.82); transform:scale(.97); }
+    #laser-btn { border-color:rgba(255,120,120,.42); color:#ffd5d5; }
+    #grapple-btn { border-color:rgba(115,235,255,.55); }
+    #special-btn { border-color:rgba(255,218,108,.46); color:#ffedb0; }
+    #special-btn.ready { background:rgba(135,110,22,.45); border-color:#ffe889; box-shadow:0 0 16px rgba(255,224,105,.22); }
+    #push-btn.cooldown { opacity:.42; }
+
+    #rotate {
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:20;
+      background:#000;
+      align-items:center;
+      justify-content:center;
+      padding:30px;
+      text-align:center;
+      color:#dcfbff;
+      font-size:18px;
+      line-height:1.45;
+    }
+    #rotate strong { display:block; color:var(--cyan); font-size:24px; margin-bottom:8px; letter-spacing:.08em; }
+
+    @media (orientation:portrait) and (max-width:900px) {
+      #rotate { display:flex; }
+    }
+
+    @media (max-height:420px) {
+      #hud { font-size:9px; }
+      #hud-primary, #hud-secondary, #objective { padding:4px 6px; }
+      #restart-btn { top:calc(48px + var(--safe-top)); height:26px; }
+      #touch-controls { height:132px; }
+      #joystick { width:118px; height:118px; }
+      #action-pad { grid-template-columns:repeat(3,58px); grid-template-rows:repeat(2,54px); gap:5px; }
+      .action { min-width:54px; min-height:50px; border-radius:13px; font-size:9px; }
+      #objective { max-width:68vw; }
+    }
+
+    @media (min-width:1000px) {
+      #touch-controls { opacity:.86; }
+    }
   </style>
 </head>
 <body>
-  <canvas id="game" aria-label="DRAG_EM space game"></canvas>
-  <div id="hud"><div id="left"></div><div id="right"></div></div>
+  <canvas id="game" aria-label="DRAG_EM mobile space game"></canvas>
+
+  <div id="hud">
+    <div id="hud-row">
+      <div id="hud-primary"></div>
+      <div id="hud-secondary"></div>
+    </div>
+    <div id="objective"></div>
+  </div>
+
+  <button id="restart-btn" type="button">RESTART</button>
   <div id="message"></div>
-  <div id="help">W/S thrust · A/D turn · Q/E strafe · SPACE laser · G grapple/release · R reel in · F pay out · B build Sling Array at beacon · X fire relativistic sling when charged · N restart</div>
+
+  <div id="touch-controls" aria-label="Game controls">
+    <div id="joystick" aria-label="Movement joystick"><div id="stick-knob"></div></div>
+    <div id="action-pad">
+      <button id="grapple-btn" class="action" type="button">GRAPPLE</button>
+      <button id="laser-btn" class="action" type="button">LASER</button>
+      <button id="push-btn" class="action" type="button">PUSH</button>
+      <button id="reel-in-btn" class="action" type="button">REEL −</button>
+      <button id="special-btn" class="action" type="button">BUILD</button>
+      <button id="reel-out-btn" class="action" type="button">REEL +</button>
+    </div>
+  </div>
+
+  <div id="rotate"><div><strong>DRAG_EM</strong>Rotate your phone to landscape to play.</div></div>
   <script src="app.js"></script>
 </body>
 </html>
