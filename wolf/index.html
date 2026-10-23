@@ -6,33 +6,18 @@
   <meta name="theme-color" content="#05070a" />
   <title>Wolf — WebGL Werewolf</title>
   <style>
-    :root { color-scheme: dark; }
-    * { box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #05070a; }
-    body { min-height: 100dvh; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    canvas {
-      position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block;
-      touch-action: none; background: #05070a;
-    }
-    .hud {
-      position: fixed; left: max(14px, env(safe-area-inset-left));
-      bottom: max(14px, env(safe-area-inset-bottom)); z-index: 2; pointer-events: none;
-      max-width: calc(100vw - 28px); padding: 8px 10px; border-radius: 999px;
-      color: rgba(235,241,246,.65); background: rgba(3,5,8,.28);
-      border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px);
-      font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
-      opacity: .75; transition: opacity .6s ease;
-    }
-    body:hover .hud { opacity: .42; }
-    .fallback { display:none; position:fixed; inset:0; place-items:center; padding:24px; color:#e8edf2; background:#05070a; text-align:center; }
-    .fallback strong { display:block; margin-bottom:8px; }
-    @media (max-width: 560px) { .hud { font-size: 9px; letter-spacing: .05em; } }
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#05070a}
+    body{min-height:100dvh}
+    canvas{position:fixed;inset:0;width:100vw;height:100dvh;display:block;background:#05070a;touch-action:none}
+    .fallback{display:none;position:fixed;inset:0;place-items:center;padding:24px;color:#e8edf2;background:#05070a;text-align:center;font-family:system-ui,sans-serif}
+    .fallback strong{display:block;margin-bottom:8px}
   </style>
 </head>
 <body>
-  <canvas id="scene" aria-label="Interactive moonlit werewolf scene"></canvas>
-  <div class="hud">Move pointer • wind, fog, fur, tail &amp; spittle animate in real time</div>
-  <div class="fallback" id="fallback"><div><strong>WebGL is unavailable.</strong>This scene needs a browser with WebGL enabled.</div></div>
+  <canvas id="scene" aria-label="Animated moonlit werewolf scene"></canvas>
+  <div class="fallback" id="fallback"><div><strong>WebGL is unavailable.</strong>This scene needs WebGL enabled.</div></div>
 
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
@@ -43,21 +28,21 @@
 
     let renderer;
     try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer = new THREE.WebGLRenderer({canvas, antialias:true, powerPreference:'high-performance'});
     } catch (err) {
-      fallback.style.display = 'grid';
+      fallback.style.display='grid';
       throw err;
     }
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
 
-    const chunkUrls = Array.from({ length: 6 }, (_, i) => `./assets/werewolf-${String(i).padStart(2, '0')}.txt`);
-    const encoded = (await Promise.all(chunkUrls.map(async url => {
-      const response = await fetch(url, { cache: 'force-cache' });
-      if (!response.ok) throw new Error(`Failed to load ${url}`);
-      return response.text();
+    const chunkUrls = Array.from({length:6},(_,i)=>`./assets/werewolf-${String(i).padStart(2,'0')}.txt`);
+    const encoded = (await Promise.all(chunkUrls.map(async url=>{
+      const r = await fetch(url,{cache:'force-cache'});
+      if(!r.ok) throw new Error(`Failed to load ${url}`);
+      return r.text();
     }))).join('');
 
     const texture = await new THREE.TextureLoader().loadAsync(`data:image/webp;base64,${encoded}`);
@@ -66,230 +51,196 @@
     texture.magFilter = THREE.LinearFilter;
 
     const uniforms = {
-      uTexture: { value: texture },
-      uTime: { value: 0 },
-      uResolution: { value: new THREE.Vector2(1, 1) },
-      uMouse: { value: new THREE.Vector2(0, 0) },
-      uMotion: { value: reduceMotion ? 0.28 : 1.0 },
-      uImageAspect: { value: texture.image.width / texture.image.height }
+      uTexture:{value:texture},
+      uTime:{value:0},
+      uResolution:{value:new THREE.Vector2(1,1)},
+      uImageAspect:{value:texture.image.width/texture.image.height},
+      uWind:{value:new THREE.Vector2(0.7,0.12)},
+      uMotion:{value:reduceMotion?0.28:1.0}
     };
 
     const material = new THREE.ShaderMaterial({
       uniforms,
-      depthTest: false,
-      depthWrite: false,
-      vertexShader: `
+      depthTest:false,
+      depthWrite:false,
+      vertexShader:`
         varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = vec4(position, 1.0);
-        }
+        void main(){vUv=uv;gl_Position=vec4(position,1.0);}
       `,
-      fragmentShader: `
+      fragmentShader:`
         precision highp float;
         varying vec2 vUv;
         uniform sampler2D uTexture;
         uniform float uTime;
         uniform vec2 uResolution;
-        uniform vec2 uMouse;
-        uniform float uMotion;
         uniform float uImageAspect;
+        uniform vec2 uWind;
+        uniform float uMotion;
 
-        float hash21(vec2 p) {
-          p = fract(p * vec2(123.34, 456.21));
-          p += dot(p, p + 45.32);
-          return fract(p.x * p.y);
+        float hash21(vec2 p){
+          p=fract(p*vec2(123.34,456.21));
+          p+=dot(p,p+45.32);
+          return fract(p.x*p.y);
         }
 
-        float noise(vec2 p) {
-          vec2 i = floor(p);
-          vec2 f = fract(p);
-          f = f * f * (3.0 - 2.0 * f);
-          float a = hash21(i);
-          float b = hash21(i + vec2(1.0, 0.0));
-          float c = hash21(i + vec2(0.0, 1.0));
-          float d = hash21(i + vec2(1.0, 1.0));
-          return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
+        float noise(vec2 p){
+          vec2 i=floor(p),f=fract(p);
+          f=f*f*(3.0-2.0*f);
+          float a=hash21(i),b=hash21(i+vec2(1.,0.)),c=hash21(i+vec2(0.,1.)),d=hash21(i+vec2(1.,1.));
+          return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);
         }
 
-        float fbm(vec2 p) {
-          float v = 0.0;
-          float a = 0.5;
-          mat2 r = mat2(0.80, 0.60, -0.60, 0.80);
-          for (int i = 0; i < 5; i++) {
-            v += a * noise(p);
-            p = r * p * 2.03 + 7.13;
-            a *= 0.5;
+        float fbm(vec2 p){
+          float v=0.0,a=0.5;
+          mat2 r=mat2(.80,.60,-.60,.80);
+          for(int i=0;i<5;i++){
+            v+=a*noise(p);
+            p=r*p*2.03+7.13;
+            a*=0.5;
           }
           return v;
         }
 
-        float ellipseMask(vec2 p, vec2 c, vec2 s) {
-          vec2 q = (p - c) / s;
-          return 1.0 - smoothstep(0.72, 1.0, dot(q,q));
+        float ellipse(vec2 p,vec2 c,vec2 s,float feather){
+          vec2 q=(p-c)/s;
+          float d=dot(q,q);
+          return 1.0-smoothstep(1.0-feather,1.0,d);
         }
 
-        // Full-bleed coordinates for the atmospheric background.
-        vec2 coverUv(vec2 uv) {
-          float screenAspect = uResolution.x / max(uResolution.y, 1.0);
-          vec2 ratio = vec2(1.0);
-          if (screenAspect > uImageAspect) ratio.y = uImageAspect / screenAspect;
-          else ratio.x = screenAspect / uImageAspect;
-          return (uv - 0.5) * ratio + 0.5;
+        vec2 coverUv(vec2 uv){
+          float screenAspect=uResolution.x/max(uResolution.y,1.0);
+          vec2 ratio=vec2(1.0);
+          if(screenAspect>uImageAspect) ratio.y=uImageAspect/screenAspect;
+          else ratio.x=screenAspect/uImageAspect;
+          return (uv-.5)*ratio+.5;
         }
 
-        // Responsive foreground coordinates. The complete original frame always fits
-        // inside the viewport, so the wolf is never cropped by browser aspect ratio.
-        vec2 containUv(vec2 uv) {
-          float screenAspect = uResolution.x / max(uResolution.y, 1.0);
-          vec2 outUv = uv;
-          if (screenAspect > uImageAspect) {
-            float visibleWidth = uImageAspect / screenAspect;
-            outUv.x = (uv.x - 0.5) / visibleWidth + 0.5;
-          } else {
-            float visibleHeight = screenAspect / uImageAspect;
-            outUv.y = (uv.y - 0.5) / visibleHeight + 0.5;
-          }
-          return outUv;
+        float droplet(vec2 uv,vec2 pos,float size,float stretch){
+          vec2 p=(uv-pos)/vec2(size,size*stretch);
+          float body=1.0-smoothstep(.28,1.0,dot(p,p));
+          float glint=1.0-smoothstep(.02,.18,length(p-vec2(-.18,.25)));
+          return body*(.62+.38*glint);
         }
 
-        float insideImage(vec2 uv) {
-          float m = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
-          float feather = smoothstep(0.0, 0.018, uv.x) * smoothstep(0.0, 0.018, uv.y)
-                        * smoothstep(0.0, 0.018, 1.0 - uv.x) * smoothstep(0.0, 0.018, 1.0 - uv.y);
-          return m * feather;
-        }
+        void main(){
+          float t=uTime*uMotion;
+          vec2 iuv=coverUv(vUv);
 
-        float droplet(vec2 uv, vec2 pos, float size, float stretch) {
-          vec2 p = (uv - pos) / vec2(size, size * stretch);
-          float d = dot(p,p);
-          float body = 1.0 - smoothstep(0.30, 1.0, d);
-          float glint = 1.0 - smoothstep(0.02, 0.18, length(p - vec2(-0.18,0.25)));
-          return body * (0.55 + 0.45 * glint);
-        }
+          // The photograph itself is completely static.
+          vec3 base=texture2D(uTexture,clamp(iuv,.001,.999)).rgb;
+          vec3 col=base;
 
-        void main() {
-          float t = uTime * uMotion;
-          vec2 parallax = uMouse * vec2(0.010, 0.006);
+          // Localized fur layer. Only samples inside conservative wolf masks move.
+          float mane=ellipse(iuv,vec2(.505,.735),vec2(.175,.145),.30);
+          float shoulderL=ellipse(iuv,vec2(.365,.625),vec2(.105,.135),.34);
+          float shoulderR=ellipse(iuv,vec2(.645,.615),vec2(.105,.135),.34);
+          float armL=ellipse(iuv,vec2(.315,.505),vec2(.075,.135),.38);
+          float armR=ellipse(iuv,vec2(.690,.495),vec2(.075,.135),.38);
+          float chest=ellipse(iuv,vec2(.505,.555),vec2(.145,.135),.42);
+          float thighL=ellipse(iuv,vec2(.430,.365),vec2(.095,.125),.38);
+          float thighR=ellipse(iuv,vec2(.575,.360),vec2(.095,.125),.38);
+          float furMask=max(max(max(mane,shoulderL),max(shoulderR,chest)),max(max(armL,armR),max(thighL,thighR)));
 
-          // Fill the entire browser with a darker atmospheric copy of the scene.
-          vec2 bgUv = coverUv(vUv) + parallax * 0.22;
-          vec3 bg = texture2D(uTexture, clamp(bgUv, 0.001, 0.999)).rgb;
-          bg *= vec3(0.34, 0.38, 0.44);
+          float gust=.55+.45*fbm(vec2(t*.10,3.7));
+          vec2 windDir=normalize(vec2(1.0+uWind.x*.28,.16+uWind.y*.10));
+          float furWave=sin(iuv.y*118.0+iuv.x*34.0+t*4.1)*.0019;
+          furWave+=sin(iuv.y*63.0-iuv.x*19.0+t*2.2)*.0010;
+          vec2 furOffset=windDir*furWave*gust;
+          furOffset.y+=cos(iuv.x*97.0-t*3.0)*.00055*gust;
+          vec3 furMoved=texture2D(uTexture,clamp(iuv+furOffset,.001,.999)).rgb;
+          col=mix(col,furMoved,furMask*.88);
 
-          // Fit the original composition into the current browser viewport.
-          vec2 imageUv = containUv(vUv);
-          float fitMask = insideImage(imageUv);
-          vec2 uv = imageUv + parallax;
+          // Tail gets its own slow idle motion rather than moving the whole image.
+          float tail=ellipse(iuv,vec2(.220,.355),vec2(.145,.205),.34);
+          float tailTip=ellipse(iuv,vec2(.135,.300),vec2(.095,.135),.40);
+          float tailSwing=sin(t*.72)*.0085+sin(t*1.21+1.4)*.0025;
+          vec2 tailOffset=vec2(tailSwing*(.45+iuv.y),cos(t*.66)*.0018);
+          tailOffset+=vec2(sin(t*.72-.55)*.0075,cos(t*.58)*.0022)*tailTip;
+          vec3 tailMoved=texture2D(uTexture,clamp(iuv+tailOffset,.001,.999)).rgb;
+          col=mix(col,tailMoved,max(tail*.72,tailTip*.82));
 
-          // Tail: localized slow pendulum movement with tip follow-through.
-          float tail = ellipseMask(imageUv, vec2(0.235, 0.355), vec2(0.19, 0.24));
-          float tailTip = ellipseMask(imageUv, vec2(0.145, 0.300), vec2(0.13, 0.16));
-          float tailSwing = sin(t * 0.78) * 0.010 + sin(t * 1.31 + 1.2) * 0.003;
-          uv.x += tail * tailSwing * (0.45 + imageUv.y);
-          uv.x += tailTip * sin(t * 0.78 - 0.55) * 0.013;
-          uv.y += tailTip * cos(t * 0.73) * 0.0025;
+          // Moving clouds: independent procedural layer, strongest around the moon.
+          vec2 cloudP=vec2(iuv.x*4.0-t*.050,iuv.y*4.8+t*.004);
+          float cloudA=fbm(cloudP+vec2(fbm(cloudP*.55),0.0));
+          float cloudB=fbm(cloudP*1.55+vec2(9.2,-3.1));
+          float cloudDensity=smoothstep(.46,.74,cloudA*.72+cloudB*.28);
+          float skyMask=smoothstep(.54,.67,iuv.y);
+          float moonMask=ellipse(iuv,vec2(.805,.790),vec2(.165,.145),.55);
+          float movingCloud=cloudDensity*skyMask;
+          vec3 cloudColor=vec3(.10,.13,.17);
+          col=mix(col,cloudColor,movingCloud*(.18+.40*moonMask));
 
-          // Fur motion stays locked to the wolf, independent of viewport shape.
-          float mane = ellipseMask(imageUv, vec2(0.505, 0.755), vec2(0.27, 0.23));
-          float leftArm = ellipseMask(imageUv, vec2(0.315, 0.590), vec2(0.13, 0.22));
-          float rightArm = ellipseMask(imageUv, vec2(0.665, 0.575), vec2(0.13, 0.22));
-          float thigh = ellipseMask(imageUv, vec2(0.48, 0.40), vec2(0.25, 0.22));
-          float fur = max(max(mane, leftArm), max(rightArm, thigh));
-          float gust = 0.65 + 0.35 * sin(t * 0.41 + fbm(vec2(t * 0.05, 1.7)) * 6.0);
-          float ripple = sin(imageUv.y * 115.0 + t * 4.1 + imageUv.x * 31.0) * 0.0016;
-          ripple += sin(imageUv.y * 57.0 + t * 2.2) * 0.0009;
-          uv.x += fur * ripple * gust * (0.75 + uMouse.x * 0.25);
-          uv.y += fur * cos(imageUv.x * 91.0 - t * 3.2) * 0.00055 * gust;
+          // A brighter moving cloud edge makes motion readable against moonlight.
+          float cloudEdge=smoothstep(.54,.60,cloudA)-smoothstep(.60,.69,cloudA);
+          col+=vec3(.09,.11,.14)*cloudEdge*skyMask*(.22+.32*moonMask);
 
-          vec3 fg = texture2D(uTexture, clamp(uv, 0.001, 0.999)).rgb;
-          vec3 col = mix(bg, fg, fitMask);
+          // Independent rolling fog in the lower terrain.
+          vec2 fogP=vec2(iuv.x*3.5-t*.038,iuv.y*7.0+sin(t*.17)*.08);
+          float fog1=fbm(fogP+vec2(fbm(fogP*.52),0.0));
+          float fog2=fbm(vec2(iuv.x*6.2+t*.026,iuv.y*10.0-t*.006)+4.7);
+          float low=1.0-smoothstep(.24,.55,iuv.y);
+          float mid=1.0-smoothstep(.42,.66,iuv.y);
+          float fog=smoothstep(.44,.72,fog1)*low + smoothstep(.58,.78,fog2)*mid*.38;
+          fog=clamp(fog,0.0,1.0);
+          vec3 fogColor=vec3(.43,.50,.57);
+          col=mix(col,fogColor,fog*.34);
 
-          // Clouds drift across the full browser background and the fitted scene.
-          vec2 cloudUv = vec2(vUv.x * 2.7 + t * 0.017, vUv.y * 3.0 - t * 0.004);
-          float clouds = fbm(cloudUv + fbm(cloudUv * 0.65 + 9.0));
-          float skyMask = smoothstep(0.53, 0.91, vUv.y) * (1.0 - smoothstep(0.93, 1.0, vUv.y));
-          float cloudBand = smoothstep(0.47, 0.72, clouds) * skyMask;
-          col = mix(col, col * vec3(0.78,0.84,0.92) + vec3(0.025,0.035,0.055), cloudBand * 0.18);
+          // Subtle moving specular breakup on fur reinforces wind without moving the scene.
+          float hairLight=(.5+.5*sin(iuv.y*92.0+iuv.x*21.0+t*3.7))*furMask*gust;
+          col+=vec3(.020,.028,.038)*hairLight;
 
-          // Low rolling fog remains viewport-wide.
-          vec2 fogUv = vec2(vUv.x * 3.4 - t * 0.025, vUv.y * 5.3 + sin(t * 0.12) * 0.06);
-          float fogNoise = fbm(fogUv + vec2(fbm(fogUv * 0.55), 0.0));
-          float lowMask = 1.0 - smoothstep(0.18, 0.66, vUv.y);
-          float midMask = 1.0 - smoothstep(0.38, 0.78, vUv.y);
-          float fog = smoothstep(0.46, 0.78, fogNoise) * max(lowMask, midMask * 0.45);
-          col = mix(col, vec3(0.39, 0.48, 0.56), fog * 0.24);
+          // Spittle is generated independently and falls from the fixed mouth position.
+          vec2 mouth=vec2(.616,.785);
+          float strandX=abs(iuv.x-mouth.x);
+          float strandY=smoothstep(mouth.y-.100,mouth.y-.020,iuv.y)*(1.0-smoothstep(mouth.y-.006,mouth.y+.012,iuv.y));
+          float strand=(1.0-smoothstep(.0012,.0045,strandX))*strandY;
+          float f1=mod(t*.120+.020,.180);
+          float f2=mod(t*.092+.090,.220);
+          float f3=mod(t*.155+.140,.270);
+          float d1=droplet(iuv,mouth+vec2(.004,-.028-f1),.0047,2.1);
+          float d2=droplet(iuv,mouth+vec2(-.010,-.043-f2),.0035,1.8);
+          float d3=droplet(iuv,mouth+vec2(.014,-.060-f3),.0028,1.6);
+          float saliva=max(strand*.55,max(d1,max(d2,d3)));
+          col=mix(col,vec3(.84,.91,.95),saliva*.82);
+          col+=vec3(.16,.20,.24)*max(d1,max(d2,d3))*.50;
 
-          float windLight = fur * (0.5 + 0.5 * sin(t * 2.0 + imageUv.y * 68.0 + imageUv.x * 14.0));
-          col += vec3(0.035,0.045,0.060) * windLight * 0.22 * fitMask;
+          // Gentle vignette only; no poster frame, no duplicate background.
+          vec2 q=vUv-.5;
+          float vignette=smoothstep(.86,.28,dot(q,q));
+          col*=mix(.76,1.02,vignette);
 
-          // Spittle is now positioned in image space so it stays attached to the mouth
-          // at every browser width/height instead of drifting with screen coordinates.
-          vec2 mouth = vec2(0.616, 0.785);
-          float strandX = abs(imageUv.x - mouth.x);
-          float strandY = smoothstep(mouth.y - 0.105, mouth.y - 0.015, imageUv.y)
-                        * (1.0 - smoothstep(mouth.y - 0.006, mouth.y + 0.012, imageUv.y));
-          float strand = (1.0 - smoothstep(0.0012, 0.0046, strandX)) * strandY;
-          float fall1 = mod(t * 0.125 + 0.02, 0.18);
-          float fall2 = mod(t * 0.092 + 0.09, 0.22);
-          float fall3 = mod(t * 0.160 + 0.14, 0.28);
-          float d1 = droplet(imageUv, mouth + vec2( 0.004, -0.025 - fall1), 0.0048, 2.0);
-          float d2 = droplet(imageUv, mouth + vec2(-0.010, -0.040 - fall2), 0.0036, 1.8);
-          float d3 = droplet(imageUv, mouth + vec2( 0.014, -0.058 - fall3), 0.0028, 1.6);
-          float saliva = max(strand * 0.58, max(d1, max(d2,d3))) * fitMask;
-          col = mix(col, vec3(0.84,0.91,0.95), saliva * 0.82);
-          col += vec3(0.18,0.22,0.25) * max(d1, max(d2,d3)) * 0.55 * fitMask;
-
-          vec2 q = vUv - 0.5;
-          float vignette = smoothstep(0.82, 0.24, dot(q,q));
-          col *= mix(0.70, 1.03, vignette);
-
-          gl_FragColor = vec4(col, 1.0);
+          gl_FragColor=vec4(col,1.0);
         }
       `
     });
 
-    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),material));
 
-    const targetMouse = new THREE.Vector2();
-    function viewportSize() {
-      const vv = window.visualViewport;
-      return {
-        width: Math.max(1, Math.round(vv?.width || document.documentElement.clientWidth || innerWidth)),
-        height: Math.max(1, Math.round(vv?.height || document.documentElement.clientHeight || innerHeight))
-      };
+    const targetWind = new THREE.Vector2(.7,.12);
+    addEventListener('pointermove',e=>{
+      targetWind.x=((e.clientX/window.innerWidth)-.5)*2.0;
+      targetWind.y=-(((e.clientY/window.innerHeight)-.5)*2.0)*.35;
+    },{passive:true});
+    addEventListener('pointerleave',()=>targetWind.set(.7,.12),{passive:true});
+
+    function resize(){
+      const vv=window.visualViewport;
+      const w=Math.max(1,Math.round(vv?.width||window.innerWidth));
+      const h=Math.max(1,Math.round(vv?.height||window.innerHeight));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+      renderer.setSize(w,h,false);
+      uniforms.uResolution.value.set(w,h);
     }
+    resize();
+    addEventListener('resize',resize,{passive:true});
+    window.visualViewport?.addEventListener('resize',resize,{passive:true});
+    window.visualViewport?.addEventListener('scroll',resize,{passive:true});
 
-    function resizeScene() {
-      const { width, height } = viewportSize();
-      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-      renderer.setSize(width, height, false);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      uniforms.uResolution.value.set(width, height);
-    }
-
-    function setPointer(clientX, clientY) {
-      const { width, height } = viewportSize();
-      targetMouse.x = (clientX / width - 0.5) * 2.0;
-      targetMouse.y = -((clientY / height - 0.5) * 2.0);
-      targetMouse.clampScalar(-1, 1);
-    }
-
-    addEventListener('pointermove', e => setPointer(e.clientX, e.clientY), { passive: true });
-    addEventListener('pointerleave', () => targetMouse.set(0,0), { passive: true });
-    addEventListener('resize', resizeScene, { passive: true });
-    addEventListener('orientationchange', resizeScene, { passive: true });
-    window.visualViewport?.addEventListener('resize', resizeScene, { passive: true });
-    window.visualViewport?.addEventListener('scroll', resizeScene, { passive: true });
-    new ResizeObserver(resizeScene).observe(document.documentElement);
-    resizeScene();
-
-    const clock = new THREE.Clock();
-    function animate() {
-      uniforms.uTime.value = clock.getElapsedTime();
-      uniforms.uMouse.value.lerp(targetMouse, 0.035);
-      renderer.render(scene, camera);
+    const clock=new THREE.Clock();
+    function animate(){
+      uniforms.uTime.value=clock.getElapsedTime();
+      uniforms.uWind.value.lerp(targetWind,.018);
+      renderer.render(scene,camera);
       requestAnimationFrame(animate);
     }
     animate();
