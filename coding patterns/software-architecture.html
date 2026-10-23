@@ -3,303 +3,210 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Software Architecture Patterns &amp; Styles · Swamp</title>
-<meta name="description" content="Animated explanations of MVC, Circuit Breaker, Layered Architecture, Microservices, and Event-Driven Architecture.">
+<title>Software Architecture Patterns & Styles · Swamp</title>
+<meta name="description" content="A practical, interactive guide to MVC, Layered Architecture, Microservices, Event-Driven Architecture, and Circuit Breaker, with code, data, trade-offs, and failure simulations.">
 <style>
-:root{
-  --bg:#f3f0e8;--ink:#24211d;--muted:#6e675f;--card:#fffdf8;--line:#d9d1c5;
-  --accent:#4f6d54;--accent2:#1c6aa6;--good:#4f6d54;--warn:#9a6c16;--bad:#9c3d3d;--track:#d8d3c9
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{max-width:1120px;margin:auto;padding:24px}
-.back{display:inline-block;margin-bottom:14px;color:var(--accent);font-weight:800;text-decoration:none}
-.hero,.pattern,.compare{background:var(--card);border:1px solid var(--line);border-radius:20px}
-.hero{padding:clamp(24px,5vw,46px);margin-bottom:18px}
-.eyebrow{margin:0 0 6px;color:var(--accent);font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-h1{margin:0;font-size:clamp(2.35rem,7vw,4.7rem);line-height:.98}
-.lede{max-width:830px;color:var(--muted);font-size:1.1rem}
-.source{font-size:.9rem;color:var(--muted)}
-.source a{color:var(--accent2)}
-.compare{display:grid;grid-template-columns:1fr 1fr;gap:1px;overflow:hidden;margin:18px 0 28px;background:var(--line)}
-.compare>div{background:var(--card);padding:20px}
-.compare h2{margin:0 0 6px}
-.compare p{margin:0;color:var(--muted)}
-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px}
-nav a{border:1px solid var(--line);border-radius:999px;background:#fff;padding:7px 11px;color:var(--ink);font-weight:750;text-decoration:none}
-.pattern{margin:0 0 22px;padding:clamp(18px,4vw,32px);scroll-margin-top:16px}
-.kind{display:inline-block;margin-bottom:8px;border:1px solid var(--line);border-radius:999px;padding:3px 8px;background:#fff;font-size:.72rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
-.pattern h2{margin:0;font-size:clamp(1.7rem,4vw,2.5rem)}
-.summary{margin:7px 0 0;max-width:780px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:20px;margin-top:20px}
-.text h3{margin:0 0 4px;font-size:1rem}
-.text p,.text ul{margin-top:5px;color:var(--muted)}
-.text ul{padding-left:20px}
-.tradeoff{border-left:4px solid var(--accent);padding:9px 12px;background:#f5f5ef;border-radius:8px}
-.demo{position:relative;min-height:240px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fff,#f6f4ee);overflow:hidden;padding:16px}
-.demo-title{margin:0 0 12px;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.node{position:relative;z-index:2;display:grid;place-items:center;min-height:48px;padding:7px;border:1px solid #bdb6aa;border-radius:10px;background:#fff;text-align:center;font-size:.78rem;font-weight:850;box-shadow:0 2px 9px #0000000b}
-.packet,.pulse,.event-dot,.fan,.breaker-packet{position:absolute;z-index:4;border-radius:50%;background:var(--accent2)}
-.flow-row{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:13px;align-items:center;margin-top:42px}
-.flow-row:before{content:"";position:absolute;left:7%;right:7%;top:50%;height:3px;background:var(--track);transform:translateY(-50%)}
-.packet{width:15px;height:15px;box-shadow:0 0 0 5px #1c6aa620}
-.packet.h{left:7%;top:50%;transform:translate(-50%,-50%);animation:five 7s ease-in-out infinite}
-.stage-labels{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:8px;color:var(--muted);font-size:.66rem;text-align:center}
-
-.layers{position:relative;display:grid;gap:8px;padding:4px 34px 0}
-.layer{position:relative;z-index:2;min-height:40px;display:grid;place-items:center;border:1px solid #bdb6aa;border-radius:9px;background:#fff;font-size:.78rem;font-weight:850}
-.layers:before{content:"";position:absolute;left:50%;top:25px;bottom:20px;width:3px;background:var(--track);transform:translateX(-50%)}
-.packet.v{left:50%;top:28px;transform:translate(-50%,-50%);animation:vertical 5.8s ease-in-out infinite}
-
-/* Microservices: one trunk to the gateway, then three visibly distinct routes. */
-.micro{position:relative;height:176px;margin-top:10px}
-.micro .client{position:absolute;left:2%;top:64px;width:25%}
-.micro .gateway{position:absolute;left:37%;top:64px;width:25%}
-.micro .service-stack{position:absolute;right:0;top:0;width:27%;display:grid;gap:8px}
-.micro .trunk{position:absolute;left:14%;right:13%;top:88px;height:3px;background:var(--track)}
-.micro .branch{position:absolute;left:62%;right:13%;height:3px;background:var(--track);transform-origin:left center}
-.micro .branch.orders{top:48px;transform:rotate(-19deg)}
-.micro .branch.catalog{top:88px}
-.micro .branch.billing{top:128px;transform:rotate(19deg)}
-.pulse{width:13px;height:13px;box-shadow:0 0 0 4px #1c6aa61c;left:14%;top:88px;transform:translate(-50%,-50%);opacity:0}
-.pulse.orders{animation:microOrders 6s linear infinite}
-.pulse.catalog{animation:microCatalog 6s linear 2s infinite}
-.pulse.billing{animation:microBilling 6s linear 4s infinite}
-
-/* Event driven: one event reaches the bus, then three consumers receive separate copies. */
-.bus{position:relative;height:176px;margin-top:10px}
-.bus .producer{position:absolute;left:1%;top:64px;width:27%}
-.bus .bus-core{position:absolute;left:37%;top:30px;width:27%;min-height:116px;background:#eef4ef;border-color:#9eb6a2}
-.bus .consumers{position:absolute;right:0;top:0;width:27%;display:grid;gap:8px}
-.bus .trunk{position:absolute;left:14%;right:13%;top:88px;height:3px;background:var(--track)}
-.bus .branch{position:absolute;left:64%;right:13%;height:3px;background:var(--track);transform-origin:left center}
-.bus .branch.inventory{top:48px;transform:rotate(-19deg)}
-.bus .branch.email{top:88px}
-.bus .branch.analytics{top:128px;transform:rotate(19deg)}
-.event-dot{width:14px;height:14px;left:14%;top:88px;transform:translate(-50%,-50%);animation:eventToBus 4.2s linear infinite}
-.fan{width:12px;height:12px;left:63%;top:88px;transform:translate(-50%,-50%);opacity:0;background:var(--accent)}
-.fan.inventory{animation:fanInventory 4.2s linear infinite}
-.fan.email{animation:fanEmail 4.2s linear infinite}
-.fan.analytics{animation:fanAnalytics 4.2s linear infinite}
-
-.breaker-layout{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:center;margin-top:36px}
-.breaker-layout:before{content:"";position:absolute;left:10%;right:10%;top:50%;height:3px;background:var(--track)}
-.breaker{transition:.25s;border-width:2px}
-.breaker.closed{border-color:var(--good);background:#edf5ee}
-.breaker.open{border-color:var(--bad);background:#f9ecec}
-.breaker.half{border-color:var(--warn);background:#fbf3df}
-.breaker-packet{width:15px;height:15px;left:12%;top:50%;transform:translate(-50%,-50%)}
-.breaker-packet.go{animation:breakerPass 1.35s linear forwards}
-.breaker-packet.reject{animation:breakerReject .85s ease-out forwards;background:var(--bad)}
-.status{position:absolute;left:16px;right:16px;bottom:13px;text-align:center;color:var(--muted);font-size:.78rem;font-weight:800}
-.controls{display:flex;justify-content:flex-end;margin-top:12px}
-.controls button{border:1px solid var(--line);border-radius:9px;background:#fff;padding:7px 10px;color:var(--ink);font:inherit;font-size:.8rem;font-weight:800;cursor:pointer}
-body.paused *{animation-play-state:paused!important}
-
-@keyframes five{
-  0%,8%{left:7%}22%{left:29%}40%{left:50%}60%{left:71%}78%,100%{left:93%}
-}
-@keyframes vertical{
-  0%,8%{top:28px}30%{top:76px}52%{top:124px}74%{top:172px}82%,100%{top:28px}
-}
-@keyframes microOrders{
-  0%{left:14%;top:88px;opacity:0}5%{opacity:1}42%{left:49%;top:88px}
-  70%{left:82%;top:24px;opacity:1}82%,100%{left:82%;top:24px;opacity:0}
-}
-@keyframes microCatalog{
-  0%{left:14%;top:88px;opacity:0}5%{opacity:1}42%{left:49%;top:88px}
-  70%{left:82%;top:88px;opacity:1}82%,100%{left:82%;top:88px;opacity:0}
-}
-@keyframes microBilling{
-  0%{left:14%;top:88px;opacity:0}5%{opacity:1}42%{left:49%;top:88px}
-  70%{left:82%;top:152px;opacity:1}82%,100%{left:82%;top:152px;opacity:0}
-}
-@keyframes eventToBus{
-  0%{left:14%;opacity:0}7%{opacity:1}44%{left:49%;opacity:1}58%,100%{left:49%;opacity:0}
-}
-@keyframes fanInventory{
-  0%,44%{left:63%;top:88px;opacity:0}52%{opacity:1}78%{left:86%;top:24px;opacity:1}90%,100%{opacity:0}
-}
-@keyframes fanEmail{
-  0%,44%{left:63%;top:88px;opacity:0}52%{opacity:1}78%{left:86%;top:88px;opacity:1}90%,100%{opacity:0}
-}
-@keyframes fanAnalytics{
-  0%,44%{left:63%;top:88px;opacity:0}52%{opacity:1}78%{left:86%;top:152px;opacity:1}90%,100%{opacity:0}
-}
-@keyframes breakerPass{from{left:12%}to{left:88%}}
-@keyframes breakerReject{0%{left:12%}55%{left:47%}100%{left:35%;opacity:0}}
-
-footer{padding:16px 4px 5px;text-align:center;color:var(--muted);font-size:.9rem}
-@media(max-width:780px){
-  main{padding:12px}.compare,.grid{grid-template-columns:1fr}.demo{min-height:260px}
-  .flow-row{gap:5px}.node{font-size:.67rem;padding:5px}.stage-labels{gap:5px}.layers{padding-inline:12px}
-}
-@media(prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  *{animation-duration:.001ms!important;animation-iteration-count:1!important}
-}
+:root{--bg:#f3f0e8;--ink:#24211d;--muted:#6e675f;--card:#fffdf8;--line:#d9d1c5;--accent:#4f6d54;--blue:#1c6aa6;--good:#427a4c;--warn:#a66c11;--bad:#a13e3e;--code:#171a1d;--codeink:#e8edf1;--soft:#ece7dc}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1180px;margin:auto;padding:24px}.back{display:inline-block;margin-bottom:14px;color:var(--accent);font-weight:800;text-decoration:none}.hero,.section,.matrix,.scenario{background:var(--card);border:1px solid var(--line);border-radius:20px}.hero{padding:clamp(24px,5vw,48px);margin-bottom:20px}.eyebrow{margin:0 0 6px;color:var(--accent);font-size:.78rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}h1{margin:0;font-size:clamp(2.35rem,7vw,4.8rem);line-height:.98}.lede{max-width:860px;color:var(--muted);font-size:1.1rem}.note{border-left:5px solid var(--accent);background:#eef3ee;padding:14px 16px;border-radius:10px;margin-top:18px}.scenario{padding:20px;margin:0 0 22px}.scenario h2{margin:0 0 6px}.scenario p{margin:4px 0;color:var(--muted)}.scenario code{font-weight:800;color:var(--blue)}nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}nav a{border:1px solid var(--line);border-radius:999px;background:#fff;padding:7px 11px;color:var(--ink);font-weight:750;text-decoration:none}.matrix{padding:18px;overflow:auto;margin-bottom:26px}.matrix table{width:100%;border-collapse:collapse;min-width:780px}.matrix th,.matrix td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.matrix th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}.yes{color:var(--good);font-weight:850}.maybe{color:var(--warn);font-weight:850}.section{padding:clamp(20px,4vw,34px);margin:0 0 24px;scroll-margin-top:12px}.topline{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.kind{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 8px;background:#fff;font-size:.72rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.section h2{margin:0;font-size:clamp(1.8rem,4vw,2.7rem)}.summary{max-width:900px;margin:7px 0 0;color:var(--muted);font-size:1.05rem}.twocol{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);gap:22px;margin-top:22px}.why h3,.details h3,.example h3{margin:18px 0 6px}.why h3:first-child,.details h3:first-child{margin-top:0}.why p,.why li,.details p,.details li{color:var(--muted)}.why ul,.details ul{padding-left:20px}.callout{padding:12px 14px;border-radius:10px;background:#f4f1e9;border:1px solid var(--line)}.callout.bad{border-left:5px solid var(--bad)}.callout.good{border-left:5px solid var(--good)}.demo{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fff,#f7f4ed);padding:16px;min-height:300px}.demohead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.demohead b{font-size:.82rem;letter-spacing:.06em;text-transform:uppercase}.controls{display:flex;gap:7px;flex-wrap:wrap}.controls button{border:1px solid var(--line);border-radius:9px;background:#fff;padding:7px 10px;font:inherit;font-size:.78rem;font-weight:850;cursor:pointer}.controls button:hover{border-color:#9a9488}.diagram{position:relative;display:grid;gap:12px;align-items:center;min-height:195px}.row3{grid-template-columns:repeat(3,1fr)}.row4{grid-template-columns:repeat(4,1fr)}.node{position:relative;z-index:2;display:grid;place-items:center;min-height:60px;padding:8px;border:2px solid #beb7aa;border-radius:11px;background:#fff;text-align:center;font-size:.78rem;font-weight:850;transition:.25s}.node.active{border-color:var(--blue);box-shadow:0 0 0 5px #1c6aa617}.node.good{border-color:var(--good);background:#edf5ee}.node.bad{border-color:var(--bad);background:#f9ecec}.node.warn{border-color:var(--warn);background:#fbf3df}.arrow{color:#8a847b;text-align:center;font-weight:900}.log{min-height:64px;margin-top:12px;padding:10px 12px;border-radius:9px;background:#efebe2;color:#4e4942;font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap}.examples{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.example{min-width:0}.example h3{font-size:1rem}.codebox{position:relative;background:var(--code);color:var(--codeink);border-radius:12px;overflow:auto;border:1px solid #272b2f}.codebox .label{position:sticky;left:0;display:block;padding:7px 12px;background:#22272b;color:#b8c2c9;font-size:.72rem;font-weight:850;letter-spacing:.05em;text-transform:uppercase}.codebox pre{margin:0;padding:14px;min-width:100%;font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.repo{background:#f4f1e9;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap}.foot{color:var(--muted);font-size:.9rem}.source a{color:var(--blue)}footer{text-align:center;color:var(--muted);padding:14px 4px 5px;font-size:.9rem}@media(max-width:820px){main{padding:12px}.twocol,.examples{grid-template-columns:1fr}.row4{grid-template-columns:1fr 1fr}.demo{min-height:0}.hero,.section,.matrix,.scenario{border-radius:16px}}@media(max-width:520px){.row3,.row4{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.node{transition:none}}
 </style>
 </head>
 <body>
 <main>
 <a class="back" href="index.html">← Coding Patterns</a>
-
 <section class="hero">
-  <p class="eyebrow">Animated architecture reference</p>
-  <h1>Software Architecture Patterns &amp; Styles</h1>
-  <p class="lede">Architecture patterns are reusable approaches to recurring system-level problems. Architecture styles describe the broad structural organization of a system. The line between the two can be blurry; what matters here is understanding the flow, responsibility boundaries, and trade-offs.</p>
-  <p class="source">Based on the examples named in Wikipedia's <a href="https://en.wikipedia.org/wiki/Software_architecture#Patterns_and_styles">Software architecture — Patterns and styles</a> section. The animations below are simplified teaching models, not complete implementations.</p>
+<p class="eyebrow">Practical architecture guide</p>
+<h1>Software Architecture Patterns &amp; Styles</h1>
+<p class="lede">This page is about architectural decisions, not memorizing definitions. Each pattern below is applied to the same small order-processing system so you can see what changes in the code, data, deployment boundaries, message flow, scaling model, and failure behavior.</p>
+<div class="note"><strong>Important:</strong> these are not five mutually exclusive choices. A real cloud application might use MVC inside a web service, layers inside each service, microservices between domains, events between services, and circuit breakers around unreliable network calls.</div>
+<p class="foot source">The set of examples is based on the patterns and styles referenced by Wikipedia's <a href="https://en.wikipedia.org/wiki/Software_architecture#Pattern">Software architecture — Pattern</a> material. The implementation examples here are original teaching examples.</p>
 </section>
-
-<section class="compare" aria-label="Pattern and style comparison">
-  <div><h2>Pattern</h2><p>A reusable solution to a recurring architecture problem. Think: “When this problem appears, this arrangement is a proven way to deal with it.”</p></div>
-  <div><h2>Style</h2><p>A high-level structural vocabulary and set of constraints. Think: “This is how the system is organized and how its pieces are allowed to interact.”</p></div>
+<section class="scenario">
+<h2>The system we will keep rebuilding</h2>
+<p>A customer submits an order for two products. The application must validate it, reserve inventory, take payment, save the order, and eventually send a confirmation.</p>
+<p><strong>Input:</strong> <code>POST /orders</code> → customer <code>C-42</code>, SKU <code>KB-100</code> × 1, SKU <code>MS-200</code> × 2.</p>
+<p><strong>Question:</strong> Where should each responsibility live, how should the pieces communicate, and what happens when one of them fails?</p>
 </section>
+<nav aria-label="Architecture navigation"><a href="#matrix">Quick comparison</a><a href="#mvc">MVC</a><a href="#layered">Layered</a><a href="#microservices">Microservices</a><a href="#event">Event-driven</a><a href="#breaker">Circuit Breaker</a></nav>
+<section class="matrix" id="matrix"><table><thead><tr><th>Approach</th><th>Primary problem</th><th>Cloud fit</th><th>Data style</th><th>Failure boundary</th><th>Typical use</th></tr></thead><tbody>
+<tr><td><strong>MVC</strong></td><td>Separate UI/input, application behavior, and presentation</td><td class="maybe">Neutral</td><td>Usually shared app database</td><td>Usually one application</td><td>Web apps, desktop UI</td></tr>
+<tr><td><strong>Layered</strong></td><td>Control dependencies and responsibilities inside an application</td><td class="maybe">Neutral</td><td>Often one database behind repositories</td><td>Usually one deployment</td><td>Business applications, APIs</td></tr>
+<tr><td><strong>Microservices</strong></td><td>Independent deployment, ownership, and scaling by business capability</td><td class="yes">Strong</td><td>Prefer database-per-service</td><td>Per service</td><td>Large or independently evolving systems</td></tr>
+<tr><td><strong>Event-driven</strong></td><td>Decouple producers from asynchronous reactions</td><td class="yes">Strong</td><td>Events + local state/read models</td><td>Per consumer</td><td>Workflows, integration, streaming</td></tr>
+<tr><td><strong>Circuit Breaker</strong></td><td>Prevent repeated calls to a failing dependency</td><td class="yes">Very useful</td><td>Not a data architecture</td><td>Around a remote call</td><td>Distributed systems</td></tr>
+</tbody></table></section>
+<section class="section" id="mvc"><div class="topline"><span class="kind">Pattern</span><h2>Model–View–Controller (MVC)</h2></div><p class="summary">MVC separates how a user request enters the application, how business state behaves, and how a response is presented. It is mainly a code-organization pattern for interactive applications—not a cloud scaling strategy.</p><div class="twocol"><div class="why"><h3>What problem is it solving?</h3><p>Without separation, request parsing, business rules, database calls, and HTML/JSON formatting can collapse into one giant handler. MVC gives each concern a home.</p><h3>In our order system</h3><ul><li><strong>Controller:</strong> accepts <code>POST /orders</code>, validates request shape, calls the model/application logic.</li><li><strong>Model:</strong> represents order rules and state.</li><li><strong>View:</strong> renders JSON, HTML, or another representation from the result.</li></ul><div class="callout good"><strong>Choose it when:</strong> you have a user-facing application and want a clear boundary between input handling, state/business behavior, and presentation.</div><div class="callout bad"><strong>Do not expect it to solve:</strong> distributed deployment, service ownership, cross-service reliability, or independent scaling.</div><h3>Common languages/frameworks</h3><p>ASP.NET MVC, Spring MVC, Ruby on Rails, Laravel, Django-style MVC/MTV patterns, and many JavaScript frameworks use closely related separations.</p></div><div class="demo" data-demo="mvc"><div class="demohead"><b>Request flow</b><div class="controls"><button data-action="run">Run order</button><button data-action="bad">Put SQL in controller</button><button data-action="reset">Reset</button></div></div><div class="diagram row4"><div class="node" data-n="0">Browser / API client</div><div class="node" data-n="1">Controller<br><small>parse + route</small></div><div class="node" data-n="2">Model<br><small>order rules</small></div><div class="node" data-n="3">View<br><small>JSON response</small></div></div><div class="log">Press “Run order” to trace the request.</div></div></div><div class="examples"><div class="example"><h3>Code</h3><div class="codebox"><span class="label">TypeScript — controller + model</span><pre><code>// Controller: HTTP concerns
+export async function createOrder(req, res) {
+  const command = {
+    customerId: req.body.customerId,
+    items: req.body.items
+  };
+  const order = await Order.place(command);
+  res.status(201).json(orderView(order));
+}
 
-<nav aria-label="Pattern navigation">
-  <a href="#mvc">MVC</a><a href="#circuit">Circuit Breaker</a><a href="#layered">Layered</a><a href="#microservices">Microservices</a><a href="#event-driven">Event-Driven</a>
-</nav>
+// Model: business rule
+class Order {
+  static async place(input) {
+    if (!input.items.length) throw new Error('Empty order');
+    const total = price(input.items);
+    return repository.insert({ ...input, total, status: 'NEW' });
+  }
+}</code></pre></div></div><div class="example"><h3>Data</h3><div class="codebox"><span class="label">HTTP request / response</span><pre><code>POST /orders
+{
+  "customerId": "C-42",
+  "items": [
+    {"sku":"KB-100","qty":1},
+    {"sku":"MS-200","qty":2}
+  ]
+}
 
-<section class="pattern" id="mvc">
-  <span class="kind">Pattern</span>
-  <h2>Model–View–Controller (MVC)</h2>
-  <p class="summary">Separates application state and rules (Model), presentation (View), and input/orchestration (Controller) so changes in one concern do not have to rewrite the others.</p>
-  <div class="grid">
-    <div class="text">
-      <h3>How it works</h3>
-      <ul><li>The user acts through the interface.</li><li>The Controller interprets the action and asks the Model to change or retrieve data.</li><li>The Model represents application state and rules.</li><li>The View renders that state back to the user.</li></ul>
-      <h3>Useful when</h3><p>User-interface logic, domain logic, and rendering are becoming tangled together.</p>
-      <p class="tradeoff"><strong>Trade-off:</strong> clearer separation costs extra structure, and real frameworks vary in exactly how Controller, Model, and View communicate.</p>
-    </div>
-    <div class="demo" aria-label="Animated MVC request flow">
-      <p class="demo-title">Request → state → rendered result</p>
-      <div class="flow-row"><div class="node">User</div><div class="node">Controller</div><div class="node">Model</div><div class="node">View</div><div class="node">User</div><span class="packet h"></span></div>
-      <div class="stage-labels"><span>action</span><span>interpret</span><span>state</span><span>render</span><span>result</span></div>
-    </div>
-  </div>
-</section>
+201 Created
+{
+  "id":"O-9001",
+  "status":"NEW",
+  "total":139.97
+}</code></pre></div></div></div><h3>What the repository may look like</h3><div class="repo">src/
+  controllers/order-controller.ts
+  models/order.ts
+  views/order-view.ts
+  repositories/order-repository.ts
+  routes.ts</div></section>
+<section class="section" id="layered"><div class="topline"><span class="kind">Style</span><h2>Layered Architecture</h2></div><p class="summary">Layering controls dependency direction. Higher-level code asks lower layers for capabilities instead of every part of the application reaching directly into the database or infrastructure.</p><div class="twocol"><div class="why"><h3>Typical layers</h3><ul><li><strong>Presentation:</strong> HTTP/UI concerns.</li><li><strong>Application/service:</strong> orchestrates a use case.</li><li><strong>Domain:</strong> business rules and entities.</li><li><strong>Infrastructure/data:</strong> SQL, file systems, external APIs.</li></ul><h3>Why this matters</h3><p>A request can change from REST to a message consumer without rewriting pricing rules. A database can change without teaching controllers SQL. The architecture is enforcing where dependencies are allowed.</p><div class="callout good"><strong>Good fit:</strong> internal business systems, APIs, line-of-business apps, and teams that value understandable dependency boundaries over deployment independence.</div><div class="callout bad"><strong>Failure mode:</strong> a “layered” app where every layer is just a pass-through creates ceremony without separation. Another common failure is bypassing layers whenever something feels inconvenient.</div></div><div class="demo" data-demo="layered"><div class="demohead"><b>Dependency path</b><div class="controls"><button data-action="run">Run order</button><button data-action="bad">Bypass layers</button><button data-action="reset">Reset</button></div></div><div class="diagram row4"><div class="node" data-n="0">HTTP layer</div><div class="node" data-n="1">Application service</div><div class="node" data-n="2">Domain rules</div><div class="node" data-n="3">Repository / DB</div></div><div class="log">Normal path keeps HTTP and SQL details away from domain rules.</div></div></div><div class="examples"><div class="example"><h3>Code</h3><div class="codebox"><span class="label">TypeScript — application service</span><pre><code>class PlaceOrder {
+  constructor(private orders: OrderRepository,
+              private inventory: InventoryGateway) {}
 
-<section class="pattern" id="circuit">
-  <span class="kind">Pattern</span>
-  <h2>Circuit Breaker</h2>
-  <p class="summary">Stops repeatedly calling a failing remote dependency. After enough failures it “opens,” rejects calls quickly, waits, then allows a test request through before deciding whether to close again.</p>
-  <div class="grid">
-    <div class="text">
-      <h3>How it works</h3>
-      <ul><li><strong>Closed:</strong> requests pass normally and failures are counted.</li><li><strong>Open:</strong> requests fail fast instead of hammering the unhealthy service.</li><li><strong>Half-open:</strong> a limited probe is allowed through after a cooldown.</li><li>If the probe succeeds, normal traffic resumes; if it fails, the breaker opens again.</li></ul>
-      <p class="tradeoff"><strong>Trade-off:</strong> it improves resilience but adds state, timing, thresholds, fallback behaviour, and monitoring that must be tuned.</p>
-    </div>
-    <div class="demo" id="breakerDemo" aria-label="Animated circuit breaker states">
-      <p class="demo-title">Closed → open → half-open → closed</p>
-      <div class="breaker-layout"><div class="node">Caller</div><div class="node breaker closed" id="breakerNode">Breaker<br><span id="breakerState">CLOSED</span></div><div class="node">Remote service</div><span class="breaker-packet" id="breakerPacket"></span></div>
-      <div class="status" id="breakerStatus">Healthy: requests pass through.</div>
-    </div>
-  </div>
-</section>
+  async execute(cmd: PlaceOrderCommand) {
+    const order = Order.create(cmd.customerId, cmd.items);
+    await this.inventory.reserve(order.items);
+    await this.orders.save(order);
+    return order;
+  }
+}
 
-<section class="pattern" id="layered">
-  <span class="kind">Style</span>
-  <h2>Layered Architecture</h2>
-  <p class="summary">Organizes software into horizontal layers, each with a distinct responsibility. Calls usually move through neighbouring layers rather than allowing every part of the system to reach every other part directly.</p>
-  <div class="grid">
-    <div class="text">
-      <h3>Typical flow</h3>
-      <ul><li>Presentation handles the user-facing interaction.</li><li>Application/business logic applies use-case and domain rules.</li><li>Data-access code isolates persistence details.</li><li>The database stores durable state.</li></ul>
-      <h3>Useful when</h3><p>You want predictable responsibility boundaries in a conventional application and the domain maps naturally to tiers.</p>
-      <p class="tradeoff"><strong>Trade-off:</strong> layers can become pass-through bureaucracy, and a change may have to cross several layers even when little value is added.</p>
-    </div>
-    <div class="demo" aria-label="Animated layered architecture call">
-      <p class="demo-title">Call down, result back up</p>
-      <div class="layers"><div class="layer">Presentation</div><div class="layer">Business / Application</div><div class="layer">Data Access</div><div class="layer">Database</div><span class="packet v"></span></div>
-    </div>
-  </div>
-</section>
+interface OrderRepository {
+  save(order: Order): Promise&lt;void&gt;;
+}</code></pre></div></div><div class="example"><h3>Data</h3><div class="codebox"><span class="label">SQL owned by infrastructure layer</span><pre><code>CREATE TABLE orders (
+  id          VARCHAR(30) PRIMARY KEY,
+  customer_id VARCHAR(30) NOT NULL,
+  status      VARCHAR(20) NOT NULL,
+  total       DECIMAL(10,2) NOT NULL
+);
 
-<section class="pattern" id="microservices">
-  <span class="kind">Style</span>
-  <h2>Microservices</h2>
-  <p class="summary">Builds a system as independently deployable services aligned around bounded capabilities. Each service owns a focused responsibility and communicates with other services over explicit interfaces.</p>
-  <div class="grid">
-    <div class="text">
-      <h3>How it works</h3>
-      <ul><li>A client often enters through an API gateway or edge service.</li><li>Requests are routed to the service responsible for that capability.</li><li>Services can be deployed and scaled independently.</li><li>Cross-service work requires network communication and distributed coordination.</li></ul>
-      <h3>Useful when</h3><p>Different parts of a large system need independent deployment, scaling, ownership, or technology evolution.</p>
-      <p class="tradeoff"><strong>Trade-off:</strong> local code becomes simpler at the cost of distributed-system problems: latency, partial failure, tracing, deployment coordination, and data consistency.</p>
-    </div>
-    <div class="demo" aria-label="Animated microservice routing">
-      <p class="demo-title">Gateway routes requests to different services</p>
-      <div class="micro">
-        <div class="node client">Client</div><div class="node gateway">API Gateway</div>
-        <div class="service-stack"><div class="node">Orders</div><div class="node">Catalog</div><div class="node">Billing</div></div>
-        <span class="trunk"></span><span class="branch orders"></span><span class="branch catalog"></span><span class="branch billing"></span>
-        <span class="pulse orders"></span><span class="pulse catalog"></span><span class="pulse billing"></span>
-      </div>
-    </div>
-  </div>
-</section>
+INSERT INTO orders
+VALUES ('O-9001','C-42','NEW',139.97);</code></pre></div></div></div><h3>Dependency rule</h3><div class="repo">presentation → application → domain
+                       ↓
+                 repository interface
+                       ↑
+              infrastructure implements it
 
-<section class="pattern" id="event-driven">
-  <span class="kind">Style</span>
-  <h2>Event-Driven Architecture</h2>
-  <p class="summary">Components publish events describing something that happened. Other components subscribe and react without the publisher needing to know every consumer.</p>
-  <div class="grid">
-    <div class="text">
-      <h3>How it works</h3>
-      <ul><li>A producer emits an event such as <em>OrderPlaced</em>.</li><li>An event broker or bus distributes it.</li><li>Multiple consumers can react independently: inventory, email, analytics, billing, and more.</li><li>New consumers can often be added without changing the producer.</li></ul>
-      <h3>Useful when</h3><p>Work is naturally asynchronous, several components react to the same occurrence, or loose coupling is more valuable than immediate synchronous answers.</p>
-      <p class="tradeoff"><strong>Trade-off:</strong> flow is less obvious than a direct call chain. Ordering, duplicate delivery, retries, observability, and eventual consistency become design concerns.</p>
-    </div>
-    <div class="demo" aria-label="Animated event driven fan-out">
-      <p class="demo-title">One event, three independent reactions</p>
-      <div class="bus">
-        <div class="node producer">Producer<br>OrderPlaced</div><div class="node bus-core">Event Bus</div>
-        <div class="consumers"><div class="node">Inventory</div><div class="node">Email</div><div class="node">Analytics</div></div>
-        <span class="trunk"></span><span class="branch inventory"></span><span class="branch email"></span><span class="branch analytics"></span>
-        <span class="event-dot"></span><span class="fan inventory"></span><span class="fan email"></span><span class="fan analytics"></span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="controls"><button id="toggleMotion" type="button">Pause animations</button></div>
-<footer>Conceptual teaching diagrams · pure HTML/CSS/JavaScript · no framework required</footer>
-</main>
-
-<script>
-const body=document.body;
-const toggle=document.querySelector('#toggleMotion');
-let paused=false;
-toggle.addEventListener('click',()=>{
-  paused=!paused;
-  body.classList.toggle('paused',paused);
-  toggle.textContent=paused?'Resume animations':'Pause animations';
+The domain should not import Express, SQL drivers, AWS SDKs, or UI libraries.</div></section>
+<section class="section" id="microservices"><div class="topline"><span class="kind">Style</span><h2>Microservices</h2></div><p class="summary">Microservices split a system into independently deployable services aligned to business capabilities. The important word is not “small”; it is <em>independent</em>: code ownership, deployment, runtime scaling, and usually data ownership are separated.</p><div class="twocol"><div class="why"><h3>Our order system becomes</h3><ul><li><strong>Order Service</strong> owns order lifecycle.</li><li><strong>Inventory Service</strong> owns stock and reservations.</li><li><strong>Payment Service</strong> owns charges/refunds.</li><li><strong>Notification Service</strong> owns email/SMS delivery.</li></ul><h3>The architectural cost</h3><p>Function calls become network calls. One transaction can no longer safely update four databases. You now need timeouts, retries, idempotency, observability, versioned contracts, deployment automation, and a strategy for partial failure.</p><div class="callout good"><strong>Choose it when:</strong> parts of the system genuinely need independent release cycles, scaling, ownership, technology choices, or fault isolation.</div><div class="callout bad"><strong>Avoid premature microservices:</strong> a small team can easily create a distributed monolith—many deployables that still must change together.</div><h3>Cloud fit</h3><p>Strong. Containers, managed databases, service discovery, autoscaling, load balancers, and managed observability all support this style well. But cloud hosting alone is not a reason to use microservices.</p></div><div class="demo" data-demo="micro"><div class="demohead"><b>Distributed order</b><div class="controls"><button data-action="run">Place order</button><button data-action="bad">Kill inventory</button><button data-action="reset">Reset</button></div></div><div class="diagram row4"><div class="node" data-n="0">API Gateway</div><div class="node" data-n="1">Order Service</div><div class="node" data-n="2">Inventory Service</div><div class="node" data-n="3">Payment Service</div></div><div class="log">Try a normal order, then kill Inventory and compare the failure boundary.</div></div></div><div class="examples"><div class="example"><h3>Code</h3><div class="codebox"><span class="label">Order service making remote calls</span><pre><code>const reservation = await inventory.reserve({
+  orderId,
+  items
 });
 
-const breaker=document.querySelector('#breakerNode');
-const state=document.querySelector('#breakerState');
-const status=document.querySelector('#breakerStatus');
-const packet=document.querySelector('#breakerPacket');
-const phases=[
-  {name:'CLOSED',cls:'closed',msg:'Healthy: requests pass through.',motion:'go'},
-  {name:'OPEN',cls:'open',msg:'Failures crossed the threshold: calls fail fast.',motion:'reject'},
-  {name:'HALF-OPEN',cls:'half',msg:'Cooldown elapsed: one probe request is allowed.',motion:'go'},
-  {name:'CLOSED',cls:'closed',msg:'Probe succeeded: normal traffic resumes.',motion:'go'}
-];
-let phase=0;
-function runBreaker(){
-  if(paused)return;
-  const p=phases[phase%phases.length];
-  breaker.className='node breaker '+p.cls;
-  state.textContent=p.name;
-  status.textContent=p.msg;
-  packet.className='breaker-packet';
-  void packet.offsetWidth;
-  packet.classList.add(p.motion);
-  phase++;
+if (!reservation.ok) {
+  return { status: 'REJECTED', reason: 'OUT_OF_STOCK' };
 }
-runBreaker();
-setInterval(runBreaker,2600);
+
+const payment = await payments.charge({
+  orderId,
+  customerId,
+  amount
+});</code></pre></div></div><div class="example"><h3>Data ownership</h3><div class="codebox"><span class="label">Separate service data</span><pre><code>Order DB
+O-9001 | C-42 | PENDING | 139.97
+
+Inventory DB
+KB-100 | on_hand=21 | reserved=4
+MS-200 | on_hand=70 | reserved=13
+
+Payment DB
+P-771 | O-9001 | AUTHORIZED | 139.97
+
+No service reaches directly into another service's DB.</code></pre></div></div></div><h3>Deployment boundary</h3><div class="repo">order-service/        → image v18 → 4 replicas → order_db
+inventory-service/    → image v7  → 8 replicas → inventory_db
+payment-service/      → image v12 → 3 replicas → payment_db
+notification-service/ → image v31 → 2 replicas → notification_db</div></section>
+<section class="section" id="event"><div class="topline"><span class="kind">Style</span><h2>Event-Driven Architecture</h2></div><p class="summary">A producer publishes that something happened; consumers react independently. The producer does not need to know every downstream action. This is excellent for asynchronous workflows—but introduces eventual consistency and delivery semantics you must design for.</p><div class="twocol"><div class="why"><h3>Order example</h3><p>The Order Service publishes <code>OrderPlaced</code>. Inventory, analytics, notifications, and fraud detection can all react without the Order Service calling them directly.</p><h3>What you gain</h3><ul><li>Loose coupling between producer and consumers.</li><li>New consumers can be added without changing the producer.</li><li>Consumers can process at different rates and recover independently.</li></ul><h3>What becomes harder</h3><ul><li>Events can arrive more than once.</li><li>Consumers can process late or out of order.</li><li>There is no single synchronous transaction covering everything.</li><li>Debugging needs correlation IDs and event tracing.</li></ul><div class="callout bad"><strong>Critical rule:</strong> design consumers to be idempotent. “At least once” delivery can otherwise charge a card or send a shipment twice.</div></div><div class="demo" data-demo="event"><div class="demohead"><b>Publish + fan out</b><div class="controls"><button data-action="run">Publish OrderPlaced</button><button data-action="bad">Duplicate event</button><button data-action="reset">Reset</button></div></div><div class="diagram row4"><div class="node" data-n="0">Order Service</div><div class="node" data-n="1">Event Broker</div><div class="node" data-n="2">Inventory Consumer</div><div class="node" data-n="3">Email Consumer</div></div><div class="log">Publish the event and watch independent consumers react.</div></div></div><div class="examples"><div class="example"><h3>Code</h3><div class="codebox"><span class="label">Producer + idempotent consumer</span><pre><code>// Producer
+await broker.publish('orders.placed', event);
+
+// Consumer
+async function onOrderPlaced(event) {
+  if (await processed.exists(event.eventId)) return;
+
+  await inventory.reserve(event.orderId, event.items);
+  await processed.mark(event.eventId);
+}</code></pre></div></div><div class="example"><h3>Event data</h3><div class="codebox"><span class="label">JSON event contract</span><pre><code>{
+  "eventId": "EV-88421",
+  "type": "OrderPlaced",
+  "version": 1,
+  "occurredAt": "2026-10-23T13:20:14Z",
+  "orderId": "O-9001",
+  "customerId": "C-42",
+  "items": [
+    {"sku":"KB-100","qty":1},
+    {"sku":"MS-200","qty":2}
+  ],
+  "correlationId": "REQ-51F0"
+}</code></pre></div></div></div><h3>Data over time</h3><div class="repo">13:20:14.011  Order DB      O-9001 = PLACED
+13:20:14.019  Broker        OrderPlaced EV-88421
+13:20:14.087  Inventory DB  reservation R-120 created
+13:20:14.160  Email queue   confirmation queued
+13:20:14.900  Analytics     order counter updated
+
+For ~0.9 seconds, different parts of the system legitimately know different things.</div></section>
+<section class="section" id="breaker"><div class="topline"><span class="kind">Resilience pattern</span><h2>Circuit Breaker</h2></div><p class="summary">A circuit breaker wraps calls to an unreliable remote dependency. After repeated failures it stops making calls temporarily, fails fast, and later allows a probe to determine whether the dependency recovered.</p><div class="twocol"><div class="why"><h3>Why it exists</h3><p>Suppose Payment normally answers in 80 ms but is now timing out after 10 seconds. Without a breaker, every order request can pile up waiting for the same broken dependency, exhausting threads, connections, memory, and request queues.</p><h3>States</h3><ul><li><strong>Closed:</strong> calls pass normally; failures are counted.</li><li><strong>Open:</strong> calls are rejected immediately for a cooldown period.</li><li><strong>Half-open:</strong> a limited probe is allowed. Success closes the circuit; failure opens it again.</li></ul><div class="callout good"><strong>Use with:</strong> timeouts, bounded retries, fallbacks where appropriate, and observability. A circuit breaker is not a substitute for a timeout.</div><div class="callout bad"><strong>Do not:</strong> blindly retry non-idempotent operations such as charging a card. You need request IDs/idempotency keys and provider-specific guarantees.</div></div><div class="demo" data-demo="breaker"><div class="demohead"><b>Payment dependency</b><div class="controls"><button data-action="run">Successful call</button><button data-action="bad">Cause failures</button><button data-action="probe">Probe recovery</button><button data-action="reset">Reset</button></div></div><div class="diagram row3"><div class="node" data-n="0">Order Service</div><div class="node good" data-n="1">Circuit: CLOSED</div><div class="node" data-n="2">Payment API</div></div><div class="log">State = CLOSED. Calls flow to Payment.</div></div></div><div class="examples"><div class="example"><h3>Code</h3><div class="codebox"><span class="label">Simplified circuit breaker</span><pre><code>async function chargeWithBreaker(request) {
+  if (breaker.isOpen()) {
+    throw new Error('Payment temporarily unavailable');
+  }
+
+  try {
+    const result = await withTimeout(
+      payments.charge(request), 1200
+    );
+    breaker.recordSuccess();
+    return result;
+  } catch (err) {
+    breaker.recordFailure();
+    throw err;
+  }
+}</code></pre></div></div><div class="example"><h3>Operational data</h3><div class="codebox"><span class="label">Breaker metrics</span><pre><code>dependency: payment-api
+window: 20 calls
+failureThreshold: 50%
+minimumCalls: 10
+openDuration: 30s
+probeCalls: 1
+
+10:14:02 CLOSED   failures=2/10
+10:14:07 CLOSED   failures=5/10
+10:14:07 OPEN     calls fail fast
+10:14:37 HALF_OPEN probe allowed
+10:14:37 CLOSED   probe succeeded</code></pre></div></div></div></section>
+<section class="section"><div class="topline"><span class="kind">Putting it together</span><h2>What a realistic cloud system might actually use</h2></div><p class="summary">The useful mental model is composition. Architecture patterns operate at different levels.</p><div class="examples"><div class="example"><h3>Inside one service</h3><div class="repo">HTTP Controller       ← MVC / presentation boundary
+      ↓
+Application Service    ← Layered orchestration
+      ↓
+Domain Model           ← business rules
+      ↓
+Repository Interface   ← dependency boundary
+      ↓
+PostgreSQL Adapter</div></div><div class="example"><h3>Between services</h3><div class="repo">Order Service
+   ├──sync HTTP──→ Payment Service
+   │               ↑ Circuit Breaker + timeout
+   │
+   └──event──────→ Message Broker
+                       ├──→ Inventory Consumer
+                       ├──→ Notification Consumer
+                       └──→ Analytics Consumer
+
+Each service may itself use MVC + layers internally.</div></div></div><h3>A practical decision sequence</h3><ol><li>Start by separating responsibilities inside one deployable application.</li><li>Use layers or similar dependency boundaries where they make the code easier to reason about.</li><li>Use MVC when you have interactive/request-driven presentation concerns.</li><li>Split into microservices only when independent deployment/ownership/scaling is worth the distributed-systems cost.</li><li>Use events where asynchronous decoupling is valuable.</li><li>Add circuit breakers around remote calls where repeated failure can cascade.</li></ol></section>
+<footer>Interactive teaching examples · Swamp Coding Patterns</footer>
+</main>
+<script>
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function nodes(d){return [...d.querySelectorAll('.node')]}function log(d,t){d.querySelector('.log').textContent=t}function clear(d){nodes(d).forEach(n=>n.classList.remove('active','bad','warn'));}
+async function step(d,i,t,ms=520){clear(d);const n=nodes(d)[i];if(n)n.classList.add('active');log(d,t);await wait(ms)}
+for(const d of document.querySelectorAll('[data-demo]')){d.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.action,type=d.dataset.demo;b.disabled=true;if(a==='reset'){clear(d);nodes(d).forEach(n=>n.classList.remove('good','bad','warn'));if(type==='breaker'){nodes(d)[1].classList.add('good');nodes(d)[1].innerHTML='Circuit: CLOSED'}log(d,type==='breaker'?'State = CLOSED. Calls flow to Payment.':'Reset.');b.disabled=false;return}if(type==='mvc'){if(a==='run'){await step(d,0,'1. Client sends POST /orders');await step(d,1,'2. Controller parses HTTP input and chooses the use case');await step(d,2,'3. Model applies order rules and changes state');await step(d,3,'4. View serializes the result as JSON');clear(d);log(d,'Complete: HTTP concerns, business behavior, and presentation remained separate.');}if(a==='bad'){clear(d);nodes(d)[1].classList.add('bad');log(d,'Anti-pattern: controller now parses HTTP, contains pricing rules, runs SQL, and formats output. Changes become tightly coupled.');}}if(type==='layered'){if(a==='run'){await step(d,0,'1. HTTP layer maps request → command');await step(d,1,'2. Application layer coordinates PlaceOrder');await step(d,2,'3. Domain validates invariants and calculates behavior');await step(d,3,'4. Repository persists through infrastructure');clear(d);log(d,'Dependency direction stayed controlled. Domain code never needed to know Express or SQL.');}if(a==='bad'){clear(d);nodes(d)[0].classList.add('bad');nodes(d)[3].classList.add('bad');log(d,'Layer bypass: HTTP handler writes SQL directly. Fast today, but HTTP, business behavior, and storage are now coupled.');}}if(type==='micro'){if(a==='run'){await step(d,0,'1. Gateway routes POST /orders');await step(d,1,'2. Order Service creates pending order');await step(d,2,'3. Inventory Service reserves stock in its own DB');await step(d,3,'4. Payment Service authorizes charge in its own DB');clear(d);log(d,'Success. Each service owned its code, process, and data boundary.');}if(a==='bad'){clear(d);nodes(d)[2].classList.add('bad');nodes(d)[1].classList.add('warn');log(d,'Inventory is unavailable. Order Service must timeout/fail/degrade deliberately; it cannot pretend the remote call is a local function. Other services can remain healthy.');}}if(type==='event'){if(a==='run'){await step(d,0,'1. Order Service commits O-9001');await step(d,1,'2. OrderPlaced EV-88421 is published');clear(d);nodes(d)[2].classList.add('active');nodes(d)[3].classList.add('active');log(d,'3. Inventory and Email consume independently. One can lag or fail without blocking the other.');await wait(700);clear(d);}if(a==='bad'){clear(d);nodes(d)[1].classList.add('warn');nodes(d)[2].classList.add('bad');log(d,'Broker redelivers EV-88421. A non-idempotent consumer reserves stock twice. Correct consumer checks eventId before applying side effects.');}}if(type==='breaker'){const ns=nodes(d),c=ns[1];if(a==='run'){clear(d);c.classList.add('good');c.innerHTML='Circuit: CLOSED';await step(d,0,'Order Service requests a payment');c.classList.add('good');await step(d,2,'Payment responds successfully in 82 ms');c.classList.add('good');clear(d);c.classList.add('good');log(d,'Success recorded. Circuit remains CLOSED.');}if(a==='bad'){clear(d);ns[2].classList.add('bad');c.classList.remove('good');c.classList.add('warn');c.innerHTML='Failures rising';log(d,'Payment times out repeatedly…');await wait(650);c.classList.remove('warn');c.classList.add('bad');c.innerHTML='Circuit: OPEN';log(d,'Threshold reached. Circuit OPEN: new payment attempts fail immediately instead of waiting for more timeouts.');}if(a==='probe'){clear(d);c.className='node warn';c.innerHTML='Circuit: HALF-OPEN';log(d,'Cooldown elapsed. One probe call is allowed.');await wait(650);ns[2].classList.add('active');log(d,'Probe to Payment succeeds.');await wait(650);clear(d);c.className='node good';c.innerHTML='Circuit: CLOSED';log(d,'Circuit CLOSED. Normal traffic resumes.');}}b.disabled=false;});}
 </script>
 </body>
 </html>
