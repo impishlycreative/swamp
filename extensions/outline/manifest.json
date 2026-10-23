@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Outline",
+  "version": "0.1.0",
+  "description": "Research, notes, characters and timelines alongside the web.",
+  "permissions": ["storage", "contextMenus", "activeTab", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Toggle Outline"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["src/storage.js", "src/model.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
