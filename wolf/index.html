@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#05070a" />
+  <title>Wolf — WebGL Werewolf</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #05070a; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+    .hud {
+      position: fixed; left: 18px; bottom: 16px; z-index: 2; pointer-events: none;
+      padding: 8px 10px; border-radius: 999px; color: rgba(235,241,246,.65);
+      background: rgba(3,5,8,.28); border: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(8px); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      opacity: .75; transition: opacity .6s ease;
+    }
+    body:hover .hud { opacity: .42; }
+    .fallback { display:none; position:fixed; inset:0; place-items:center; padding:24px; color:#e8edf2; background:#05070a; text-align:center; }
+    .fallback strong { display:block; margin-bottom:8px; }
+  </style>
+</head>
+<body>
+  <canvas id="scene" aria-label="Interactive moonlit werewolf scene"></canvas>
+  <div class="hud">Move pointer • wind, fog, fur, tail &amp; spittle animate in real time</div>
+  <div class="fallback" id="fallback"><div><strong>WebGL is unavailable.</strong>This scene needs a browser with WebGL enabled.</div></div>
+
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+    const canvas = document.getElementById('scene');
+    const fallback = document.getElementById('fallback');
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    } catch (err) {
+      fallback.style.display = 'grid';
+      throw err;
+    }
+
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.setSize(innerWidth, innerHeight, false);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    const chunkUrls = Array.from({ length: 6 }, (_, i) => `./assets/werewolf-${String(i).padStart(2, '0')}.txt`);
+    const encoded = (await Promise.all(chunkUrls.map(async url => {
+      const response = await fetch(url, { cache: 'force-cache' });
+      if (!response.ok) throw new Error(`Failed to load ${url}`);
+      return response.text();
+    }))).join('');
+    const texture = await new THREE.TextureLoader().loadAsync(`data:image/webp;base64,${encoded}`);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+
+    const uniforms = {
+      uTexture: { value: texture },
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector2(innerWidth, innerHeight) },
+      uMouse: { value: new THREE.Vector2(0, 0) },
+      uMotion: { value: reduceMotion ? 0.28 : 1.0 },
+      uImageAspect: { value: texture.image.width / texture.image.height }
+    };
+
+    const material = new THREE.ShaderMaterial({
+      uniforms,
+      depthTest: false,
+      depthWrite: false,
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        precision highp float;
+        varying vec2 vUv;
+        uniform sampler2D uTexture;
+        uniform float uTime;
+        uniform vec2 uResolution;
+        uniform vec2 uMouse;
+        uniform float uMotion;
+        uniform float uImageAspect;
+
+        float hash21(vec2 p) {
+          p = fract(p * vec2(123.34, 456.21));
+          p += dot(p, p + 45.32);
+          return fract(p.x * p.y);
+        }
+
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          float a = hash21(i);
+          float b = hash21(i + vec2(1.0, 0.0));
+          float c = hash21(i + vec2(0.0, 1.0));
+          float d = hash21(i + vec2(1.0, 1.0));
+          return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
+        }
+
+        float fbm(vec2 p) {
+          float v = 0.0;
+          float a = 0.5;
+          mat2 r = mat2(0.80, 0.60, -0.60, 0.80);
+          for (int i = 0; i < 5; i++) {
+            v += a * noise(p);
+            p = r * p * 2.03 + 7.13;
+            a *= 0.5;
+          }
+          return v;
+        }
+
+        float ellipseMask(vec2 p, vec2 c, vec2 s) {
+          vec2 q = (p - c) / s;
+          return 1.0 - smoothstep(0.72, 1.0, dot(q,q));
+        }
+
+        vec2 coverUv(vec2 uv) {
+          float screenAspect = uResolution.x / max(uResolution.y, 1.0);
+          vec2 ratio = vec2(1.0);
+          if (screenAspect > uImageAspect) ratio.y = uImageAspect / screenAspect;
+          else ratio.x = screenAspect / uImageAspect;
+          return (uv - 0.5) * ratio + 0.5;
+        }
+
+        float droplet(vec2 uv, vec2 pos, float size, float stretch) {
+          vec2 p = (uv - pos) / vec2(size, size * stretch);
+          float d = dot(p,p);
+          float body = 1.0 - smoothstep(0.30, 1.0, d);
+          float glint = 1.0 - smoothstep(0.02, 0.18, length(p - vec2(-0.18,0.25)));
+          return body * (0.55 + 0.45 * glint);
+        }
+
+        void main() {
+          float t = uTime * uMotion;
+          vec2 uv = coverUv(vUv);
+
+          // Pointer/touch parallax. The mouse also changes the apparent breeze direction.
+          vec2 parallax = uMouse * vec2(0.010, 0.006);
+          uv += parallax;
+
+          // Tail: localized, slow pendulum-like lateral movement with a softer tip follow-through.
+          float tail = ellipseMask(uv, vec2(0.235, 0.355), vec2(0.19, 0.24));
+          float tailTip = ellipseMask(uv, vec2(0.145, 0.300), vec2(0.13, 0.16));
+          float tailSwing = sin(t * 0.78) * 0.010 + sin(t * 1.31 + 1.2) * 0.003;
+          uv.x += tail * tailSwing * (0.45 + uv.y);
+          uv.x += tailTip * sin(t * 0.78 - 0.55) * 0.013;
+          uv.y += tailTip * cos(t * 0.73) * 0.0025;
+
+          // Fur: tiny directional ripples, strongest at mane, shoulders and forearms.
+          float mane = ellipseMask(uv, vec2(0.505, 0.755), vec2(0.27, 0.23));
+          float leftArm = ellipseMask(uv, vec2(0.315, 0.590), vec2(0.13, 0.22));
+          float rightArm = ellipseMask(uv, vec2(0.665, 0.575), vec2(0.13, 0.22));
+          float thigh = ellipseMask(uv, vec2(0.48, 0.40), vec2(0.25, 0.22));
+          float fur = max(max(mane, leftArm), max(rightArm, thigh));
+          float gust = 0.65 + 0.35 * sin(t * 0.41 + fbm(vec2(t * 0.05, 1.7)) * 6.0);
+          float ripple = sin(uv.y * 115.0 + t * 4.1 + uv.x * 31.0) * 0.0016;
+          ripple += sin(uv.y * 57.0 + t * 2.2) * 0.0009;
+          uv.x += fur * ripple * gust * (0.75 + uMouse.x * 0.25);
+          uv.y += fur * cos(uv.x * 91.0 - t * 3.2) * 0.00055 * gust;
+
+          vec3 col = texture2D(uTexture, clamp(uv, 0.001, 0.999)).rgb;
+
+          // Cloud drift: a moving translucent layer mostly confined to the upper sky.
+          vec2 cloudUv = vec2(vUv.x * 2.7 + t * 0.017, vUv.y * 3.0 - t * 0.004);
+          float clouds = fbm(cloudUv + fbm(cloudUv * 0.65 + 9.0));
+          float skyMask = smoothstep(0.53, 0.91, vUv.y) * (1.0 - smoothstep(0.93, 1.0, vUv.y));
+          float cloudBand = smoothstep(0.47, 0.72, clouds) * skyMask;
+          col = mix(col, col * vec3(0.78,0.84,0.92) + vec3(0.025,0.035,0.055), cloudBand * 0.18);
+
+          // Ground fog: layered, slow, low-contrast motion that rolls behind/across the legs.
+          vec2 fogUv = vec2(vUv.x * 3.4 - t * 0.025, vUv.y * 5.3 + sin(t * 0.12) * 0.06);
+          float fogNoise = fbm(fogUv + vec2(fbm(fogUv * 0.55), 0.0));
+          float lowMask = (1.0 - smoothstep(0.18, 0.66, vUv.y));
+          float midMask = 1.0 - smoothstep(0.38, 0.78, vUv.y);
+          float fog = smoothstep(0.46, 0.78, fogNoise) * max(lowMask, midMask * 0.45);
+          vec3 fogColor = vec3(0.39, 0.48, 0.56);
+          col = mix(col, fogColor, fog * 0.24);
+
+          // Subtle moonlit wind shimmer over exposed fur/highlights.
+          float windLight = fur * (0.5 + 0.5 * sin(t * 2.0 + uv.y * 68.0 + uv.x * 14.0));
+          col += vec3(0.035,0.045,0.060) * windLight * 0.22;
+
+          // Saliva: persistent strand + repeating falling droplets from the mouth.
+          vec2 mouth = vec2(0.616, 0.785) - parallax;
+          float strandX = abs(vUv.x - mouth.x);
+          float strandY = smoothstep(mouth.y - 0.105, mouth.y - 0.015, vUv.y) * (1.0 - smoothstep(mouth.y - 0.006, mouth.y + 0.012, vUv.y));
+          float strand = (1.0 - smoothstep(0.0012, 0.0046, strandX)) * strandY;
+
+          float fall1 = mod(t * 0.125 + 0.02, 0.18);
+          float fall2 = mod(t * 0.092 + 0.09, 0.22);
+          float fall3 = mod(t * 0.160 + 0.14, 0.28);
+          float d1 = droplet(vUv, mouth + vec2( 0.004, -0.025 - fall1), 0.0048, 2.0);
+          float d2 = droplet(vUv, mouth + vec2(-0.010, -0.040 - fall2), 0.0036, 1.8);
+          float d3 = droplet(vUv, mouth + vec2( 0.014, -0.058 - fall3), 0.0028, 1.6);
+          float saliva = max(strand * 0.58, max(d1, max(d2,d3)));
+          col = mix(col, vec3(0.84,0.91,0.95), saliva * 0.82);
+
+          // Wet glint on droplets.
+          col += vec3(0.18,0.22,0.25) * max(d1, max(d2,d3)) * 0.55;
+
+          // Cinematic edge falloff.
+          vec2 q = vUv - 0.5;
+          float vignette = smoothstep(0.82, 0.24, dot(q,q));
+          col *= mix(0.70, 1.03, vignette);
+
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `
+    });
+
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+
+    const targetMouse = new THREE.Vector2();
+    function setPointer(clientX, clientY) {
+      targetMouse.x = (clientX / innerWidth - 0.5) * 2.0;
+      targetMouse.y = -((clientY / innerHeight - 0.5) * 2.0);
+      targetMouse.clampScalar(-1, 1);
+    }
+    addEventListener('pointermove', e => setPointer(e.clientX, e.clientY), { passive: true });
+    addEventListener('pointerleave', () => targetMouse.set(0,0), { passive: true });
+
+    addEventListener('resize', () => {
+      renderer.setSize(innerWidth, innerHeight, false);
+      uniforms.uResolution.value.set(innerWidth, innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+    function animate() {
+      uniforms.uTime.value = clock.getElapsedTime();
+      uniforms.uMouse.value.lerp(targetMouse, 0.035);
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
