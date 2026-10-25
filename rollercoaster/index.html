@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wireframe Rollercoaster</title>
+  <style>
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#020409; font-family:Arial,Helvetica,sans-serif; color:#d9f6ff; }
+    #app { width:100%; height:100%; }
+    canvas { display:block; }
+    .hud { position:fixed; top:16px; left:16px; right:16px; display:flex; justify-content:space-between; gap:16px; pointer-events:none; z-index:10; font-size:14px; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 0 10px rgba(120,220,255,.5); }
+    .panel { padding:10px 12px; border:1px solid rgba(120,220,255,.25); background:rgba(5,10,18,.45); backdrop-filter:blur(4px); }
+    .hint { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); padding:8px 12px; border:1px solid rgba(120,220,255,.18); background:rgba(5,10,18,.45); font-size:12px; letter-spacing:.08em; text-transform:uppercase; z-index:10; opacity:.85; }
+    .accent { color:#7ce6ff; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div class="hud">
+    <div class="panel">Speed <span id="speed" class="accent">0</span></div>
+    <div class="panel">Ride Time <span id="rideTime" class="accent">00:00</span> / 02:00</div>
+    <div class="panel">Progress <span id="progress" class="accent">0%</span></div>
+  </div>
+  <div class="hint">Wireframe first-car POV rollercoaster — click / tap to restart</div>
+
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+    const app = document.getElementById('app');
+    const speedEl = document.getElementById('speed');
+    const rideTimeEl = document.getElementById('rideTime');
+    const progressEl = document.getElementById('progress');
+
+    const DESIRED_DURATION = 120;
+    const GRAVITY = 22;
+    const MIN_SPEED = 3.5;
+    const LIFT_SPEED = 3.2;
+    const FRICTION_PER_UNIT = 0.05;
+    const SAMPLE_COUNT = 4000;
+    const CURVE_SEGMENTS = 1800;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x020409);
+    scene.fog = new THREE.FogExp2(0x020409, 0.0065);
+
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 4000);
+    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    app.appendChild(renderer.domElement);
+
+    const clock = new THREE.Clock();
+    scene.add(new THREE.AmbientLight(0x88bbff, 0.45));
+
+    const points = [
+      new THREE.Vector3(0,10,0), new THREE.Vector3(18,16,-8), new THREE.Vector3(34,28,-6), new THREE.Vector3(52,42,8),
+      new THREE.Vector3(72,18,34), new THREE.Vector3(104,7,70), new THREE.Vector3(125,24,112), new THREE.Vector3(78,6,152),
+      new THREE.Vector3(14,12,168), new THREE.Vector3(-56,34,135), new THREE.Vector3(-116,10,82), new THREE.Vector3(-140,8,10),
+      new THREE.Vector3(-108,22,-54), new THREE.Vector3(-40,14,-102), new THREE.Vector3(24,18,-96), new THREE.Vector3(64,12,-44)
+    ];
+
+    const curve = new THREE.CatmullRomCurve3(points, true, 'catmullrom', 0.42);
+    const frenetFrames = curve.computeFrenetFrames(CURVE_SEGMENTS, true);
+    const trackMaterial = new THREE.MeshBasicMaterial({ color:0x7ce6ff, wireframe:true, transparent:true, opacity:.9 });
+    const supportMaterial = new THREE.LineBasicMaterial({ color:0x416d88, transparent:true, opacity:.7 });
+    const tieMaterial = new THREE.LineBasicMaterial({ color:0x6dd1ee, transparent:true, opacity:.65 });
+
+    function getFrameAt(t) {
+      const scaled = t * CURVE_SEGMENTS;
+      const index = Math.floor(scaled);
+      const nextIndex = (index + 1) % frenetFrames.normals.length;
+      const alpha = scaled - index;
+      const normal = frenetFrames.normals[index].clone().lerp(frenetFrames.normals[nextIndex], alpha).normalize();
+      const binormal = frenetFrames.binormals[index].clone().lerp(frenetFrames.binormals[nextIndex], alpha).normalize();
+      const tangent = curve.getTangentAt(t).normalize();
+      return { tangent, normal, binormal };
+    }
+
+    function buildOffsetCurve(offset) {
+      const offsetPoints = [];
+      for (let i = 0; i <= CURVE_SEGMENTS; i++) {
+        const t = i / CURVE_SEGMENTS;
+        const point = curve.getPointAt(t);
+        const frame = getFrameAt(t);
+        offsetPoints.push(point.clone().add(frame.binormal.multiplyScalar(offset)).add(frame.normal.clone().multiplyScalar(-0.08)));
+      }
+      return new THREE.CatmullRomCurve3(offsetPoints, true, 'catmullrom', 0.42);
+    }
+
+    const leftRailCurve = buildOffsetCurve(-0.95);
+    const rightRailCurve = buildOffsetCurve(0.95);
+    scene.add(
+      new THREE.Mesh(new THREE.TubeGeometry(leftRailCurve, CURVE_SEGMENTS, 0.12, 8, true), trackMaterial),
+      new THREE.Mesh(new THREE.TubeGeometry(rightRailCurve, CURVE_SEGMENTS, 0.12, 8, true), trackMaterial)
+    );
+
+    scene.add(new THREE.Mesh(
+      new THREE.TubeGeometry(curve, CURVE_SEGMENTS, 0.08, 6, true),
+      new THREE.MeshBasicMaterial({ color:0x2a4f60, wireframe:true, transparent:true, opacity:.35 })
+    ));
+
+    const tiePositions = [];
+    const supportPositions = [];
+    const tieCount = 240;
+    for (let i = 0; i < tieCount; i++) {
+      const t = i / tieCount;
+      const p = curve.getPointAt(t);
+      const frame = getFrameAt(t);
+      const left = p.clone().add(frame.binormal.clone().multiplyScalar(-0.95));
+      const right = p.clone().add(frame.binormal.clone().multiplyScalar(0.95));
+      tiePositions.push(left.x,left.y,left.z,right.x,right.y,right.z);
+      const supportMid = left.clone().lerp(right, 0.5);
+      supportPositions.push(supportMid.x,supportMid.y,supportMid.z,supportMid.x,-28,supportMid.z);
+    }
+
+    const tieGeometry = new THREE.BufferGeometry();
+    tieGeometry.setAttribute('position', new THREE.Float32BufferAttribute(tiePositions, 3));
+    scene.add(new THREE.LineSegments(tieGeometry, tieMaterial));
+
+    const supportGeometry = new THREE.BufferGeometry();
+    supportGeometry.setAttribute('position', new THREE.Float32BufferAttribute(supportPositions, 3));
+    scene.add(new THREE.LineSegments(supportGeometry, supportMaterial));
+
+    const grid = new THREE.GridHelper(700, 70, 0x1f6378, 0x12323d);
+    grid.position.y = -28;
+    scene.add(grid);
+
+    const starsGeometry = new THREE.BufferGeometry();
+    const starPositions = [];
+    for (let i = 0; i < 2200; i++) {
+      const radius = 900 + Math.random() * 900;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI * .6;
+      starPositions.push(Math.cos(theta)*Math.sin(phi)*radius, 120 + Math.cos(phi)*radius*.35, Math.sin(theta)*Math.sin(phi)*radius);
+    }
+    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+    scene.add(new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color:0x9be7ff, size:1.7, sizeAttenuation:true })));
+
+    const cockpitGeometry = new THREE.BufferGeometry();
+    cockpitGeometry.setAttribute('position', new THREE.Float32BufferAttribute([
+      -.45,-.42,-1.1, -.2,-.05,-2.1, .45,-.42,-1.1, .2,-.05,-2.1,
+      -.45,-.42,-1.1, .45,-.42,-1.1, -.2,-.05,-2.1, .2,-.05,-2.1,
+      0,-.33,-1.2, 0,-.12,-2.15
+    ], 3));
+    camera.add(new THREE.LineSegments(cockpitGeometry, new THREE.LineBasicMaterial({ color:0xdffcff, transparent:true, opacity:.95 })));
+    scene.add(camera);
+
+    const samples = [];
+    let totalLength = 0;
+    let previousPoint = curve.getPointAt(0);
+    for (let i = 0; i <= SAMPLE_COUNT; i++) {
+      const t = i / SAMPLE_COUNT;
+      const point = curve.getPointAt(t);
+      if (i > 0) totalLength += point.distanceTo(previousPoint);
+      samples.push({ t, point, dist:totalLength, height:point.y, speed:0 });
+      previousPoint = point;
+    }
+
+    const maxHeight = Math.max(...samples.map(s => s.height));
+    const liftEndIndex = Math.floor(SAMPLE_COUNT * .16);
+    const energyReferenceHeight = Math.max(maxHeight + 3, samples[liftEndIndex].height + 2);
+    let rawLapTime = 0;
+
+    for (let i = 0; i < samples.length; i++) {
+      const sample = samples[i];
+      let speed;
+      if (i <= liftEndIndex) speed = LIFT_SPEED;
+      else {
+        const distSinceDrop = sample.dist - samples[liftEndIndex].dist;
+        const energy = (2 * GRAVITY * (energyReferenceHeight - sample.height)) - (FRICTION_PER_UNIT * distSinceDrop);
+        speed = Math.sqrt(Math.max(MIN_SPEED * MIN_SPEED, energy));
+      }
+      sample.speed = speed;
+      if (i > 0) rawLapTime += (sample.dist - samples[i - 1].dist) / speed;
+    }
+
+    const speedScale = rawLapTime / DESIRED_DURATION;
+    samples.forEach(sample => sample.speed /= speedScale);
+
+    function sampleAtDistance(distance) {
+      let s = distance % totalLength;
+      if (s < 0) s += totalLength;
+      let low = 0, high = samples.length - 1;
+      while (low <= high) {
+        const mid = (low + high) >> 1;
+        if (samples[mid].dist < s) low = mid + 1; else high = mid - 1;
+      }
+      const nextIndex = Math.min(low, samples.length - 1);
+      const prevIndex = Math.max(0, nextIndex - 1);
+      const a = samples[prevIndex], b = samples[nextIndex];
+      const span = Math.max(.0001, b.dist - a.dist);
+      const alpha = THREE.MathUtils.clamp((s - a.dist) / span, 0, 1);
+      return { dist:s, t:THREE.MathUtils.lerp(a.t,b.t,alpha), speed:THREE.MathUtils.lerp(a.speed,b.speed,alpha) };
+    }
+
+    let rideDistance = 0;
+    let elapsedRide = 0;
+
+    function formatTime(seconds) {
+      return `${Math.floor(seconds / 60).toString().padStart(2,'0')}:${Math.floor(seconds % 60).toString().padStart(2,'0')}`;
+    }
+
+    function resetRide() { rideDistance = 0; elapsedRide = 0; }
+    window.addEventListener('click', resetRide);
+    window.addEventListener('touchstart', resetRide, { passive:true });
+
+    function updateCamera(sample) {
+      const currentPoint = curve.getPointAt(sample.t);
+      const lookAheadT = (sample.t + .0025) % 1;
+      const lookAheadPoint = curve.getPointAt(lookAheadT);
+      const frame = getFrameAt(sample.t);
+      camera.position.copy(currentPoint.clone().add(frame.normal.clone().multiplyScalar(.45)));
+      camera.up.copy(frame.normal.clone().lerp(new THREE.Vector3(0,1,0), .08).normalize());
+      camera.lookAt(lookAheadPoint.clone().add(frame.normal.clone().multiplyScalar(.2)));
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), .05);
+      const currentSample = sampleAtDistance(rideDistance);
+      rideDistance += currentSample.speed * dt;
+      elapsedRide += dt;
+      if (elapsedRide >= DESIRED_DURATION || rideDistance >= totalLength) resetRide();
+      const sample = sampleAtDistance(rideDistance);
+      updateCamera(sample);
+      speedEl.textContent = `${sample.speed.toFixed(1)} u/s`;
+      rideTimeEl.textContent = formatTime(elapsedRide);
+      progressEl.textContent = `${Math.floor((rideDistance / totalLength) * 100)}%`;
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
+    updateCamera(sampleAtDistance(0));
+    animate();
+  </script>
+</body>
+</html>
