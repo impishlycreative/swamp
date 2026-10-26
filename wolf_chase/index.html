@@ -1,454 +1,67 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#05090b" />
-  <title>Wolf Chase — Wireframe 3D</title>
-  <style>
-    *{box-sizing:border-box}
-    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05090b;color:#dff7ef;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    #stage{position:fixed;inset:0}
-    canvas{display:block;width:100%;height:100%}
-    #hud{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;pointer-events:none}
-    .panel{max-width:min(520px,78vw);padding:10px 12px;border:1px solid rgba(132,238,205,.28);border-radius:12px;background:rgba(2,8,10,.68);backdrop-filter:blur(8px)}
-    h1{margin:0 0 3px;font-size:16px;letter-spacing:.04em;text-transform:uppercase}
-    #phase{margin:0;color:#8de6c8;font-size:13px;font-weight:700}
-    #detail{margin:3px 0 0;color:rgba(223,247,239,.72);font-size:12px;line-height:1.35}
-    #time{font:700 12px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}
-    #controls{position:fixed;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-    button,a{min-height:44px;border-radius:11px;border:1px solid rgba(132,238,205,.38);padding:0 14px;background:rgba(5,17,20,.82);color:#dff7ef;font:700 14px system-ui,sans-serif;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
-    button:hover,a:hover{background:rgba(15,45,43,.9)}
-    button:focus-visible,a:focus-visible{outline:3px solid #8de6c8;outline-offset:2px}
-    #progressWrap{flex:1 1 180px;min-width:130px;height:8px;border-radius:999px;background:rgba(223,247,239,.16);overflow:hidden;border:1px solid rgba(223,247,239,.12)}
-    #progress{height:100%;width:0;background:#8de6c8;transform-origin:left center}
-    #tip{position:fixed;right:12px;bottom:65px;max-width:280px;padding:8px 10px;border-radius:10px;background:rgba(2,8,10,.58);color:rgba(223,247,239,.65);font-size:11px;pointer-events:none}
-    @media(max-width:650px){#hud{top:8px;left:8px;right:8px}.panel{max-width:76vw}#controls{left:8px;right:8px;bottom:8px}button,a{padding:0 11px}#tip{display:none}}
-    @media(prefers-reduced-motion:reduce){#detail::after{content:" · Reduced-motion preference detected"}}
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05090b">
+<title>Wolf Chase — Wireframe 3D</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05090b;color:#dff7ef;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}#hud{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;pointer-events:none}.panel{max-width:min(560px,78vw);padding:10px 12px;border:1px solid rgba(132,238,205,.28);border-radius:12px;background:rgba(2,8,10,.68);backdrop-filter:blur(8px)}h1{margin:0 0 3px;font-size:16px;letter-spacing:.04em;text-transform:uppercase}#phase{margin:0;color:#8de6c8;font-size:13px;font-weight:700}#detail{margin:3px 0 0;color:rgba(223,247,239,.72);font-size:12px;line-height:1.35}#time{font:700 12px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}#controls{position:fixed;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}button,a{min-height:44px;border-radius:11px;border:1px solid rgba(132,238,205,.38);padding:0 14px;background:rgba(5,17,20,.82);color:#dff7ef;font:700 14px system-ui,sans-serif;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}button:hover,a:hover{background:rgba(15,45,43,.9)}button:focus-visible,a:focus-visible{outline:3px solid #8de6c8;outline-offset:2px}#progressWrap{flex:1 1 180px;min-width:130px;height:8px;border-radius:999px;background:rgba(223,247,239,.16);overflow:hidden;border:1px solid rgba(223,247,239,.12)}#progress{height:100%;width:0;background:#8de6c8}#tip{position:fixed;right:12px;bottom:65px;max-width:300px;padding:8px 10px;border-radius:10px;background:rgba(2,8,10,.58);color:rgba(223,247,239,.65);font-size:11px;pointer-events:none}@media(max-width:650px){#hud{top:8px;left:8px;right:8px}.panel{max-width:76vw}#controls{left:8px;right:8px;bottom:8px}button,a{padding:0 11px}#tip{display:none}}
+</style>
 </head>
 <body>
-  <div id="stage" aria-label="Animated 3D wireframe wolf chase"></div>
-  <div id="hud">
-    <div class="panel">
-      <h1>Wolf Chase</h1>
-      <p id="phase">Running through the field</p>
-      <p id="detail">Anatomically informed procedural motion · orbiting camera · live WebGL</p>
-    </div>
-    <div class="panel" id="time">00.0 / 34.0</div>
-  </div>
-  <div id="tip">Tap “Restart + Sound” once to enable generated footsteps, panting, wind and chase rustle. Browsers block audio until you interact.</div>
-  <div id="controls">
-    <button id="start" type="button">Restart + Sound</button>
-    <button id="pause" type="button">Pause</button>
-    <button id="mute" type="button">Sound: Off</button>
-    <div id="progressWrap" aria-hidden="true"><div id="progress"></div></div>
-    <a href="../index.html">Back to Swamp</a>
-  </div>
-
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-
-    const stage=document.getElementById('stage');
-    const phaseEl=document.getElementById('phase');
-    const timeEl=document.getElementById('time');
-    const progressEl=document.getElementById('progress');
-    const startBtn=document.getElementById('start');
-    const pauseBtn=document.getElementById('pause');
-    const muteBtn=document.getElementById('mute');
-
-    const scene=new THREE.Scene();
-    scene.background=new THREE.Color(0x05090b);
-    scene.fog=new THREE.FogExp2(0x05090b,.022);
-
-    const camera=new THREE.PerspectiveCamera(54,innerWidth/innerHeight,.05,150);
-    const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-    renderer.setSize(innerWidth,innerHeight);
-    renderer.outputColorSpace=THREE.SRGBColorSpace;
-    stage.appendChild(renderer.domElement);
-
-    const hemi=new THREE.HemisphereLight(0xaee8ff,0x173022,1.7);
-    scene.add(hemi);
-    const moon=new THREE.DirectionalLight(0xb8fff0,2.2);
-    moon.position.set(-8,15,-10);
-    scene.add(moon);
-
-    const terrainMat=new THREE.MeshBasicMaterial({color:0x315d50,wireframe:true,transparent:true,opacity:.55});
-    const terrainGeo=new THREE.PlaneGeometry(100,34,80,26);
-    const p=terrainGeo.attributes.position;
-    for(let i=0;i<p.count;i++){
-      const x=p.getX(i),y=p.getY(i);
-      p.setZ(i,.15*Math.sin(x*.22)+.08*Math.sin(y*.72)+.05*Math.sin((x+y)*.46));
-    }
-    terrainGeo.computeVertexNormals();
-    const terrain=new THREE.Mesh(terrainGeo,terrainMat);
-    terrain.rotation.x=-Math.PI/2;
-    terrain.position.y=-.02;
-    scene.add(terrain);
-
-    const pathMat=new THREE.LineBasicMaterial({color:0x7dc9ae,transparent:true,opacity:.34});
-    for(let z=-10;z<=10;z+=5){
-      const pts=[];
-      for(let x=-45;x<=45;x+=1)pts.push(new THREE.Vector3(x,.06+.15*Math.sin(x*.22)+.08*Math.sin(z*.72)+.05*Math.sin((x+z)*.46),z));
-      scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),pathMat));
-    }
-
-    function wireMesh(geometry,color=0x9af5d5,opacity=.92){
-      return new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color,wireframe:true,transparent:true,opacity}));
-    }
-
-    const treeMat=0x4f9b78;
-    function addTree(x,z,s=1){
-      const g=new THREE.Group();
-      const trunk=wireMesh(new THREE.CylinderGeometry(.14*s,.2*s,2.2*s,6,1),treeMat,.52);
-      trunk.position.y=1.1*s;
-      g.add(trunk);
-      const crown=wireMesh(new THREE.ConeGeometry(1.05*s,3.4*s,8,3),treeMat,.42);
-      crown.position.y=3.3*s;
-      g.add(crown);
-      g.position.set(x,terrainHeight(x,z),z);
-      scene.add(g);
-    }
-    for(let i=0;i<42;i++){
-      const x=-42+i*2.15;
-      const side=i%2?1:-1;
-      const z=side*(8.5+(i%5)*1.2);
-      addTree(x,z,.72+(i%7)*.055);
-    }
-    for(let i=0;i<20;i++) addTree(-36+i*4.2,13-(i%3)*1.1,.55+(i%4)*.08);
-
-    function terrainHeight(x,z){return .15*Math.sin(x*.22)+.08*Math.sin(z*.72)+.05*Math.sin((x+z)*.46);}
-
-    function createSegment(radius=.055,color=0xb9ffe7){
-      return wireMesh(new THREE.CylinderGeometry(radius,radius,1,7,1),color,.96);
-    }
-    function positionSegment(mesh,a,b){
-      const mid=a.clone().add(b).multiplyScalar(.5);
-      const dir=b.clone().sub(a);
-      const len=Math.max(.001,dir.length());
-      mesh.position.copy(mid);
-      mesh.scale.set(1,len,1);
-      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
-    }
-
-    function createWolf(){
-      const root=new THREE.Group();
-      const body=wireMesh(new THREE.IcosahedronGeometry(1,2)); body.scale.set(1.65,.72,.7); root.add(body);
-      const chest=wireMesh(new THREE.IcosahedronGeometry(.72,1),0xb9ffe7,.84); chest.scale.set(.9,1.05,.86); chest.position.set(.95,.1,0); root.add(chest);
-      const pelvis=wireMesh(new THREE.IcosahedronGeometry(.62,1),0xb9ffe7,.82); pelvis.position.set(-1.05,-.02,0); pelvis.scale.set(1.05,.8,.85); root.add(pelvis);
-      const neck=new THREE.Group(); neck.position.set(1.55,.38,0); neck.rotation.z=-.23; root.add(neck);
-      const neckMesh=wireMesh(new THREE.CylinderGeometry(.43,.62,1.25,8,2),0xb9ffe7,.9); neckMesh.rotation.z=Math.PI/2; neckMesh.position.x=.45; neck.add(neckMesh);
-      const head=new THREE.Group(); head.position.set(1.0,.28,0); neck.add(head);
-      const skull=wireMesh(new THREE.IcosahedronGeometry(.56,2)); skull.scale.set(1.05,.85,.82); head.add(skull);
-      const muzzle=wireMesh(new THREE.ConeGeometry(.34,.95,8,2)); muzzle.rotation.z=-Math.PI/2; muzzle.position.set(.72,-.12,0); head.add(muzzle);
-      const lowerJaw=wireMesh(new THREE.BoxGeometry(.6,.12,.34),0x9af5d5,.88); lowerJaw.position.set(.61,-.32,0); head.add(lowerJaw);
-      const earGeo=new THREE.ConeGeometry(.24,.68,4,1);
-      const earL=wireMesh(earGeo); earL.position.set(-.12,.66,.32); earL.rotation.z=-.08; head.add(earL);
-      const earR=wireMesh(earGeo); earR.position.set(-.12,.66,-.32); earR.rotation.z=-.08; head.add(earR);
-      const tail=new THREE.Group(); tail.position.set(-1.62,.18,0); root.add(tail);
-      const tailSeg=[];
-      for(let i=0;i<5;i++){const s=createSegment(.075-i*.008,0x9af5d5); tail.add(s); tailSeg.push(s);}
-      const legDefs=[
-        {name:'FL',hip:new THREE.Vector3(.92,-.25,.43),fore:true,side:1,phase:0},
-        {name:'FR',hip:new THREE.Vector3(.92,-.25,-.43),fore:true,side:-1,phase:Math.PI},
-        {name:'HL',hip:new THREE.Vector3(-1.02,-.22,.42),fore:false,side:1,phase:Math.PI},
-        {name:'HR',hip:new THREE.Vector3(-1.02,-.22,-.42),fore:false,side:-1,phase:0}
-      ];
-      const legs=legDefs.map(d=>{
-        const upper=createSegment(.065),lower=createSegment(.052),paw=wireMesh(new THREE.IcosahedronGeometry(.12,1));
-        root.add(upper,lower,paw);
-        return {...d,upper,lower,paw,knee:new THREE.Vector3(),foot:new THREE.Vector3()};
-      });
-      return {root,body,chest,pelvis,neck,head,lowerJaw,tail,tailSeg,legs};
-    }
-
-    const wolf=createWolf();
-    scene.add(wolf.root);
-
-    function createRabbit(){
-      const g=new THREE.Group();
-      const body=wireMesh(new THREE.IcosahedronGeometry(.34,1),0xe8ffd8,.94); body.scale.set(1.25,.82,.8); g.add(body);
-      const head=wireMesh(new THREE.IcosahedronGeometry(.25,1),0xe8ffd8,.94); head.position.set(.43,.23,0); g.add(head);
-      const earGeo=new THREE.ConeGeometry(.07,.48,5,1);
-      const e1=wireMesh(earGeo,0xe8ffd8,.94); e1.position.set(.43,.63,.1); e1.rotation.z=-.1; g.add(e1);
-      const e2=e1.clone(); e2.material=e1.material.clone(); e2.position.z=-.1; g.add(e2);
-      const rear=createSegment(.035,0xe8ffd8),front=createSegment(.028,0xe8ffd8); g.add(rear,front);
-      g.visible=false;
-      return {g,body,head,rear,front};
-    }
-    const rabbit=createRabbit(); scene.add(rabbit.g);
-
-    const TOTAL=34;
-    let startTime=performance.now();
-    let paused=false,pauseStamp=0,pauseAccum=0;
-    let soundOn=false,lastFoot=-1,lastPant=-1,lastRustle=-1;
-
-    class SoundEngine{
-      constructor(){this.ctx=null;this.master=null;this.wind=null;}
-      async ensure(){
-        if(!this.ctx){
-          this.ctx=new (window.AudioContext||window.webkitAudioContext)();
-          this.master=this.ctx.createGain(); this.master.gain.value=0; this.master.connect(this.ctx.destination);
-          const len=this.ctx.sampleRate*2,buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate),data=buf.getChannelData(0);
-          for(let i=0;i<len;i++)data[i]=Math.random()*2-1;
-          const src=this.ctx.createBufferSource(); src.buffer=buf; src.loop=true;
-          const lp=this.ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=560;
-          const g=this.ctx.createGain(); g.gain.value=.035;
-          src.connect(lp).connect(g).connect(this.master); src.start(); this.wind={src,g};
-        }
-        if(this.ctx.state==='suspended')await this.ctx.resume();
-      }
-      setEnabled(on){if(this.master&&this.ctx)this.master.gain.setTargetAtTime(on?.32:0,this.ctx.currentTime,.02);}
-      noiseBurst(duration=.09,gain=.12,low=180,high=900){
-        if(!soundOn||!this.ctx)return;
-        const n=Math.max(1,Math.floor(this.ctx.sampleRate*duration)),buf=this.ctx.createBuffer(1,n,this.ctx.sampleRate),data=buf.getChannelData(0);
-        for(let i=0;i<n;i++)data[i]=(Math.random()*2-1)*(1-i/n);
-        const src=this.ctx.createBufferSource(); src.buffer=buf;
-        const bp=this.ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=(low+high)/2; bp.Q.value=.8;
-        const g=this.ctx.createGain(); g.gain.setValueAtTime(gain,this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+duration);
-        src.connect(bp).connect(g).connect(this.master); src.start();
-      }
-      step(strong=false){
-        if(!soundOn||!this.ctx)return;
-        this.noiseBurst(.08,strong?.16:.1,70,420);
-        const o=this.ctx.createOscillator(),g=this.ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(strong?80:105,this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(45,this.ctx.currentTime+.07); g.gain.setValueAtTime(strong?.07:.045,this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+.08); o.connect(g).connect(this.master); o.start(); o.stop(this.ctx.currentTime+.09);
-      }
-      pant(){this.noiseBurst(.17,.065,500,2600);}
-      rustle(){this.noiseBurst(.11,.05,1100,5200);}
-    }
-    const audio=new SoundEngine();
-
-    function setLegPose(leg,hip,knee,foot){
-      leg.knee.copy(knee); leg.foot.copy(foot);
-      positionSegment(leg.upper,hip,knee); positionSegment(leg.lower,knee,foot); leg.paw.position.copy(foot);
-      leg.paw.scale.set(1.45,.65,1);
-    }
-
-    function gaitLeg(leg,t,speed=1,amount=1){
-      const ph=t*speed*5.6+leg.phase;
-      const stride=Math.sin(ph)*.78*amount;
-      const lift=Math.max(0,Math.sin(ph+Math.PI*.18))*.34*amount;
-      const hip=leg.hip.clone();
-      const ground=-.95;
-      if(leg.fore){
-        const foot=new THREE.Vector3(hip.x+stride,ground+lift,hip.z);
-        const knee=new THREE.Vector3(hip.x+.18+stride*.38,-.58+lift*.42,hip.z);
-        setLegPose(leg,hip,knee,foot);
-      }else{
-        const foot=new THREE.Vector3(hip.x+stride*.92,ground+lift,hip.z);
-        const knee=new THREE.Vector3(hip.x-.28+stride*.28,-.55+lift*.36,hip.z);
-        setLegPose(leg,hip,knee,foot);
-      }
-    }
-
-    function gallopLeg(leg,t){
-      const pairPhase=leg.fore?0:Math.PI*.9;
-      const sidePhase=leg.side>0?0:.28;
-      const ph=t*7.4+pairPhase+sidePhase;
-      const drive=Math.sin(ph);
-      const lift=Math.max(0,Math.sin(ph+.42))*.48;
-      const hip=leg.hip.clone();
-      const ground=-.95;
-      const span=(leg.fore?1.0:.92)*drive;
-      const foot=new THREE.Vector3(hip.x+span,ground+lift,hip.z);
-      const knee=new THREE.Vector3(hip.x+(leg.fore?.22:-.34)+span*.32,-.56+lift*.38,hip.z);
-      setLegPose(leg,hip,knee,foot);
-    }
-
-    function seatedLeg(leg,scratch,t){
-      const hip=leg.hip.clone();
-      if(!leg.fore){
-        if(leg.name==='HR'&&scratch){
-          const kick=.5+.5*Math.sin(t*16);
-          const knee=new THREE.Vector3(hip.x-.15,-.05,hip.z-.18);
-          const foot=new THREE.Vector3(1.72+.08*kick,.45+.16*kick,-.43);
-          setLegPose(leg,hip,knee,foot);
-        }else{
-          const knee=new THREE.Vector3(hip.x-.5,-.57,hip.z);
-          const foot=new THREE.Vector3(hip.x-.15,-.82,hip.z+(leg.side*.14));
-          setLegPose(leg,hip,knee,foot);
-        }
-      }else{
-        const knee=new THREE.Vector3(hip.x+.12,-.56,hip.z);
-        const foot=new THREE.Vector3(hip.x+.22,-.95,hip.z);
-        setLegPose(leg,hip,knee,foot);
-      }
-    }
-
-    function updateTail(t,activity){
-      let a=new THREE.Vector3(-1.62,.18,0),dir=new THREE.Vector3(-.45,-.08,0);
-      for(let i=0;i<wolf.tailSeg.length;i++){
-        const wag=Math.sin(t*3.2-i*.55)*(.10+.10*activity);
-        const b=a.clone().add(new THREE.Vector3(dir.x,dir.y+Math.sin(t*2+i)*.018,wag));
-        positionSegment(wolf.tailSeg[i],a,b); a=b;
-      }
-    }
-
-    function setWolfWorld(x,z,yaw=0){
-      const y=terrainHeight(x,z)+1.03;
-      wolf.root.position.set(x,y,z); wolf.root.rotation.y=yaw;
-    }
-
-    function phaseInfo(t){
-      if(t<10)return ['Running through the field','run'];
-      if(t<12)return ['Slowing to a controlled stop','stop'];
-      if(t<15)return ['Sitting naturally','sit'];
-      if(t<19)return ['Scratching behind the ear','scratch'];
-      if(t<24)return ['Panting and recovering','pant'];
-      if(t<27)return ['Rabbit passes — head turns','notice'];
-      return ['Chasing the rabbit','chase'];
-    }
-
-    function wolfPosition(t){
-      if(t<10)return {x:-21+t*2.65,z:Math.sin(t*.45)*.45,yaw:0};
-      if(t<12){const u=(t-10)/2,e=1-Math.pow(1-u,3);return {x:5.5+2.4*e,z:.0,yaw:0};}
-      if(t<27)return {x:7.9,z:0,yaw:0};
-      const u=t-27; return {x:7.9+u*3.15,z:Math.min(4.4,u*.72),yaw:-.22};
-    }
-
-    function rabbitPosition(t){
-      if(t<24)return null;
-      if(t<27){const u=(t-24)/3;return {x:10.2+u*2.6,z:-7+u*9.3};}
-      const u=t-27;return {x:12.8+u*3.55,z:2.3+Math.min(3.5,u*.62)};
-    }
-
-    function updateRabbit(t){
-      const pos=rabbitPosition(t);
-      if(!pos){rabbit.g.visible=false;return;}
-      rabbit.g.visible=true;
-      rabbit.g.position.set(pos.x,terrainHeight(pos.x,pos.z)+.55+Math.abs(Math.sin(t*8))*0.18,pos.z);
-      rabbit.g.rotation.y=-.22;
-      const hop=Math.sin(t*8);
-      rabbit.body.rotation.z=hop*.12;
-      rabbit.head.rotation.z=-hop*.08;
-      positionSegment(rabbit.rear,new THREE.Vector3(-.15,-.1,.12),new THREE.Vector3(-.55,-.38-hop*.08,.12));
-      positionSegment(rabbit.front,new THREE.Vector3(.25,-.05,-.12),new THREE.Vector3(.55,-.34+hop*.06,-.12));
-    }
-
-    function updateWolf(t){
-      const [,phase]=phaseInfo(t);
-      const wp=wolfPosition(t);
-      setWolfWorld(wp.x,wp.z,wp.yaw);
-      wolf.root.scale.setScalar(1);
-      wolf.root.rotation.z=0;
-      wolf.neck.rotation.y=0;
-      wolf.neck.rotation.z=-.23;
-      wolf.head.rotation.y=0;
-      wolf.head.rotation.z=0;
-      wolf.lowerJaw.rotation.z=0;
-      wolf.body.position.y=0;
-      wolf.body.rotation.z=0;
-      wolf.body.scale.set(1.65,.72,.7);
-      wolf.chest.position.y=.1;
-      wolf.chest.scale.set(.9,1.05,.86);
-      wolf.pelvis.position.y=-.02;
-
-      if(phase==='run'){
-        const bob=Math.sin(t*11.2)*.055;
-        wolf.body.position.y=bob; wolf.chest.position.y=.1+bob*.8; wolf.pelvis.position.y=-.02+bob*.65;
-        wolf.legs.forEach(l=>gaitLeg(l,t,1,1));
-        wolf.neck.rotation.z=-.23+Math.sin(t*5.6)*.035;
-      }else if(phase==='stop'){
-        const u=(t-10)/2,amt=1-u;
-        wolf.legs.forEach(l=>gaitLeg(l,t,.75,amt));
-        wolf.body.rotation.z=.05*u; wolf.neck.rotation.z=-.23-.08*u;
-      }else if(phase==='sit'||phase==='scratch'||phase==='pant'||phase==='notice'){
-        const enter=Math.min(1,Math.max(0,(t-12)/2.2));
-        wolf.root.position.y-=.42*enter;
-        wolf.body.rotation.z=.07*enter;
-        wolf.pelvis.position.y=-.24*enter;
-        wolf.legs.forEach(l=>seatedLeg(l,phase==='scratch',t));
-        if(phase==='scratch'){
-          wolf.head.rotation.z=.10+.05*Math.sin(t*5);
-          wolf.neck.rotation.y=.08*Math.sin(t*2);
-        }
-        if(phase==='pant'){
-          const breath=.5+.5*Math.sin(t*4.6);
-          wolf.lowerJaw.rotation.z=-.16-.06*breath;
-          wolf.chest.scale.y=1.05+.045*breath;
-          wolf.head.rotation.z=Math.sin(t*2.3)*.025;
-        }
-        if(phase==='notice'){
-          const rp=rabbitPosition(t);
-          if(rp){const dx=rp.x-wp.x,dz=rp.z-wp.z;wolf.neck.rotation.y=-Math.atan2(dz,dx)*.52;wolf.head.rotation.y=-Math.atan2(dz,dx)*.38;}
-          wolf.lowerJaw.rotation.z=-.05;
-        }
-      }else if(phase==='chase'){
-        const tt=t-27;
-        const bob=Math.abs(Math.sin(tt*7.4))*.11;
-        wolf.root.position.y+=bob;
-        wolf.body.scale.x=1.65+Math.sin(tt*7.4)*.08;
-        wolf.legs.forEach(l=>gallopLeg(l,tt));
-        wolf.neck.rotation.z=-.29+Math.sin(tt*7.4)*.045;
-        wolf.lowerJaw.rotation.z=-.1;
-      }
-      updateTail(t,phase==='chase'?1:phase==='pant'?.55:.25);
-    }
-
-    function updateCamera(t){
-      const wp=wolfPosition(t);
-      const target=new THREE.Vector3(wp.x,terrainHeight(wp.x,wp.z)+1.35,wp.z);
-      let angle,height,dist;
-      if(t<10){const u=t/10;angle=Math.PI+(u*.95);height=2.2+u*2.7;dist=7.6-u*.6;}
-      else if(t<24){const u=(t-10)/14;angle=Math.PI+.95+u*2.1;height=4.9-Math.sin(u*Math.PI)*2.0;dist=7.0-u*.8;}
-      else if(t<27){const u=(t-24)/3;angle=3.05+u*.35;height=3.0+u*.6;dist=6.4;}
-      else{const u=t-27;angle=3.45+Math.sin(u*.28)*.18;height=3.5+Math.sin(u*.4)*.45;dist=7.4;}
-      camera.position.set(target.x+Math.cos(angle)*dist,target.y+height,target.z+Math.sin(angle)*dist);
-      camera.lookAt(target);
-    }
-
-    function updateSound(t,phase){
-      if(!soundOn)return;
-      if(phase==='run'||phase==='chase'){
-        const rate=phase==='chase'?4.4:3.0;
-        const idx=Math.floor(t*rate);
-        if(idx!==lastFoot){audio.step(phase==='chase');lastFoot=idx;}
-      }
-      if(phase==='pant'){
-        const idx=Math.floor((t-19)*2.3);
-        if(idx!==lastPant){audio.pant();lastPant=idx;}
-      }
-      if(phase==='notice'||phase==='chase'){
-        const idx=Math.floor(t*3.1);
-        if(idx!==lastRustle){audio.rustle();lastRustle=idx;}
-      }
-    }
-
-    function currentSeconds(now){
-      if(paused)return Math.min(TOTAL,(pauseStamp-startTime-pauseAccum)/1000);
-      return ((now-startTime-pauseAccum)/1000)%TOTAL;
-    }
-
-    function frame(now){
-      const t=currentSeconds(now);
-      const [label,phase]=phaseInfo(t);
-      phaseEl.textContent=label;
-      timeEl.textContent=`${t.toFixed(1).padStart(4,'0')} / ${TOTAL.toFixed(1)}`;
-      progressEl.style.width=`${(t/TOTAL)*100}%`;
-      updateWolf(t); updateRabbit(t); updateCamera(t); updateSound(t,phase);
-      renderer.render(scene,camera);
-      requestAnimationFrame(frame);
-    }
-
-    startBtn.addEventListener('click',async()=>{
-      await audio.ensure(); soundOn=true; audio.setEnabled(true); muteBtn.textContent='Sound: On';
-      startTime=performance.now(); pauseAccum=0; paused=false; pauseBtn.textContent='Pause'; lastFoot=lastPant=lastRustle=-1;
-    });
-    pauseBtn.addEventListener('click',()=>{
-      if(!paused){paused=true;pauseStamp=performance.now();pauseBtn.textContent='Resume';}
-      else{pauseAccum+=performance.now()-pauseStamp;paused=false;pauseBtn.textContent='Pause';}
-    });
-    muteBtn.addEventListener('click',async()=>{
-      await audio.ensure(); soundOn=!soundOn; audio.setEnabled(soundOn); muteBtn.textContent=`Sound: ${soundOn?'On':'Off'}`;
-    });
-
-    function resize(){
-      const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);
-      camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-    }
-    addEventListener('resize',resize,{passive:true});
-    requestAnimationFrame(frame);
-  </script>
-</body>
-</html>
+<div id="stage" aria-label="Animated 3D wireframe wolf chase"></div>
+<div id="hud"><div class="panel"><h1>Wolf Chase</h1><p id="phase">Running through the field</p><p id="detail">Articulated spine · canine-proportioned legs · pelvis-anchored tail · quadrupedal rabbit hop</p></div><div class="panel" id="time">00.0 / 34.0</div></div>
+<div id="tip">Tap “Restart + Sound” once. A short tone confirms mobile audio is enabled.</div>
+<div id="controls"><button id="start" type="button">Restart + Sound</button><button id="pause" type="button">Pause</button><button id="mute" type="button">Sound: Off</button><div id="progressWrap" aria-hidden="true"><div id="progress"></div></div><a href="../index.html">Back to Swamp</a></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+const $=id=>document.getElementById(id),stage=$('stage'),phaseEl=$('phase'),timeEl=$('time'),progressEl=$('progress'),startBtn=$('start'),pauseBtn=$('pause'),muteBtn=$('mute');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x05090b);scene.fog=new THREE.FogExp2(0x05090b,.022);
+const camera=new THREE.PerspectiveCamera(54,innerWidth/innerHeight,.05,150),renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;stage.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xaee8ff,0x173022,1.6));const moon=new THREE.DirectionalLight(0xb8fff0,2.2);moon.position.set(-8,15,-10);scene.add(moon);
+function terrainHeight(x,z){return .15*Math.sin(x*.22)+.08*Math.sin(z*.72)+.05*Math.sin((x+z)*.46)}
+const terrainGeo=new THREE.PlaneGeometry(100,34,80,26),pa=terrainGeo.attributes.position;for(let i=0;i<pa.count;i++){const x=pa.getX(i),y=pa.getY(i);pa.setZ(i,terrainHeight(x,y))}terrainGeo.computeVertexNormals();const terrain=new THREE.Mesh(terrainGeo,new THREE.MeshBasicMaterial({color:0x315d50,wireframe:true,transparent:true,opacity:.55}));terrain.rotation.x=-Math.PI/2;terrain.position.y=-.02;scene.add(terrain);
+function wireMesh(g,c=0x9af5d5,o=.92){return new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:c,wireframe:true,transparent:true,opacity:o}))}
+function seg(r=.05,c=0xb9ffe7){return wireMesh(new THREE.CylinderGeometry(r,r,1,7,1),c,.96)}
+function place(m,a,b){const d=b.clone().sub(a),len=Math.max(.001,d.length());m.position.copy(a.clone().add(b).multiplyScalar(.5));m.scale.set(1,len,1);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize())}
+function addTree(x,z,s=1){const g=new THREE.Group(),tr=wireMesh(new THREE.CylinderGeometry(.14*s,.2*s,2.2*s,6,1),0x4f9b78,.52),cr=wireMesh(new THREE.ConeGeometry(1.05*s,3.4*s,8,3),0x4f9b78,.42);tr.position.y=1.1*s;cr.position.y=3.3*s;g.add(tr,cr);g.position.set(x,terrainHeight(x,z),z);scene.add(g)}
+for(let i=0;i<42;i++){const x=-42+i*2.15,z=(i%2?1:-1)*(8.5+(i%5)*1.2);addTree(x,z,.72+(i%7)*.055)}for(let i=0;i<20;i++)addTree(-36+i*4.2,13-(i%3)*1.1,.55+(i%4)*.08);
+function createWolf(){const root=new THREE.Group();
+ const shoulder=wireMesh(new THREE.IcosahedronGeometry(.64,2));shoulder.scale.set(1.05,1.05,.82);shoulder.position.set(.82,.14,0);
+ const rib=wireMesh(new THREE.IcosahedronGeometry(.67,2));rib.scale.set(1.15,.82,.76);rib.position.set(.15,.05,0);
+ const lumbar=wireMesh(new THREE.IcosahedronGeometry(.5,1));lumbar.scale.set(1.15,.68,.7);lumbar.position.set(-.55,.02,0);
+ const pelvis=wireMesh(new THREE.IcosahedronGeometry(.55,1));pelvis.scale.set(1.05,.72,.78);pelvis.position.set(-1.15,-.02,0);root.add(shoulder,rib,lumbar,pelvis);
+ const neck=new THREE.Group();neck.position.set(1.35,.38,0);root.add(neck);const neckMesh=wireMesh(new THREE.CylinderGeometry(.34,.5,1.0,8,2));neckMesh.rotation.z=Math.PI/2;neckMesh.position.x=.4;neck.add(neckMesh);
+ const head=new THREE.Group();head.position.set(.85,.28,0);neck.add(head);const skull=wireMesh(new THREE.IcosahedronGeometry(.5,2));skull.scale.set(1.02,.86,.82);head.add(skull);const muzzle=wireMesh(new THREE.ConeGeometry(.28,.82,8,2));muzzle.rotation.z=-Math.PI/2;muzzle.position.set(.64,-.12,0);head.add(muzzle);const jaw=wireMesh(new THREE.BoxGeometry(.54,.1,.3));jaw.position.set(.55,-.3,0);head.add(jaw);const eg=new THREE.ConeGeometry(.19,.58,4,1),e1=wireMesh(eg),e2=wireMesh(eg);e1.position.set(-.12,.58,.28);e2.position.set(-.12,.58,-.28);head.add(e1,e2);
+ const tailSeg=[];for(let i=0;i<6;i++){const s=seg(.07-i*.007);root.add(s);tailSeg.push(s)}
+ const defs=[['FL',1,.58,true,0],['FR',-1,.58,true,Math.PI],['HL',1,-1.12,false,Math.PI],['HR',-1,-1.12,false,0]];
+ const legs=defs.map(([name,side,x,fore,phase])=>{const upper=seg(.055),lower=seg(.045),paw=wireMesh(new THREE.IcosahedronGeometry(.11,1));root.add(upper,lower,paw);return{name,side,x,fore,phase,upper,lower,paw}});
+ return{root,shoulder,rib,lumbar,pelvis,neck,head,jaw,tailSeg,legs}}
+const wolf=createWolf();scene.add(wolf.root);
+function spinePose(t,phase){let flex=0;if(phase==='run')flex=Math.sin(t*5.6)*.035;if(phase==='chase')flex=Math.sin((t-27)*7.4)*.12;if(phase==='stop')flex=.025;if(['sit','scratch','pant','notice'].includes(phase))flex=-.08;
+ wolf.shoulder.position.set(.82,.14+flex*.25,0);wolf.shoulder.rotation.z=-flex*.7;wolf.rib.position.set(.15,.05-flex*.08,0);wolf.rib.rotation.z=flex*.4;wolf.lumbar.position.set(-.55,.02-flex*.22,0);wolf.lumbar.rotation.z=flex*.9;wolf.pelvis.position.set(-1.15,-.02-flex*.3,0);wolf.pelvis.rotation.z=-flex*.65;
+ wolf.neck.position.set(1.35,.38+flex*.2,0);wolf.neck.rotation.z=-.22-flex*.45}
+function hipFor(l){if(l.fore)return new THREE.Vector3(wolf.shoulder.position.x-.08,wolf.shoulder.position.y-.47,l.side*.38);return new THREE.Vector3(wolf.pelvis.position.x,wolf.pelvis.position.y-.38,l.side*.36)}
+function setLeg(l,hip,knee,ankle,foot){place(l.upper,hip,knee);place(l.lower,knee,ankle);l.paw.position.copy(foot);l.paw.scale.set(1.5,.62,1);l.paw.rotation.z=-.08}
+function gaitLeg(l,t,speed=1,amount=1){const ph=t*speed*5.6+l.phase,stride=Math.sin(ph)*.7*amount,lift=Math.max(0,Math.sin(ph+.55))*.3*amount,hip=hipFor(l),ground=-1.02;if(l.fore){const ankle=new THREE.Vector3(hip.x+stride,ground+lift,hip.z),knee=new THREE.Vector3(hip.x+.10+stride*.32,-.43+lift*.38,hip.z),foot=ankle.clone().add(new THREE.Vector3(.18,0,0));setLeg(l,hip,knee,ankle,foot)}else{const ankle=new THREE.Vector3(hip.x+stride*.92,ground+lift,hip.z),knee=new THREE.Vector3(hip.x-.32+stride*.25,-.38+lift*.32,hip.z),foot=ankle.clone().add(new THREE.Vector3(.2,0,0));setLeg(l,hip,knee,ankle,foot)}}
+function gallopLeg(l,t){const pair=l.fore?0:Math.PI*.92,side=l.side>0?0:.18,ph=t*7.4+pair+side,drive=Math.sin(ph),lift=Math.max(0,Math.sin(ph+.45))*.42,hip=hipFor(l),ground=-1.02,span=(l.fore?.9:.82)*drive,ankle=new THREE.Vector3(hip.x+span,ground+lift,hip.z),knee=new THREE.Vector3(hip.x+(l.fore?.12:-.34)+span*.27,-.4+lift*.3,hip.z),foot=ankle.clone().add(new THREE.Vector3(.2,0,0));setLeg(l,hip,knee,ankle,foot)}
+function seatedLeg(l,scratch,t){const hip=hipFor(l);if(!l.fore&&l.name==='HR'&&scratch){const k=.5+.5*Math.sin(t*16),knee=new THREE.Vector3(-.86,.08,-.32),ankle=new THREE.Vector3(1.5+.08*k,.48+.14*k,-.4);setLeg(l,hip,knee,ankle,ankle)}else if(!l.fore){const knee=new THREE.Vector3(hip.x-.5,-.45,hip.z),ankle=new THREE.Vector3(hip.x-.12,-.8,hip.z+l.side*.08),foot=ankle.clone().add(new THREE.Vector3(.16,0,0));setLeg(l,hip,knee,ankle,foot)}else{const knee=new THREE.Vector3(hip.x+.05,-.48,hip.z),ankle=new THREE.Vector3(hip.x+.18,-1.0,hip.z),foot=ankle.clone().add(new THREE.Vector3(.18,0,0));setLeg(l,hip,knee,ankle,foot)}}
+function updateTail(t,activity){let a=wolf.pelvis.position.clone().add(new THREE.Vector3(-.52,.13,0));for(let i=0;i<wolf.tailSeg.length;i++){const len=.38-i*.018,wag=Math.sin(t*3-i*.45)*(.07+.07*activity),drop=-.07-i*.018,b=a.clone().add(new THREE.Vector3(-len,drop,wag));place(wolf.tailSeg[i],a,b);a=b}}
+function createRabbit(){const g=new THREE.Group(),body=wireMesh(new THREE.IcosahedronGeometry(.34,2),0xe8ffd8,.95),rump=wireMesh(new THREE.IcosahedronGeometry(.3,1),0xe8ffd8,.9),head=wireMesh(new THREE.IcosahedronGeometry(.23,1),0xe8ffd8,.95);body.scale.set(1.35,.75,.78);rump.position.set(-.34,.05,0);rump.scale.set(1.15,1.05,1);head.position.set(.48,.22,0);g.add(body,rump,head);const eg=new THREE.ConeGeometry(.065,.5,5,1),e1=wireMesh(eg,0xe8ffd8),e2=wireMesh(eg,0xe8ffd8);e1.position.set(.48,.62,.1);e2.position.set(.48,.62,-.1);e1.rotation.z=e2.rotation.z=-.08;g.add(e1,e2);const tail=wireMesh(new THREE.IcosahedronGeometry(.13,1),0xe8ffd8);tail.position.set(-.62,.13,0);g.add(tail);
+ const defs=[['FL',1,.31,true],['FR',-1,.31,true],['HL',1,-.36,false],['HR',-1,-.36,false]],legs=[];for(const[name,side,x,fore]of defs){const upper=seg(fore?.025:.035,0xe8ffd8),lower=seg(fore?.021:.03,0xe8ffd8),paw=wireMesh(new THREE.IcosahedronGeometry(fore?.05:.07,1),0xe8ffd8);g.add(upper,lower,paw);legs.push({name,side,x,fore,upper,lower,paw})}g.visible=false;return{g,body,rump,head,e1,e2,legs}}
+const rabbit=createRabbit();scene.add(rabbit.g);
+function rabbitPosition(t){if(t<24)return null;if(t<27){const u=(t-24)/3;return{x:10.2+u*2.6,z:-7+u*9.3}}const u=t-27;return{x:12.8+u*3.55,z:2.3+Math.min(3.5,u*.62)}}
+function rabbitLegPose(l,c){const hip=new THREE.Vector3(l.x,-.05,l.side*.19);let knee,ankle;if(l.fore){if(c<.35){knee=new THREE.Vector3(.24,-.2,l.side*.19);ankle=new THREE.Vector3(.48,-.38,l.side*.19)}else if(c<.7){knee=new THREE.Vector3(.43,-.12,l.side*.19);ankle=new THREE.Vector3(.66,-.22,l.side*.19)}else{knee=new THREE.Vector3(.44,-.24,l.side*.19);ankle=new THREE.Vector3(.62,-.43,l.side*.19)}}else{if(c<.18){knee=new THREE.Vector3(-.55,-.17,l.side*.19);ankle=new THREE.Vector3(-.18,-.42,l.side*.19)}else if(c<.45){knee=new THREE.Vector3(-.3,-.02,l.side*.19);ankle=new THREE.Vector3(-.86,-.18,l.side*.19)}else if(c<.75){knee=new THREE.Vector3(-.18,-.02,l.side*.19);ankle=new THREE.Vector3(-.72,-.25,l.side*.19)}else{knee=new THREE.Vector3(-.5,-.18,l.side*.19);ankle=new THREE.Vector3(-.12,-.43,l.side*.19)}}place(l.upper,hip,knee);place(l.lower,knee,ankle);l.paw.position.copy(ankle);l.paw.scale.set(1.7,.6,1)}
+function updateRabbit(t){const p=rabbitPosition(t);if(!p){rabbit.g.visible=false;return}rabbit.g.visible=true;const c=(t*1.55)%1,arc=c<.18?-.07*(1-c/.18):c<.75?.42*Math.sin((c-.18)/.57*Math.PI):.04*Math.sin((c-.75)/.25*Math.PI),ground=terrainHeight(p.x,p.z);rabbit.g.position.set(p.x,ground+.52+arc,p.z);rabbit.g.rotation.y=-.22;rabbit.body.rotation.z=c<.2?.09:c<.75?-.06:.04;rabbit.rump.rotation.z=c<.2?.14:-.05;rabbit.head.rotation.z=c<.75?-.04:.06;rabbit.e1.rotation.z=rabbit.e2.rotation.z=-.08+(c<.75?-.08:.04);rabbit.legs.forEach(l=>rabbitLegPose(l,c))}
+const TOTAL=34;let startTime=performance.now(),paused=false,pauseStamp=0,pauseAccum=0,soundOn=false,lastFoot=-1,lastPant=-1,lastRustle=-1;
+class SoundEngine{constructor(){this.ctx=null;this.master=null}async ensure(){if(!this.ctx){this.ctx=new(window.AudioContext||window.webkitAudioContext)();this.master=this.ctx.createGain();this.master.gain.value=0;this.master.connect(this.ctx.destination);const n=this.ctx.sampleRate*2,b=this.ctx.createBuffer(1,n,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;const s=this.ctx.createBufferSource(),f=this.ctx.createBiquadFilter(),g=this.ctx.createGain();s.buffer=b;s.loop=true;f.type='lowpass';f.frequency.value=520;g.gain.value=.025;s.connect(f).connect(g).connect(this.master);s.start()}if(this.ctx.state==='suspended')await this.ctx.resume()}setEnabled(on){if(this.master&&this.ctx)this.master.gain.setTargetAtTime(on?.38:0,this.ctx.currentTime,.02)}tone(){if(!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.frequency.value=660;g.gain.setValueAtTime(.09,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+.12);o.connect(g).connect(this.master);o.start();o.stop(this.ctx.currentTime+.13)}noise(dur=.09,gain=.12,freq=500){if(!soundOn||!this.ctx)return;const n=Math.floor(this.ctx.sampleRate*dur),b=this.ctx.createBuffer(1,n,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=this.ctx.createBufferSource(),f=this.ctx.createBiquadFilter(),g=this.ctx.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=freq;f.Q.value=.8;g.gain.setValueAtTime(gain,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+dur);s.connect(f).connect(g).connect(this.master);s.start()}step(strong=false){this.noise(.08,strong?.18:.12,strong?150:220)}pant(){this.noise(.16,.08,1300)}rustle(){this.noise(.1,.055,2500)}}const audio=new SoundEngine();
+function phaseInfo(t){if(t<10)return['Running through the field','run'];if(t<12)return['Slowing to a controlled stop','stop'];if(t<15)return['Sitting naturally','sit'];if(t<19)return['Scratching behind the ear','scratch'];if(t<24)return['Panting and recovering','pant'];if(t<27)return['Rabbit passes — head turns','notice'];return['Chasing the rabbit','chase']}
+function wolfPosition(t){if(t<10)return{x:-21+t*2.65,z:Math.sin(t*.45)*.45,yaw:0};if(t<12){const u=(t-10)/2,e=1-Math.pow(1-u,3);return{x:5.5+2.4*e,z:0,yaw:0}}if(t<27)return{x:7.9,z:0,yaw:0};const u=t-27;return{x:7.9+u*3.15,z:Math.min(4.4,u*.72),yaw:-.22}}
+function updateWolf(t){const[,phase]=phaseInfo(t),wp=wolfPosition(t);wolf.root.position.set(wp.x,terrainHeight(wp.x,wp.z)+1.08,wp.z);wolf.root.rotation.set(0,wp.yaw,0);wolf.head.rotation.set(0,0,0);wolf.jaw.rotation.z=0;spinePose(t,phase);if(phase==='run'){wolf.root.position.y+=Math.sin(t*11.2)*.04;wolf.legs.forEach(l=>gaitLeg(l,t))}else if(phase==='stop'){const u=(t-10)/2;wolf.legs.forEach(l=>gaitLeg(l,t,.75,1-u))}else if(['sit','scratch','pant','notice'].includes(phase)){const e=Math.min(1,Math.max(0,(t-12)/2.2));wolf.root.position.y-=.43*e;wolf.pelvis.position.y-=.18*e;wolf.lumbar.position.y-=.08*e;wolf.legs.forEach(l=>seatedLeg(l,phase==='scratch',t));if(phase==='scratch'){wolf.head.rotation.z=.1+.05*Math.sin(t*5);wolf.neck.rotation.y=.08*Math.sin(t*2)}if(phase==='pant'){const b=.5+.5*Math.sin(t*4.6);wolf.jaw.rotation.z=-.16-.06*b;wolf.shoulder.scale.y=1.05+.035*b}if(phase==='notice'){const rp=rabbitPosition(t);if(rp){const a=Math.atan2(rp.z-wp.z,rp.x-wp.x);wolf.neck.rotation.y=-a*.5;wolf.head.rotation.y=-a*.35}}}else{const tt=t-27;wolf.root.position.y+=Math.abs(Math.sin(tt*7.4))*.09;wolf.legs.forEach(l=>gallopLeg(l,tt));wolf.jaw.rotation.z=-.08}updateTail(t,phase==='chase'?1:phase==='pant'?.5:.22)}
+function updateCamera(t){const wp=wolfPosition(t),target=new THREE.Vector3(wp.x,terrainHeight(wp.x,wp.z)+1.3,wp.z);let a,h,d;if(t<10){const u=t/10;a=Math.PI+u*.95;h=2.2+u*2.7;d=7.6-u*.6}else if(t<24){const u=(t-10)/14;a=Math.PI+.95+u*2.1;h=4.9-Math.sin(u*Math.PI)*2;d=7-u*.8}else if(t<27){const u=(t-24)/3;a=3.05+u*.35;h=3+u*.6;d=6.4}else{const u=t-27;a=3.45+Math.sin(u*.28)*.18;h=3.5+Math.sin(u*.4)*.45;d=7.4}camera.position.set(target.x+Math.cos(a)*d,target.y+h,target.z+Math.sin(a)*d);camera.lookAt(target)}
+function updateSound(t,phase){if(!soundOn)return;if(phase==='run'||phase==='chase'){const i=Math.floor(t*(phase==='chase'?4.4:3));if(i!==lastFoot){audio.step(phase==='chase');lastFoot=i}}if(phase==='pant'){const i=Math.floor((t-19)*2.3);if(i!==lastPant){audio.pant();lastPant=i}}if(phase==='notice'||phase==='chase'){const i=Math.floor(t*3.1);if(i!==lastRustle){audio.rustle();lastRustle=i}}}
+function currentSeconds(now){if(paused)return Math.min(TOTAL,(pauseStamp-startTime-pauseAccum)/1000);return((now-startTime-pauseAccum)/1000)%TOTAL}
+function frame(now){const t=currentSeconds(now),[label,phase]=phaseInfo(t);phaseEl.textContent=label;timeEl.textContent=`${t.toFixed(1).padStart(4,'0')} / ${TOTAL.toFixed(1)}`;progressEl.style.width=`${t/TOTAL*100}%`;updateWolf(t);updateRabbit(t);updateCamera(t);updateSound(t,phase);renderer.render(scene,camera);requestAnimationFrame(frame)}
+startBtn.addEventListener('click',async()=>{await audio.ensure();soundOn=true;audio.setEnabled(true);audio.tone();muteBtn.textContent='Sound: On';startTime=performance.now();pauseAccum=0;paused=false;pauseBtn.textContent='Pause';lastFoot=lastPant=lastRustle=-1});pauseBtn.addEventListener('click',()=>{if(!paused){paused=true;pauseStamp=performance.now();pauseBtn.textContent='Resume'}else{pauseAccum+=performance.now()-pauseStamp;paused=false;pauseBtn.textContent='Pause'}});muteBtn.addEventListener('click',async()=>{await audio.ensure();soundOn=!soundOn;audio.setEnabled(soundOn);if(soundOn)audio.tone();muteBtn.textContent=`Sound: ${soundOn?'On':'Off'}`});
+function resize(){const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);renderer.setPixelRatio(Math.min(devicePixelRatio||1,2))}addEventListener('resize',resize,{passive:true});requestAnimationFrame(frame);
+</script>
+</body></html>
