@@ -1,56 +1,584 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05090b">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05090b">
 <title>Wolf Chase — Wireframe 3D</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05090b;color:#dff7ef;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}#hud{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;pointer-events:none}.panel{max-width:min(560px,78vw);padding:10px 12px;border:1px solid rgba(132,238,205,.28);border-radius:12px;background:rgba(2,8,10,.68);backdrop-filter:blur(8px)}h1{margin:0 0 3px;font-size:16px;letter-spacing:.04em;text-transform:uppercase}#phase{margin:0;color:#8de6c8;font-size:13px;font-weight:700}#detail{margin:3px 0 0;color:rgba(223,247,239,.72);font-size:12px;line-height:1.35}#time{font:700 12px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}#controls{position:fixed;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}button,a{min-height:44px;border-radius:11px;border:1px solid rgba(132,238,205,.38);padding:0 14px;background:rgba(5,17,20,.82);color:#dff7ef;font:700 14px system-ui,sans-serif;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}button:hover,a:hover{background:rgba(15,45,43,.9)}button:focus-visible,a:focus-visible{outline:3px solid #8de6c8;outline-offset:2px}#progressWrap{flex:1 1 180px;min-width:130px;height:8px;border-radius:999px;background:rgba(223,247,239,.16);overflow:hidden;border:1px solid rgba(223,247,239,.12)}#progress{height:100%;width:0;background:#8de6c8}#tip{position:fixed;right:12px;bottom:65px;max-width:300px;padding:8px 10px;border-radius:10px;background:rgba(2,8,10,.58);color:rgba(223,247,239,.65);font-size:11px;pointer-events:none}@media(max-width:650px){#hud{top:8px;left:8px;right:8px}.panel{max-width:76vw}#controls{left:8px;right:8px;bottom:8px}button,a{padding:0 11px}#tip{display:none}}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05090b;color:#dff7ef;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}
+#hud{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;pointer-events:none}
+.panel{max-width:min(560px,78vw);padding:10px 12px;border:1px solid rgba(132,238,205,.28);border-radius:12px;background:rgba(2,8,10,.68);backdrop-filter:blur(8px)}
+h1{margin:0 0 3px;font-size:16px;letter-spacing:.04em;text-transform:uppercase}
+#phase{margin:0;color:#8de6c8;font-size:13px;font-weight:700}
+#detail{margin:3px 0 0;color:rgba(223,247,239,.72);font-size:12px;line-height:1.35}
+#time{font:700 12px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}
+#controls{position:fixed;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,a{min-height:44px;border-radius:11px;border:1px solid rgba(132,238,205,.38);padding:0 14px;background:rgba(5,17,20,.82);color:#dff7ef;font:700 14px system-ui,sans-serif;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+button:hover,a:hover{background:rgba(15,45,43,.9)}button:focus-visible,a:focus-visible{outline:3px solid #8de6c8;outline-offset:2px}
+#progressWrap{flex:1 1 180px;min-width:130px;height:8px;border-radius:999px;background:rgba(223,247,239,.16);overflow:hidden;border:1px solid rgba(223,247,239,.12)}
+#progress{height:100%;width:0;background:#8de6c8}
+#tip{position:fixed;right:12px;bottom:65px;max-width:300px;padding:8px 10px;border-radius:10px;background:rgba(2,8,10,.58);color:rgba(223,247,239,.65);font-size:11px;pointer-events:none}
+@media(max-width:650px){#hud{top:8px;left:8px;right:8px}.panel{max-width:76vw}#controls{left:8px;right:8px;bottom:8px}button,a{padding:0 11px}#tip{display:none}}
 </style>
 </head>
 <body>
 <div id="stage" aria-label="Animated 3D wireframe wolf chase"></div>
-<div id="hud"><div class="panel"><h1>Wolf Chase</h1><p id="phase">Running through the field</p><p id="detail">Articulated spine · three-segment limbs · sacrum-anchored tail · four-leg rabbit hop</p></div><div class="panel" id="time">00.0 / 34.0</div></div>
+<div id="hud">
+  <div class="panel">
+    <h1>Wolf Chase</h1>
+    <p id="phase">Running through the field</p>
+    <p id="detail">Continuous flexible torso · canine joint geometry · folded scratch pose · four-leg rabbit hop</p>
+  </div>
+  <div class="panel" id="time">00.0 / 34.0</div>
+</div>
 <div id="tip">Tap “Restart + Sound” once. A short tone confirms mobile audio is enabled.</div>
-<div id="controls"><button id="start" type="button">Restart + Sound</button><button id="pause" type="button">Pause</button><button id="mute" type="button">Sound: Off</button><div id="progressWrap" aria-hidden="true"><div id="progress"></div></div><a href="../index.html">Back to Swamp</a></div>
+<div id="controls">
+  <button id="start" type="button">Restart + Sound</button>
+  <button id="pause" type="button">Pause</button>
+  <button id="mute" type="button">Sound: Off</button>
+  <div id="progressWrap" aria-hidden="true"><div id="progress"></div></div>
+  <a href="../index.html">Back to Swamp</a>
+</div>
+
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-const $=id=>document.getElementById(id),stage=$('stage'),phaseEl=$('phase'),timeEl=$('time'),progressEl=$('progress'),startBtn=$('start'),pauseBtn=$('pause'),muteBtn=$('mute');
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x05090b);scene.fog=new THREE.FogExp2(0x05090b,.019);
-const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.05,180),renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;stage.appendChild(renderer.domElement);scene.add(new THREE.HemisphereLight(0xaee8ff,0x173022,1.6));
-function terrainHeight(x,z){return .12*Math.sin(x*.22)+.07*Math.sin(z*.72)+.04*Math.sin((x+z)*.46)}
-const terrainGeo=new THREE.PlaneGeometry(120,42,76,28),pa=terrainGeo.attributes.position;for(let i=0;i<pa.count;i++){const x=pa.getX(i),y=pa.getY(i);pa.setZ(i,terrainHeight(x,y))}const terrain=new THREE.Mesh(terrainGeo,new THREE.MeshBasicMaterial({color:0x315d50,wireframe:true,transparent:true,opacity:.48}));terrain.rotation.x=-Math.PI/2;scene.add(terrain);
-function wire(g,c=0x9af5d5,o=.9){return new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:c,wireframe:true,transparent:true,opacity:o}))}function bone(r=.045,c=0xc4ffea){return wire(new THREE.CylinderGeometry(r,r,1,6,1),c,.96)}function place(m,a,b){const d=b.clone().sub(a),len=Math.max(.001,d.length());m.position.copy(a.clone().add(b).multiplyScalar(.5));m.scale.set(1,len,1);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize())}
-function addTree(x,z,s=1){const g=new THREE.Group(),tr=wire(new THREE.CylinderGeometry(.12*s,.18*s,2.1*s,6,1),0x4f9b78,.5),cr=wire(new THREE.ConeGeometry(.95*s,3.2*s,7,2),0x4f9b78,.38);tr.position.y=1.05*s;cr.position.y=3.1*s;g.add(tr,cr);g.position.set(x,terrainHeight(x,z),z);scene.add(g)}for(let i=0;i<48;i++){const x=-48+i*2.05,z=(i%2?1:-1)*(9+(i%6)*1.1);addTree(x,z,.65+(i%6)*.05)}
-function ellipsoid(rx,ry,rz,detail=1,c=0x9af5d5){const m=wire(new THREE.IcosahedronGeometry(1,detail),c,.9);m.scale.set(rx,ry,rz);return m}
-function makeLeg(name,side,fore){const upper=bone(.05),lower=bone(.043),pastern=bone(.034),paw=ellipsoid(.17,.07,.1,1);wolfRoot.add(upper,lower,pastern,paw);return{name,side,fore,upper,lower,pastern,paw}}
-const wolfRoot=new THREE.Group();scene.add(wolfRoot);const bodyRoot=new THREE.Group();wolfRoot.add(bodyRoot);
-const pelvis=ellipsoid(.58,.42,.5),waist=ellipsoid(.62,.36,.46),ribs=ellipsoid(.92,.5,.58),shoulders=ellipsoid(.68,.58,.6);bodyRoot.add(pelvis,waist,ribs,shoulders);
-const spineBones=[bone(.035,0x7fffd7),bone(.035,0x7fffd7),bone(.035,0x7fffd7),bone(.035,0x7fffd7)];spineBones.forEach(b=>bodyRoot.add(b));
-const neck=new THREE.Group();bodyRoot.add(neck);const neckShell=wire(new THREE.CylinderGeometry(.28,.42,.95,7,2));neckShell.rotation.z=Math.PI/2;neck.add(neckShell);const head=new THREE.Group();neck.add(head);const skull=ellipsoid(.48,.39,.38,1),muzzle=wire(new THREE.ConeGeometry(.25,.74,7,1));muzzle.rotation.z=-Math.PI/2;muzzle.position.set(.57,-.08,0);const jaw=wire(new THREE.BoxGeometry(.48,.08,.27));jaw.position.set(.49,-.24,0);head.add(skull,muzzle,jaw);const earGeo=new THREE.ConeGeometry(.17,.52,4,1),earL=wire(earGeo),earR=wire(earGeo);earL.position.set(-.1,.5,.24);earR.position.set(-.1,.5,-.24);head.add(earL,earR);
-const tail=[];for(let i=0;i<7;i++){const b=bone(.063-i*.006);bodyRoot.add(b);tail.push(b)}
-const legs=[makeLeg('FL',1,true),makeLeg('FR',-1,true),makeLeg('HL',1,false),makeLeg('HR',-1,false)];
-const spine={sacrum:new THREE.Vector3(),lumbar:new THREE.Vector3(),thorax:new THREE.Vector3(),shoulder:new THREE.Vector3(),neckBase:new THREE.Vector3()};
-function setSpine(t,phase){let bend=0,side=0;if(phase==='run'){bend=Math.sin(t*5.6)*.045;side=Math.sin(t*2.8)*.015}else if(phase==='chase'){bend=Math.sin((t-27)*7.3)*.14;side=Math.sin((t-27)*3.65)*.025}else if(['sit','scratch','pant','notice'].includes(phase))bend=-.09;
- spine.sacrum.set(-1.18,.02,0);spine.lumbar.set(-.6,.11-bend*.22,side);spine.thorax.set(.02,.22+bend*.18,-side*.5);spine.shoulder.set(.68,.34-bend*.08,side*.3);spine.neckBase.set(1.18,.48-bend*.15,0);
- pelvis.position.copy(spine.sacrum);waist.position.copy(spine.lumbar);ribs.position.copy(spine.thorax);shoulders.position.copy(spine.shoulder);pelvis.rotation.z=-bend*.35;waist.rotation.z=bend*.5;ribs.rotation.z=-bend*.25;shoulders.rotation.z=bend*.35;
- place(spineBones[0],spine.sacrum,spine.lumbar);place(spineBones[1],spine.lumbar,spine.thorax);place(spineBones[2],spine.thorax,spine.shoulder);place(spineBones[3],spine.shoulder,spine.neckBase);neck.position.copy(spine.neckBase);neck.rotation.z=-.18-bend*.5;head.position.set(.76,.16,0);head.rotation.set(0,0,0)}
-function hip(l){if(l.fore)return spine.shoulder.clone().add(new THREE.Vector3(-.05,-.37,l.side*.36));return spine.sacrum.clone().add(new THREE.Vector3(.04,-.28,l.side*.34))}
-function poseLeg(l,a,k,h,p){place(l.upper,a,k);place(l.lower,k,h);place(l.pastern,h,p);l.paw.position.copy(p);l.paw.rotation.z=-.08}
-function runLeg(l,t,fast=false){const ph=(fast?7.3:5.6)*t+(l.fore?0:Math.PI)+(l.side<0?Math.PI:0),s=Math.sin(ph),lift=Math.max(0,Math.sin(ph+.55)),a=hip(l),ground=-1.0;if(l.fore){const p=new THREE.Vector3(a.x+s*(fast?.86:.68),ground+lift*(fast?.35:.28),a.z),h=p.clone().add(new THREE.Vector3(-.18,.18,0)),k=new THREE.Vector3(a.x+.08+s*.24,-.32+lift*.18,a.z);poseLeg(l,a,k,h,p)}else{const p=new THREE.Vector3(a.x+s*(fast?.82:.64),ground+lift*(fast?.38:.3),a.z),h=p.clone().add(new THREE.Vector3(-.22,.2,0)),k=new THREE.Vector3(a.x-.34+s*.2,-.27+lift*.16,a.z);poseLeg(l,a,k,h,p)}}
-function sitLeg(l,scratch,t){const a=hip(l);if(!l.fore&&l.name==='HR'&&scratch){const pulse=.5+.5*Math.sin(t*15.5),k=new THREE.Vector3(-.72,.03,-.38),h=new THREE.Vector3(.12,.42,-.42),p=new THREE.Vector3(.87,.62+.05*pulse,-.38);poseLeg(l,a,k,h,p);return}if(l.fore){const k=new THREE.Vector3(a.x+.08,-.38,a.z),h=new THREE.Vector3(a.x+.16,-.74,a.z),p=new THREE.Vector3(a.x+.3,-.98,a.z);poseLeg(l,a,k,h,p)}else{const k=new THREE.Vector3(a.x-.5,-.36,a.z),h=new THREE.Vector3(a.x-.17,-.69,a.z),p=new THREE.Vector3(a.x+.1,-.82,a.z);poseLeg(l,a,k,h,p)}}
-function updateTail(t,activity){let a=spine.sacrum.clone().add(new THREE.Vector3(-.45,.12,0));for(let i=0;i<tail.length;i++){const back=.33-i*.012,drop=i<2?.02:-.055-i*.018,wag=Math.sin(t*2.9-i*.48)*(.05+.08*activity),b=a.clone().add(new THREE.Vector3(-back,drop,wag));place(tail[i],a,b);a=b}}
-function createRabbit(){const g=new THREE.Group(),body=ellipsoid(.48,.27,.3,1,0xe8ffd8),rump=ellipsoid(.31,.29,.29,1,0xe8ffd8),headR=ellipsoid(.23,.21,.2,1,0xe8ffd8);rump.position.set(-.34,.04,0);headR.position.set(.48,.18,0);g.add(body,rump,headR);const eg=new THREE.ConeGeometry(.055,.45,4,1),e1=wire(eg,0xe8ffd8),e2=wire(eg,0xe8ffd8);e1.position.set(.47,.53,.09);e2.position.set(.47,.53,-.09);g.add(e1,e2);const defs=[['FL',1,true],['FR',-1,true],['HL',1,false],['HR',-1,false]],rl=[];for(const[n,s,f]of defs){const u=bone(f?.023:.032,0xe8ffd8),lo=bone(f?.02:.028,0xe8ffd8),pa=bone(f?.017:.022,0xe8ffd8),pw=ellipsoid(f?.07:.1,.035,.05,1,0xe8ffd8);g.add(u,lo,pa,pw);rl.push({n,s,f,u,lo,pa,pw})}g.visible=false;return{g,body,rump,head:headR,e1,e2,legs:rl}}
-const rabbit=createRabbit();scene.add(rabbit.g);function rabbitPosition(t){if(t<24)return null;if(t<27){const u=(t-24)/3;return{x:10.4+u*2.5,z:-7.2+u*9.2}}const u=t-27;return{x:12.9+u*3.55,z:2+Math.min(3.8,u*.66)}}
-function rabbitLeg(l,c){const a=new THREE.Vector3(l.f?.28:-.34,-.02,l.s*.18);let k,h,p;if(l.f){if(c<.45){k=new THREE.Vector3(.34,-.15,l.s*.18);h=new THREE.Vector3(.48,-.28,l.s*.18);p=new THREE.Vector3(.62,-.36,l.s*.18)}else{k=new THREE.Vector3(.42,-.05,l.s*.18);h=new THREE.Vector3(.58,-.14,l.s*.18);p=new THREE.Vector3(.7,-.21,l.s*.18)}}else{if(c<.22){k=new THREE.Vector3(-.52,-.14,l.s*.18);h=new THREE.Vector3(-.18,-.31,l.s*.18);p=new THREE.Vector3(.02,-.4,l.s*.18)}else if(c<.68){k=new THREE.Vector3(-.32,.04,l.s*.18);h=new THREE.Vector3(-.78,-.09,l.s*.18);p=new THREE.Vector3(-.95,-.17,l.s*.18)}else{k=new THREE.Vector3(-.52,-.15,l.s*.18);h=new THREE.Vector3(-.2,-.31,l.s*.18);p=new THREE.Vector3(.02,-.4,l.s*.18)}}place(l.u,a,k);place(l.lo,k,h);place(l.pa,h,p);l.pw.position.copy(p)}
-function updateRabbit(t){const p=rabbitPosition(t);if(!p){rabbit.g.visible=false;return}rabbit.g.visible=true;const c=(t*1.5)%1,air=c>.18&&c<.72?Math.sin((c-.18)/.54*Math.PI):0,arc=.4*air,ground=terrainHeight(p.x,p.z);rabbit.g.position.set(p.x,ground+.48+arc,p.z);rabbit.g.rotation.y=-.22;rabbit.body.rotation.z=air?-.05:.08;rabbit.rump.rotation.z=air?-.08:.12;rabbit.head.rotation.z=air?-.03:.06;rabbit.legs.forEach(l=>rabbitLeg(l,c))}
-const TOTAL=34;let startTime=performance.now(),paused=false,pauseStamp=0,pauseAccum=0,soundOn=false,lastFoot=-1,lastPant=-1,lastRustle=-1;
-class SoundEngine{constructor(){this.ctx=null;this.master=null}async ensure(){if(!this.ctx){this.ctx=new(window.AudioContext||window.webkitAudioContext)();this.master=this.ctx.createGain();this.master.gain.value=0;this.master.connect(this.ctx.destination);const n=this.ctx.sampleRate*2,b=this.ctx.createBuffer(1,n,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;const s=this.ctx.createBufferSource(),f=this.ctx.createBiquadFilter(),g=this.ctx.createGain();s.buffer=b;s.loop=true;f.type='lowpass';f.frequency.value=500;g.gain.value=.022;s.connect(f).connect(g).connect(this.master);s.start()}if(this.ctx.state==='suspended')await this.ctx.resume()}setEnabled(v){if(this.master&&this.ctx)this.master.gain.setTargetAtTime(v?.4:0,this.ctx.currentTime,.02)}tone(){if(!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.frequency.value=660;g.gain.setValueAtTime(.09,this.ctx.currentTime+.04);g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+.2);o.connect(g).connect(this.master);o.start(this.ctx.currentTime+.04);o.stop(this.ctx.currentTime+.21)}noise(dur,gain,freq){if(!soundOn||!this.ctx)return;const n=Math.floor(this.ctx.sampleRate*dur),b=this.ctx.createBuffer(1,n,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=this.ctx.createBufferSource(),f=this.ctx.createBiquadFilter(),g=this.ctx.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=freq;f.Q.value=.8;g.gain.setValueAtTime(gain,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+dur);s.connect(f).connect(g).connect(this.master);s.start()}step(strong=false){this.noise(.08,strong?.18:.12,strong?150:220)}pant(){this.noise(.16,.08,1300)}rustle(){this.noise(.1,.055,2500)}}const audio=new SoundEngine();
-function phaseInfo(t){if(t<10)return['Running through the field','run'];if(t<12)return['Slowing to a controlled stop','stop'];if(t<15)return['Sitting naturally','sit'];if(t<19)return['Scratching behind the ear','scratch'];if(t<24)return['Panting and recovering','pant'];if(t<27)return['Rabbit passes — head turns','notice'];return['Chasing the rabbit','chase']}
-function wolfPosition(t){if(t<10)return{x:-21+t*2.65,z:Math.sin(t*.45)*.4,yaw:0};if(t<12){const u=(t-10)/2,e=1-Math.pow(1-u,3);return{x:5.5+2.4*e,z:0,yaw:0}}if(t<27)return{x:7.9,z:0,yaw:0};const u=t-27;return{x:7.9+u*3.15,z:Math.min(4.4,u*.72),yaw:-.22}}
-function updateWolf(t){const[,phase]=phaseInfo(t),wp=wolfPosition(t);wolfRoot.position.set(wp.x,terrainHeight(wp.x,wp.z)+1.08,wp.z);wolfRoot.rotation.set(0,wp.yaw,0);setSpine(t,phase);jaw.rotation.z=0;if(phase==='run'){wolfRoot.position.y+=Math.sin(t*11.2)*.035;legs.forEach(l=>runLeg(l,t,false))}else if(phase==='stop'){legs.forEach(l=>runLeg(l,t*.8,false))}else if(['sit','scratch','pant','notice'].includes(phase)){const e=Math.min(1,Math.max(0,(t-12)/2));wolfRoot.position.y-=.4*e;spine.sacrum.y-=.12*e;pelvis.position.copy(spine.sacrum);legs.forEach(l=>sitLeg(l,phase==='scratch',t));if(phase==='scratch'){neck.rotation.z=.08;head.position.set(.42,.12,0);head.rotation.z=.27;head.rotation.y=-.12}if(phase==='pant'){const b=.5+.5*Math.sin(t*4.6);jaw.rotation.z=-.16-.055*b}if(phase==='notice'){const rp=rabbitPosition(t);if(rp){const a=Math.atan2(rp.z-wp.z,rp.x-wp.x);neck.rotation.y=-a*.48;head.rotation.y=-a*.26}}}else{const tt=t-27;wolfRoot.position.y+=Math.abs(Math.sin(tt*7.3))*.075;legs.forEach(l=>runLeg(l,tt,true));jaw.rotation.z=-.08}updateTail(t,phase==='chase'?1:phase==='pant'?.45:.2)}
-function updateCamera(t){const wp=wolfPosition(t),target=new THREE.Vector3(wp.x+.15,terrainHeight(wp.x,wp.z)+1.15,wp.z),portrait=camera.aspect<.72?1.32:1;let a,h,d;if(t<10){const u=t/10;a=Math.PI+u*.85;h=2.5+u*2.1;d=8.8}else if(t<24){const u=(t-10)/14;a=Math.PI+.85+u*1.8;h=4.5-Math.sin(u*Math.PI)*1.5;d=9.2}else if(t<27){const u=(t-24)/3;a=3.0+u*.32;h=3.2;d=9}else{const u=t-27;a=3.4+Math.sin(u*.25)*.16;h=3.5;d=9.3}d*=portrait;camera.position.set(target.x+Math.cos(a)*d,target.y+h,target.z+Math.sin(a)*d);camera.lookAt(target)}
-function updateSound(t,phase){if(!soundOn)return;if(phase==='run'||phase==='chase'){const i=Math.floor(t*(phase==='chase'?4.4:3));if(i!==lastFoot){audio.step(phase==='chase');lastFoot=i}}if(phase==='pant'){const i=Math.floor((t-19)*2.3);if(i!==lastPant){audio.pant();lastPant=i}}if(phase==='notice'||phase==='chase'){const i=Math.floor(t*3.1);if(i!==lastRustle){audio.rustle();lastRustle=i}}}
-function currentSeconds(now){if(paused)return Math.min(TOTAL,(pauseStamp-startTime-pauseAccum)/1000);return((now-startTime-pauseAccum)/1000)%TOTAL}function frame(now){const t=currentSeconds(now),[label,phase]=phaseInfo(t);phaseEl.textContent=label;timeEl.textContent=`${t.toFixed(1).padStart(4,'0')} / ${TOTAL.toFixed(1)}`;progressEl.style.width=`${t/TOTAL*100}%`;updateWolf(t);updateRabbit(t);updateCamera(t);updateSound(t,phase);renderer.render(scene,camera);requestAnimationFrame(frame)}
-startBtn.addEventListener('click',async()=>{await audio.ensure();soundOn=true;audio.setEnabled(true);audio.tone();muteBtn.textContent='Sound: On';startTime=performance.now();pauseAccum=0;paused=false;pauseBtn.textContent='Pause';lastFoot=lastPant=lastRustle=-1});pauseBtn.addEventListener('click',()=>{if(!paused){paused=true;pauseStamp=performance.now();pauseBtn.textContent='Resume'}else{pauseAccum+=performance.now()-pauseStamp;paused=false;pauseBtn.textContent='Pause'}});muteBtn.addEventListener('click',async()=>{await audio.ensure();soundOn=!soundOn;audio.setEnabled(soundOn);if(soundOn)audio.tone();muteBtn.textContent=`Sound: ${soundOn?'On':'Off'}`});function resize(){const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);renderer.setPixelRatio(Math.min(devicePixelRatio||1,2))}addEventListener('resize',resize,{passive:true});requestAnimationFrame(frame);
+
+const $=id=>document.getElementById(id);
+const stage=$('stage'),phaseEl=$('phase'),timeEl=$('time'),progressEl=$('progress');
+const startBtn=$('start'),pauseBtn=$('pause'),muteBtn=$('mute');
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x05090b);
+scene.fog=new THREE.FogExp2(0x05090b,.018);
+
+const camera=new THREE.PerspectiveCamera(57,innerWidth/innerHeight,.05,180);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xaee8ff,0x173022,1.7));
+
+function terrainHeight(x,z){
+  return .12*Math.sin(x*.22)+.07*Math.sin(z*.72)+.04*Math.sin((x+z)*.46);
+}
+
+const terrainGeo=new THREE.PlaneGeometry(120,42,76,28);
+const terrainPos=terrainGeo.attributes.position;
+for(let i=0;i<terrainPos.count;i++){
+  const x=terrainPos.getX(i),z=terrainPos.getY(i);
+  terrainPos.setZ(i,terrainHeight(x,z));
+}
+const terrain=new THREE.Mesh(
+  terrainGeo,
+  new THREE.MeshBasicMaterial({color:0x315d50,wireframe:true,transparent:true,opacity:.46})
+);
+terrain.rotation.x=-Math.PI/2;
+scene.add(terrain);
+
+function wire(geometry,color=0x9af5d5,opacity=.92){
+  return new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color,wireframe:true,transparent:true,opacity}));
+}
+function bone(radius=.04,color=0xc4ffea){
+  return wire(new THREE.CylinderGeometry(radius,radius,1,7,1),color,.97);
+}
+function ellipsoid(rx,ry,rz,detail=1,color=0x9af5d5){
+  const m=wire(new THREE.IcosahedronGeometry(1,detail),color,.93);
+  m.scale.set(rx,ry,rz);
+  return m;
+}
+function placeSegment(mesh,a,b){
+  const d=b.clone().sub(a),len=Math.max(.001,d.length());
+  mesh.position.copy(a.clone().add(b).multiplyScalar(.5));
+  mesh.scale.set(1,len,1);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+}
+function addTree(x,z,s=1){
+  const g=new THREE.Group();
+  const tr=wire(new THREE.CylinderGeometry(.12*s,.18*s,2.1*s,6,1),0x4f9b78,.5);
+  const cr=wire(new THREE.ConeGeometry(.95*s,3.2*s,7,2),0x4f9b78,.38);
+  tr.position.y=1.05*s; cr.position.y=3.1*s; g.add(tr,cr);
+  g.position.set(x,terrainHeight(x,z),z); scene.add(g);
+}
+for(let i=0;i<48;i++){
+  const x=-48+i*2.05,z=(i%2?1:-1)*(9+(i%6)*1.1);
+  addTree(x,z,.65+(i%6)*.05);
+}
+
+/* ---------- WOLF: continuous flexible body ---------- */
+const wolfRoot=new THREE.Group();
+scene.add(wolfRoot);
+
+const BODY_RINGS=9,BODY_SIDES=12;
+const bodyPositions=new Float32Array(BODY_RINGS*BODY_SIDES*3);
+const bodyIndices=[];
+for(let r=0;r<BODY_RINGS-1;r++){
+  for(let s=0;s<BODY_SIDES;s++){
+    const n=(s+1)%BODY_SIDES;
+    const a=r*BODY_SIDES+s,b=(r+1)*BODY_SIDES+s,c=(r+1)*BODY_SIDES+n,d=r*BODY_SIDES+n;
+    bodyIndices.push(a,b,d,b,c,d);
+  }
+}
+const bodyGeo=new THREE.BufferGeometry();
+bodyGeo.setAttribute('position',new THREE.BufferAttribute(bodyPositions,3));
+bodyGeo.setIndex(bodyIndices);
+const bodyMesh=new THREE.Mesh(bodyGeo,new THREE.MeshBasicMaterial({color:0x9af5d5,wireframe:true,transparent:true,opacity:.94}));
+wolfRoot.add(bodyMesh);
+
+const spineCenters=Array.from({length:BODY_RINGS},()=>new THREE.Vector3());
+const baseX=[-1.32,-1.08,-.82,-.54,-.24,.08,.38,.67,.92];
+const baseY=[.02,.07,.12,.18,.25,.31,.36,.4,.42];
+const radiusY=[.36,.4,.44,.48,.51,.54,.57,.55,.49];
+const radiusZ=[.39,.43,.46,.49,.52,.55,.58,.57,.51];
+
+const spineLineGeo=new THREE.BufferGeometry();
+const spineLinePos=new Float32Array(BODY_RINGS*3);
+spineLineGeo.setAttribute('position',new THREE.BufferAttribute(spineLinePos,3));
+const spineLine=new THREE.Line(spineLineGeo,new THREE.LineBasicMaterial({color:0x68cfad,transparent:true,opacity:.48}));
+wolfRoot.add(spineLine);
+
+function updateBodySurface(){
+  const pos=bodyGeo.attributes.position;
+  for(let r=0;r<BODY_RINGS;r++){
+    const prev=spineCenters[Math.max(0,r-1)],next=spineCenters[Math.min(BODY_RINGS-1,r+1)];
+    const tangent=next.clone().sub(prev).normalize();
+    const side=new THREE.Vector3(0,0,1);
+    const up=new THREE.Vector3().crossVectors(side,tangent).normalize();
+    for(let s=0;s<BODY_SIDES;s++){
+      const ang=s/BODY_SIDES*Math.PI*2;
+      const v=spineCenters[r].clone()
+        .addScaledVector(up,Math.cos(ang)*radiusY[r])
+        .addScaledVector(side,Math.sin(ang)*radiusZ[r]);
+      const i=r*BODY_SIDES+s;
+      pos.setXYZ(i,v.x,v.y,v.z);
+    }
+    spineLinePos[r*3]=spineCenters[r].x;
+    spineLinePos[r*3+1]=spineCenters[r].y;
+    spineLinePos[r*3+2]=spineCenters[r].z;
+  }
+  pos.needsUpdate=true;
+  bodyGeo.computeVertexNormals();
+  spineLineGeo.attributes.position.needsUpdate=true;
+}
+
+const neckGroup=new THREE.Group();
+wolfRoot.add(neckGroup);
+const neckShell=wire(new THREE.CylinderGeometry(.27,.43,.92,8,2));
+neckShell.rotation.z=Math.PI/2;
+neckShell.position.x=.37;
+neckGroup.add(neckShell);
+
+const headGroup=new THREE.Group();
+neckGroup.add(headGroup);
+const skull=ellipsoid(.44,.36,.34,1);
+skull.scale.x=1.05;
+const cheek=ellipsoid(.29,.25,.28,1);
+cheek.position.set(.28,-.04,0);
+const muzzle=wire(new THREE.ConeGeometry(.22,.78,8,2));
+muzzle.rotation.z=-Math.PI/2;
+muzzle.position.set(.67,-.11,0);
+const jaw=wire(new THREE.BoxGeometry(.52,.085,.25));
+jaw.position.set(.57,-.27,0);
+headGroup.add(skull,cheek,muzzle,jaw);
+const earGeo=new THREE.ConeGeometry(.15,.5,4,1);
+const earL=wire(earGeo),earR=wire(earGeo);
+earL.position.set(-.13,.47,.22);earR.position.set(-.13,.47,-.22);
+headGroup.add(earL,earR);
+
+function createLeg(name,side,fore){
+  const upper=bone(.047),lower=bone(.041),distal=bone(.032),paw=ellipsoid(.16,.06,.095,1);
+  wolfRoot.add(upper,lower,distal,paw);
+  return{name,side,fore,upper,lower,distal,paw};
+}
+const legs=[
+  createLeg('FL',1,true),createLeg('FR',-1,true),
+  createLeg('HL',1,false),createLeg('HR',-1,false)
+];
+
+const tail=[];
+for(let i=0;i<8;i++){
+  const b=bone(.06-i*.0055);
+  wolfRoot.add(b);tail.push(b);
+}
+
+function setSpine(t,phase){
+  let flex=0,sideWave=0;
+  if(phase==='run'){
+    flex=Math.sin(t*5.6)*.045;
+    sideWave=Math.sin(t*2.8)*.012;
+  }else if(phase==='chase'){
+    flex=Math.sin((t-27)*7.3)*.12;
+    sideWave=Math.sin((t-27)*3.65)*.025;
+  }else if(phase==='stop'){
+    flex=.02;
+  }else if(['sit','scratch','pant','notice'].includes(phase)){
+    flex=-.07;
+  }
+
+  for(let i=0;i<BODY_RINGS;i++){
+    const q=i/(BODY_RINGS-1);
+    let x=baseX[i],y=baseY[i],z=sideWave*Math.sin(q*Math.PI);
+    y += flex*Math.sin(q*Math.PI)*.85;
+
+    if(['sit','scratch','pant','notice'].includes(phase)){
+      const rear=1-q;
+      y-=.24*rear*rear;
+      x+=.06*rear;
+    }
+    spineCenters[i].set(x,y,z);
+  }
+  updateBodySurface();
+
+  const neckBase=spineCenters[BODY_RINGS-1];
+  neckGroup.position.copy(neckBase);
+  neckGroup.rotation.set(0,0,-.18-flex*.45);
+  headGroup.position.set(.76,.12,0);
+  headGroup.rotation.set(0,0,0);
+}
+
+function shoulderJoint(leg){
+  const c=spineCenters[7];
+  return c.clone().add(new THREE.Vector3(-.02,-.27,leg.side*.42));
+}
+function hipJoint(leg){
+  const c=spineCenters[1];
+  return c.clone().add(new THREE.Vector3(.02,-.25,leg.side*.36));
+}
+function setLegPose(leg,a,j1,j2,p){
+  placeSegment(leg.upper,a,j1);
+  placeSegment(leg.lower,j1,j2);
+  placeSegment(leg.distal,j2,p);
+  leg.paw.position.copy(p);
+  leg.paw.rotation.z=-.08;
+}
+
+function runLeg(leg,t,fast=false){
+  const speed=fast?7.3:5.6;
+  const phaseOffset=(leg.fore?0:Math.PI)+(leg.side<0?Math.PI:0);
+  const ph=t*speed+phaseOffset;
+  const stride=Math.sin(ph);
+  const lift=Math.max(0,Math.sin(ph+.5));
+  const a=leg.fore?shoulderJoint(leg):hipJoint(leg);
+  const ground=-1.02;
+
+  if(leg.fore){
+    const p=new THREE.Vector3(a.x+stride*(fast?.82:.67),ground+lift*(fast?.34:.27),a.z);
+    const wrist=p.clone().add(new THREE.Vector3(-.13,.17,0));
+    const elbow=new THREE.Vector3(a.x-.25+stride*.22,-.28+lift*.18,a.z);
+    setLegPose(leg,a,elbow,wrist,p);
+  }else{
+    const p=new THREE.Vector3(a.x+stride*(fast?.78:.63),ground+lift*(fast?.38:.3),a.z);
+    const hock=p.clone().add(new THREE.Vector3(-.22,.2,0));
+    const stifle=new THREE.Vector3(a.x+.28+stride*.18,-.25+lift*.16,a.z);
+    setLegPose(leg,a,stifle,hock,p);
+  }
+}
+
+function sitLeg(leg,scratch,t){
+  const a=leg.fore?shoulderJoint(leg):hipJoint(leg);
+
+  if(leg.name==='HR'&&scratch){
+    const pulse=.5+.5*Math.sin(t*15.5);
+    const stifle=new THREE.Vector3(a.x+.18,a.y+.22,-.82);
+    const hock=new THREE.Vector3(.45,.62,-.96);
+    const paw=new THREE.Vector3(1.48,.76+.055*pulse,-.66);
+    setLegPose(leg,a,stifle,hock,paw);
+    leg.paw.rotation.set(.35,0,-.35);
+    return;
+  }
+
+  if(leg.fore){
+    const elbow=new THREE.Vector3(a.x-.08,-.34,a.z);
+    const wrist=new THREE.Vector3(a.x+.07,-.72,a.z);
+    const p=new THREE.Vector3(a.x+.22,-1.0,a.z);
+    setLegPose(leg,a,elbow,wrist,p);
+  }else{
+    const stifle=new THREE.Vector3(a.x+.28,-.28,a.z);
+    const hock=new THREE.Vector3(a.x-.2,-.62,a.z);
+    const p=new THREE.Vector3(a.x+.04,-.82,a.z);
+    setLegPose(leg,a,stifle,hock,p);
+  }
+}
+
+function updateTail(t,activity){
+  let a=spineCenters[0].clone().add(new THREE.Vector3(-.18,.06,0));
+  for(let i=0;i<tail.length;i++){
+    const len=.3-i*.012;
+    const wag=Math.sin(t*2.8-i*.42)*(.045+.07*activity);
+    const drop=-.035-i*.02;
+    const b=a.clone().add(new THREE.Vector3(-len,drop,wag));
+    placeSegment(tail[i],a,b);
+    a=b;
+  }
+}
+
+/* ---------- RABBIT ---------- */
+function createRabbit(){
+  const g=new THREE.Group();
+  const body=ellipsoid(.48,.27,.3,1,0xe8ffd8);
+  const rump=ellipsoid(.31,.29,.29,1,0xe8ffd8);rump.position.set(-.34,.04,0);
+  const head=ellipsoid(.23,.21,.2,1,0xe8ffd8);head.position.set(.48,.18,0);
+  g.add(body,rump,head);
+  const eg=new THREE.ConeGeometry(.055,.45,4,1);
+  const e1=wire(eg,0xe8ffd8),e2=wire(eg,0xe8ffd8);
+  e1.position.set(.47,.53,.09);e2.position.set(.47,.53,-.09);g.add(e1,e2);
+  const legs=[];
+  for(const [name,side,fore] of [['FL',1,true],['FR',-1,true],['HL',1,false],['HR',-1,false]]){
+    const upper=bone(fore?.022:.03,0xe8ffd8);
+    const lower=bone(fore?.019:.027,0xe8ffd8);
+    const distal=bone(fore?.016:.021,0xe8ffd8);
+    const paw=ellipsoid(fore?.07:.1,.033,.048,1,0xe8ffd8);
+    g.add(upper,lower,distal,paw);legs.push({name,side,fore,upper,lower,distal,paw});
+  }
+  g.visible=false;
+  return{g,body,rump,head,e1,e2,legs};
+}
+const rabbit=createRabbit();scene.add(rabbit.g);
+
+function rabbitPosition(t){
+  if(t<24)return null;
+  if(t<27){
+    const u=(t-24)/3;
+    return{x:10.4+u*2.5,z:-7.2+u*9.2};
+  }
+  const u=t-27;
+  return{x:12.9+u*3.55,z:2+Math.min(3.8,u*.66)};
+}
+
+function rabbitLegPose(l,c){
+  const a=new THREE.Vector3(l.fore?.28:-.34,-.02,l.side*.18);
+  let j1,j2,p;
+  if(l.fore){
+    if(c<.45){
+      j1=new THREE.Vector3(.34,-.15,l.side*.18);
+      j2=new THREE.Vector3(.48,-.28,l.side*.18);
+      p=new THREE.Vector3(.62,-.36,l.side*.18);
+    }else{
+      j1=new THREE.Vector3(.42,-.05,l.side*.18);
+      j2=new THREE.Vector3(.58,-.14,l.side*.18);
+      p=new THREE.Vector3(.7,-.21,l.side*.18);
+    }
+  }else{
+    if(c<.22){
+      j1=new THREE.Vector3(-.52,-.14,l.side*.18);
+      j2=new THREE.Vector3(-.18,-.31,l.side*.18);
+      p=new THREE.Vector3(.02,-.4,l.side*.18);
+    }else if(c<.68){
+      j1=new THREE.Vector3(-.32,.04,l.side*.18);
+      j2=new THREE.Vector3(-.78,-.09,l.side*.18);
+      p=new THREE.Vector3(-.95,-.17,l.side*.18);
+    }else{
+      j1=new THREE.Vector3(-.52,-.15,l.side*.18);
+      j2=new THREE.Vector3(-.18,-.31,l.side*.18);
+      p=new THREE.Vector3(.04,-.4,l.side*.18);
+    }
+  }
+  placeSegment(l.upper,a,j1);placeSegment(l.lower,j1,j2);placeSegment(l.distal,j2,p);
+  l.paw.position.copy(p);
+}
+
+function updateRabbit(t){
+  const rp=rabbitPosition(t);
+  if(!rp){rabbit.g.visible=false;return;}
+  rabbit.g.visible=true;
+  const c=(t*1.55)%1;
+  const airborne=c>.16&&c<.72;
+  const arc=airborne?.38*Math.sin((c-.16)/.56*Math.PI):0;
+  rabbit.g.position.set(rp.x,terrainHeight(rp.x,rp.z)+.48+arc,rp.z);
+  rabbit.g.rotation.y=-.22;
+  rabbit.body.rotation.z=c<.2?.1:airborne?-.07:.05;
+  rabbit.rump.rotation.z=c<.2?.15:-.04;
+  rabbit.head.rotation.z=airborne?-.04:.06;
+  rabbit.e1.rotation.z=rabbit.e2.rotation.z=airborne?-.14:-.05;
+  rabbit.legs.forEach(l=>rabbitLegPose(l,c));
+}
+
+/* ---------- TIMELINE / MOTION ---------- */
+const TOTAL=34;
+let startTime=performance.now(),paused=false,pauseStamp=0,pauseAccum=0;
+let soundOn=false,lastFoot=-1,lastPant=-1,lastRustle=-1;
+
+function phaseInfo(t){
+  if(t<10)return['Running through the field','run'];
+  if(t<12)return['Slowing to a controlled stop','stop'];
+  if(t<15)return['Sitting naturally','sit'];
+  if(t<19)return['Scratching behind the ear','scratch'];
+  if(t<24)return['Panting and recovering','pant'];
+  if(t<27)return['Rabbit passes — head turns','notice'];
+  return['Chasing the rabbit','chase'];
+}
+function wolfPosition(t){
+  if(t<10)return{x:-21+t*2.65,z:Math.sin(t*.45)*.45,yaw:0};
+  if(t<12){
+    const u=(t-10)/2,e=1-Math.pow(1-u,3);
+    return{x:5.5+2.4*e,z:0,yaw:0};
+  }
+  if(t<27)return{x:7.9,z:0,yaw:0};
+  const u=t-27;
+  return{x:7.9+u*3.15,z:Math.min(4.4,u*.72),yaw:-.22};
+}
+
+function updateWolf(t){
+  const [,phase]=phaseInfo(t),wp=wolfPosition(t);
+  wolfRoot.position.set(wp.x,terrainHeight(wp.x,wp.z)+1.08,wp.z);
+  wolfRoot.rotation.set(0,wp.yaw,0);
+  headGroup.rotation.set(0,0,0);
+  jaw.rotation.z=0;
+  bodyMesh.scale.y=1;
+  neckGroup.rotation.y=0;
+
+  setSpine(t,phase);
+
+  if(phase==='run'){
+    wolfRoot.position.y+=Math.sin(t*11.2)*.035;
+    legs.forEach(l=>runLeg(l,t,false));
+  }else if(phase==='stop'){
+    const u=(t-10)/2;
+    legs.forEach(l=>runLeg(l,t*.8,false));
+    wolfRoot.position.y-=.04*u;
+  }else if(['sit','scratch','pant','notice'].includes(phase)){
+    const sitEase=Math.min(1,Math.max(0,(t-12)/2.1));
+    wolfRoot.position.y-=.32*sitEase;
+    legs.forEach(l=>sitLeg(l,phase==='scratch',t));
+
+    if(phase==='scratch'){
+      headGroup.rotation.z=.10+.035*Math.sin(t*4.5);
+      neckGroup.rotation.y=.08*Math.sin(t*2);
+    }
+    if(phase==='pant'){
+      const b=.5+.5*Math.sin(t*4.6);
+      jaw.rotation.z=-.15-.055*b;
+      bodyMesh.scale.y=1+.018*b;
+    }
+    if(phase==='notice'){
+      const rp=rabbitPosition(t);
+      if(rp){
+        const ang=Math.atan2(rp.z-wp.z,rp.x-wp.x);
+        neckGroup.rotation.y=-ang*.45;
+        headGroup.rotation.y=-ang*.35;
+      }
+    }
+  }else if(phase==='chase'){
+    const tt=t-27;
+    wolfRoot.position.y+=Math.abs(Math.sin(tt*7.3))*.08;
+    legs.forEach(l=>runLeg(l,tt,true));
+    jaw.rotation.z=-.08;
+  }
+  updateTail(t,phase==='chase'?1:phase==='pant'?.45:.2);
+}
+
+function updateCamera(t){
+  const wp=wolfPosition(t);
+  const target=new THREE.Vector3(wp.x,terrainHeight(wp.x,wp.z)+1.15,wp.z);
+  let a,h,d;
+  if(t<10){
+    const u=t/10;a=Math.PI+u*.9;h=2.0+u*2.2;d=8.2;
+  }else if(t<24){
+    const u=(t-10)/14;a=Math.PI+.9+u*2.0;h=4.2-Math.sin(u*Math.PI)*1.4;d=7.7;
+  }else if(t<27){
+    const u=(t-24)/3;a=3.0+u*.3;h=3.0;d=7.4;
+  }else{
+    const u=t-27;a=3.4+Math.sin(u*.28)*.16;h=3.2+Math.sin(u*.4)*.35;d=8.0;
+  }
+  if(innerHeight>innerWidth)d*=1.28;
+  camera.position.set(target.x+Math.cos(a)*d,target.y+h,target.z+Math.sin(a)*d);
+  camera.lookAt(target);
+}
+
+/* ---------- SOUND ---------- */
+class SoundEngine{
+  constructor(){this.ctx=null;this.master=null;}
+  async ensure(){
+    if(!this.ctx){
+      this.ctx=new (window.AudioContext||window.webkitAudioContext)();
+      this.master=this.ctx.createGain();this.master.gain.value=0;this.master.connect(this.ctx.destination);
+      const n=this.ctx.sampleRate*2,b=this.ctx.createBuffer(1,n,this.ctx.sampleRate),d=b.getChannelData(0);
+      for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+      const src=this.ctx.createBufferSource(),f=this.ctx.createBiquadFilter(),g=this.ctx.createGain();
+      src.buffer=b;src.loop=true;f.type='lowpass';f.frequency.value=520;g.gain.value=.025;
+      src.connect(f).connect(g).connect(this.master);src.start();
+    }
+    if(this.ctx.state==='suspended')await this.ctx.resume();
+  }
+  setEnabled(on){if(this.master&&this.ctx)this.master.gain.setTargetAtTime(on?.38:0,this.ctx.currentTime,.02);}
+  tone(){
+    if(!this.ctx)return;
+    const o=this.ctx.createOscillator(),g=this.ctx.createGain();
+    o.frequency.value=660;g.gain.setValueAtTime(.09,this.ctx.currentTime+.04);
+    g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+.2);
+    o.connect(g).connect(this.master);o.start(this.ctx.currentTime+.04);o.stop(this.ctx.currentTime+.21);
+  }
+  noise(dur=.09,gain=.12,freq=500){
+    if(!soundOn||!this.ctx)return;
+    const n=Math.floor(this.ctx.sampleRate*dur),b=this.ctx.createBuffer(1,n,this.ctx.sampleRate),d=b.getChannelData(0);
+    for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+    const s=this.ctx.createBufferSource(),f=this.ctx.createBiquadFilter(),g=this.ctx.createGain();
+    s.buffer=b;f.type='bandpass';f.frequency.value=freq;f.Q.value=.8;
+    g.gain.setValueAtTime(gain,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,this.ctx.currentTime+dur);
+    s.connect(f).connect(g).connect(this.master);s.start();
+  }
+  step(strong=false){this.noise(.08,strong?.18:.12,strong?150:220);}
+  pant(){this.noise(.16,.08,1300);}
+  rustle(){this.noise(.1,.055,2500);}
+}
+const audio=new SoundEngine();
+
+function updateSound(t,phase){
+  if(!soundOn)return;
+  if(phase==='run'||phase==='chase'){
+    const i=Math.floor(t*(phase==='chase'?4.4:3));
+    if(i!==lastFoot){audio.step(phase==='chase');lastFoot=i;}
+  }
+  if(phase==='pant'){
+    const i=Math.floor((t-19)*2.3);
+    if(i!==lastPant){audio.pant();lastPant=i;}
+  }
+  if(phase==='notice'||phase==='chase'){
+    const i=Math.floor(t*3.1);
+    if(i!==lastRustle){audio.rustle();lastRustle=i;}
+  }
+}
+
+function currentSeconds(now){
+  if(paused)return Math.min(TOTAL,(pauseStamp-startTime-pauseAccum)/1000);
+  return((now-startTime-pauseAccum)/1000)%TOTAL;
+}
+function frame(now){
+  const t=currentSeconds(now),[label,phase]=phaseInfo(t);
+  phaseEl.textContent=label;
+  timeEl.textContent=`${t.toFixed(1).padStart(4,'0')} / ${TOTAL.toFixed(1)}`;
+  progressEl.style.width=`${t/TOTAL*100}%`;
+  updateWolf(t);updateRabbit(t);updateCamera(t);updateSound(t,phase);
+  renderer.render(scene,camera);
+  requestAnimationFrame(frame);
+}
+
+startBtn.addEventListener('click',async()=>{
+  await audio.ensure();soundOn=true;audio.setEnabled(true);audio.tone();
+  muteBtn.textContent='Sound: On';
+  startTime=performance.now();pauseAccum=0;paused=false;pauseBtn.textContent='Pause';
+  lastFoot=lastPant=lastRustle=-1;
+});
+pauseBtn.addEventListener('click',()=>{
+  if(!paused){paused=true;pauseStamp=performance.now();pauseBtn.textContent='Resume';}
+  else{pauseAccum+=performance.now()-pauseStamp;paused=false;pauseBtn.textContent='Pause';}
+});
+muteBtn.addEventListener('click',async()=>{
+  await audio.ensure();soundOn=!soundOn;audio.setEnabled(soundOn);
+  if(soundOn)audio.tone();
+  muteBtn.textContent=`Sound: ${soundOn?'On':'Off'}`;
+});
+
+function resize(){
+  const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);
+  camera.aspect=w/h;camera.updateProjectionMatrix();
+  renderer.setSize(w,h);renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+}
+addEventListener('resize',resize,{passive:true});
+requestAnimationFrame(frame);
 </script>
-</body></html>
+</body>
+</html>
