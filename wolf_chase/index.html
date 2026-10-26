@@ -189,7 +189,7 @@
       async ensure(){
         if(!this.ctx){
           this.ctx=new (window.AudioContext||window.webkitAudioContext)();
-          this.master=this.ctx.createGain(); this.master.gain.value=.32; this.master.connect(this.ctx.destination);
+          this.master=this.ctx.createGain(); this.master.gain.value=0; this.master.connect(this.ctx.destination);
           const len=this.ctx.sampleRate*2,buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate),data=buf.getChannelData(0);
           for(let i=0;i<len;i++)data[i]=Math.random()*2-1;
           const src=this.ctx.createBufferSource(); src.buffer=buf; src.loop=true;
@@ -199,6 +199,7 @@
         }
         if(this.ctx.state==='suspended')await this.ctx.resume();
       }
+      setEnabled(on){if(this.master&&this.ctx)this.master.gain.setTargetAtTime(on?.32:0,this.ctx.currentTime,.02);}
       noiseBurst(duration=.09,gain=.12,low=180,high=900){
         if(!soundOn||!this.ctx)return;
         const n=Math.max(1,Math.floor(this.ctx.sampleRate*duration)),buf=this.ctx.createBuffer(1,n,this.ctx.sampleRate),data=buf.getChannelData(0);
@@ -332,9 +333,14 @@
       wolf.root.scale.setScalar(1);
       wolf.root.rotation.z=0;
       wolf.neck.rotation.y=0;
+      wolf.neck.rotation.z=-.23;
       wolf.head.rotation.y=0;
+      wolf.head.rotation.z=0;
       wolf.lowerJaw.rotation.z=0;
+      wolf.body.position.y=0;
+      wolf.body.rotation.z=0;
       wolf.body.scale.set(1.65,.72,.7);
+      wolf.chest.position.y=.1;
       wolf.chest.scale.set(.9,1.05,.86);
       wolf.pelvis.position.y=-.02;
 
@@ -426,7 +432,7 @@
     }
 
     startBtn.addEventListener('click',async()=>{
-      await audio.ensure(); soundOn=true; muteBtn.textContent='Sound: On';
+      await audio.ensure(); soundOn=true; audio.setEnabled(true); muteBtn.textContent='Sound: On';
       startTime=performance.now(); pauseAccum=0; paused=false; pauseBtn.textContent='Pause'; lastFoot=lastPant=lastRustle=-1;
     });
     pauseBtn.addEventListener('click',()=>{
@@ -434,7 +440,7 @@
       else{pauseAccum+=performance.now()-pauseStamp;paused=false;pauseBtn.textContent='Pause';}
     });
     muteBtn.addEventListener('click',async()=>{
-      await audio.ensure(); soundOn=!soundOn; muteBtn.textContent=`Sound: ${soundOn?'On':'Off'}`;
+      await audio.ensure(); soundOn=!soundOn; audio.setEnabled(soundOn); muteBtn.textContent=`Sound: ${soundOn?'On':'Off'}`;
     });
 
     function resize(){
