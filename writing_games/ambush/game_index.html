@@ -1,4 +1,93 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ambush — Writing Game</title><style>:root{--bg:#f6f1e8;--ink:#24211d;--card:#fffdf8;--accent:#8c3b2d;--muted:#6d665e;--line:#d9d0c5;--danger:#d84b32}*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--ink)}main{max-width:1200px;margin:auto;padding:16px}.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}h1{margin:.1em 0;font-size:clamp(2rem,7vw,3.5rem)}h2{margin-top:0}.tag,.label{font-size:.78rem;text-transform:uppercase;font-weight:800;letter-spacing:.07em;color:var(--accent)}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.box{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.big{font-size:1.1rem;font-weight:750}select,input{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;background:#fff}.controls{display:flex;gap:10px;flex-wrap:wrap}button{min-height:46px;border:0;border-radius:12px;padding:11px 16px;background:var(--accent);color:#fff;font:inherit;font-weight:800;cursor:pointer}button.secondary{background:#ded5ca;color:var(--ink)}button:disabled{opacity:.45}.ambush{font-size:clamp(1.2rem,4vw,1.8rem);font-weight:800;padding:20px;border:2px dashed var(--accent);border-radius:16px;background:#fff7f2}.timerWrap{display:grid;place-items:center;margin:14px}.timer{width:min(52vw,220px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;border:8px solid var(--accent);background:#f4ded6;font-size:clamp(2rem,9vw,4.2rem);font-weight:900}.timer.running{animation:beat 1s ease-in-out infinite}.timer.warning{border-color:var(--danger);background:#ffd4ca;animation:beat .45s ease-in-out infinite}.stage{font-weight:900;color:var(--accent)}@keyframes beat{50%{transform:scale(1.055)}}@media(prefers-reduced-motion:reduce){.timer.running,.timer.warning{animation:none}}@media(max-width:650px){main{padding:10px}.grid{grid-template-columns:1fr}button{width:100%}}</style></head><body><main><section class="panel"><div class="tag">Core concept: adapting to escalating reversal</div><h1>Ambush</h1><p><strong>Goal:</strong> Keep one scene coherent as surprise pressure moves through four deliberate stages: obstacle, reversal, cost, then forced choice. Each new ambush must materially change what the character can do next.</p></section><section class="panel"><label class="label" for="scenario">Choose scenario</label><select id="scenario"></select><div class="grid" style="margin-top:12px"><div class="box"><div class="label">Character</div><div id="character" class="big"></div></div><div class="box"><div class="label">Goal</div><div id="goal" class="big"></div></div><div class="box"><div class="label">Setting</div><div id="setting" class="big"></div></div><div class="box"><div class="label">Starting problem</div><div id="problem" class="big"></div></div></div><div class="controls" style="margin-top:12px"><button id="random">Random scenario</button></div></section><section class="panel"><h2>Ambush timer</h2><div class="grid"><label>Minutes<input id="minutes" type="number" min="0" max="60" value="2"></label><label>Seconds<input id="seconds" type="number" min="0" max="59" value="0"></label></div><div class="timerWrap"><div id="timer" class="timer" aria-live="polite" aria-atomic="true">02:00</div></div><div class="controls"><button id="start">Start countdown</button><button id="pause" class="secondary" disabled>Pause</button><button id="reset" class="secondary">Reset timer</button></div></section><section class="panel"><div class="stage">Stage <span id="round">0</span> of 4 · <span id="stageName">Stable scene</span></div><p id="stageHelp">Begin the scene. Establish the character pursuing the goal through the starting problem.</p><div id="ambush" class="ambush" aria-live="assertive">Your scene is stable. For now.</div><div class="controls" style="margin-top:12px"><button id="hit">AMBUSH NOW</button><button id="restart" class="secondary">Restart scenario</button></div></section><section class="panel"><h2>Completion test</h2><p>By the fourth ambush, the character should have to sacrifice something meaningful. If an ambush could be ignored and the scene continue unchanged, strengthen its effect on the goal.</p></section></main><script>const scenarios=[
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ambush — Writing Game</title>
+<style>
+:root{--bg:#f6f1e8;--ink:#24211d;--card:#fffdf8;--accent:#8c3b2d;--muted:#6d665e;--line:#d9d0c5;--danger:#d84b32}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:1200px;margin:auto;padding:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
+h1{margin:.1em 0;font-size:clamp(2rem,7vw,3.5rem)}
+h2{margin-top:0}
+.tag,.label{font-size:.78rem;text-transform:uppercase;font-weight:800;letter-spacing:.07em;color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.box{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}
+.big{font-size:1.1rem;font-weight:750}
+select,input{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;background:#fff}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+button{min-height:46px;border:0;border-radius:12px;padding:11px 16px;background:var(--accent);color:#fff;font:inherit;font-weight:800;cursor:pointer}
+button.secondary{background:#ded5ca;color:var(--ink)}
+button:disabled,select:disabled,input:disabled{opacity:.55;cursor:not-allowed}
+.ambush{font-size:clamp(1.2rem,4vw,1.8rem);font-weight:800;padding:20px;border:2px dashed var(--accent);border-radius:16px;background:#fff7f2}
+.timerWrap{display:grid;place-items:center;margin:14px}
+.timer{width:min(52vw,220px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;border:8px solid var(--accent);background:#f4ded6;font-size:clamp(2rem,9vw,4.2rem);font-weight:900}
+.timer.running{animation:beat 1s ease-in-out infinite}
+.timer.warning{border-color:var(--danger);background:#ffd4ca;animation:beat .45s ease-in-out infinite}
+.stage{font-weight:900;color:var(--accent)}
+.status{font-weight:800;margin-top:10px}
+@keyframes beat{50%{transform:scale(1.055)}}
+@media(prefers-reduced-motion:reduce){.timer.running,.timer.warning{animation:none}}
+@media(max-width:650px){main{padding:10px}.grid{grid-template-columns:1fr}button{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<section class="panel">
+<div class="tag">Core concept: adapting to escalating reversal</div>
+<h1>Ambush</h1>
+<p><strong>Goal:</strong> Keep one scene coherent as surprise pressure changes what the character can do next. Choose how many authored stages you want to play; the same writing time applies to the initial scenario and to every revealed stage.</p>
+</section>
+
+<section class="panel">
+<label class="label" for="scenario">Choose scenario</label>
+<select id="scenario"></select>
+<div class="grid" style="margin-top:12px">
+<div class="box"><div class="label">Character</div><div id="character" class="big"></div></div>
+<div class="box"><div class="label">Goal</div><div id="goal" class="big"></div></div>
+<div class="box"><div class="label">Setting</div><div id="setting" class="big"></div></div>
+<div class="box"><div class="label">Starting problem</div><div id="problem" class="big"></div></div>
+</div>
+<div class="controls" style="margin-top:12px"><button id="random">Random scenario</button></div>
+</section>
+
+<section class="panel">
+<h2>Game setup</h2>
+<div class="grid">
+<label>Number of stages<select id="stages"></select></label>
+<label>Minutes per writing period<input id="minutes" type="number" min="0" max="60" value="2"></label>
+<label>Seconds per writing period<input id="seconds" type="number" min="0" max="59" value="0"></label>
+</div>
+<p id="setupHelp">The initial scenario gets the full timer first. Then each selected stage is revealed and gets the full timer again.</p>
+<div class="timerWrap"><div id="timer" class="timer" aria-live="polite" aria-atomic="true">02:00</div></div>
+<div class="controls">
+<button id="start">Start game</button>
+<button id="pause" class="secondary" disabled>Pause</button>
+<button id="reset" class="secondary">Reset current timer</button>
+</div>
+</section>
+
+<section class="panel">
+<div class="stage"><span id="progress">Initial scenario · 0 of 1 stages revealed</span> · <span id="stageName">Stable scene</span></div>
+<p id="stageHelp">Begin the scene. Establish the character pursuing the goal through the starting problem.</p>
+<div id="ambush" class="ambush" aria-live="assertive">Your scene is stable. For now.</div>
+<div id="status" class="status" aria-live="polite">Ready to begin the initial writing period.</div>
+<div class="controls" style="margin-top:12px">
+<button id="hit">NEXT STAGE NOW</button>
+<button id="restart" class="secondary">Restart scenario</button>
+</div>
+</section>
+
+<section class="panel">
+<h2>Completion test</h2>
+<p>By the final selected stage, the scene should be meaningfully different from where it began. If a revealed ambush could be ignored and the scene continue unchanged, strengthen its effect on the goal.</p>
+</section>
+</main>
+
+<script>
+const scenarios=[
 {c:'a courier who hates being late',g:'deliver a package before anyone notices it is missing',s:'a crowded downtown hotel',p:'the intended recipient is not where expected',a:['The service elevator is shut down and security blocks the fastest route.','The character learns the room number they were given belongs to someone else.','Reaching the real recipient now requires exposing how the package was obtained.','Choose: protect the secret and miss the delivery, or complete the delivery and expose the truth.']},
 {c:'a teacher protecting a student',g:'get the student safely through an awkward meeting',s:'a nearly empty school after hours',p:'someone important is already angry',a:['The person who was meant to support the student refuses to attend.','The teacher learns the angry person has evidence the student may have lied.','Defending the student now risks the teacher’s own credibility.','Choose: protect the student publicly, or preserve credibility by admitting what is uncertain.']},
 {c:'a nervous first-time manager',g:'open a public event on time',s:'a community hall',p:'the person with key information has not arrived',a:['A required room is suddenly unavailable.','The missing person texts that the information they supplied earlier was wrong.','Fixing the problem means publicly blaming a volunteer who followed those instructions.','Choose: delay the event and protect the volunteer, or open on time and let the volunteer take the blame.']},
@@ -28,5 +117,222 @@
 {c:'a committee chair trying to finish a vote',g:'reach a decision before the meeting room closes',s:'a community centre',p:'the group is evenly split',a:['The caretaker announces the building closes thirty minutes earlier tonight.','A member who was expected to break the tie reveals a conflict of interest and abstains.','The rules allow an emergency chair’s vote, but using it will make the chair personally responsible for the outcome.','Choose: cast the deciding vote, or postpone and accept the practical cost of no decision.']},
 {c:'a sibling returning a borrowed car',g:'get the car home before its owner needs it',s:'a suburban service station',p:'a warning light comes on',a:['The mechanic says driving farther could turn a minor fault into major damage.','The owner calls to say they need the car in forty minutes for an appointment.','The only quick repair uses the shop’s last compatible part, already reserved for another customer whose car is disabled.','Choose: claim the part and save the appointment, or leave the car for proper repair and admit the delay.']},
 {c:'a student preparing a group presentation',g:'submit the slides before the deadline',s:'a school computer lab',p:'one teammate has not delivered their section',a:['The submission portal closes in twenty minutes.','The teammate messages that their research source was wrong and asks the student not to use the draft.','Replacing the section properly means cutting another teammate’s finished material to fit the time limit.','Choose: submit an incomplete presentation, or remove good work from one teammate to repair another’s mistake.']},
-{c:'a neighbour organizing a block sale',g:'open on time without breaking the permit conditions',s:'a residential street',p:'a vendor sets up outside the approved area',a:['A municipal inspector arrives earlier than scheduled.','The vendor shows an old map from the organizer that appears to authorize the wrong location.','Correcting the layout requires moving several other tables after sellers have already unpacked.','Choose: admit the organizer supplied the outdated map and delay opening, or leave the layout and risk the permit.']}];
-const stageNames=['Obstacle','Reversal','Cost','Forced choice'];const stageHelp=['The existing plan becomes harder.','An assumption or tactic proves wrong.','Continuing now harms or risks something else.','The character must sacrifice one meaningful outcome.'];const $=id=>document.getElementById(id);let round=0,remaining=120,timerId=null,running=false,audioCtx=null;function load(random=false){if(random)$('scenario').value=Math.floor(Math.random()*scenarios.length);const x=scenarios[$('scenario').value];$('character').textContent=x.c;$('goal').textContent=x.g;$('setting').textContent=x.s;$('problem').textContent=x.p;round=0;$('round').textContent='0';$('stageName').textContent='Stable scene';$('stageHelp').textContent='Begin the scene. Establish the character pursuing the goal through the starting problem.';$('ambush').textContent='Your scene is stable. For now.';$('hit').disabled=false;resetTimer()}scenarios.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+x.c+' — '+x.g;$('scenario').appendChild(o)});function configured(){return Math.max(0,Math.min(60,+$('minutes').value||0))*60+Math.max(0,Math.min(59,+$('seconds').value||0))}function fmt(n){return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}function visual(){$('timer').textContent=fmt(remaining);$('timer').classList.toggle('warning',running&&remaining<=3&&remaining>0);$('timer').classList.toggle('running',running&&remaining>3)}function stop(){if(timerId)clearInterval(timerId);timerId=null;running=false;$('start').disabled=false;$('pause').disabled=true;visual()}function resetTimer(){stop();remaining=configured();visual()}function audio(){if(!audioCtx){const C=window.AudioContext||window.webkitAudioContext;if(C)audioCtx=new C()}if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume()}function tone(f,d){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),n=audioCtx.currentTime;o.frequency.value=f;g.gain.setValueAtTime(.1,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g).connect(audioCtx.destination);o.start();o.stop(n+d)}function hit(){if(round>=4)return;const x=scenarios[$('scenario').value];$('ambush').textContent=x.a[round];$('stageName').textContent=stageNames[round];$('stageHelp').textContent=stageHelp[round];round++;$('round').textContent=round;if(round>=4)$('hit').disabled=true}function start(){if(running)return;audio();if(remaining<=0)remaining=configured();if(remaining<=0)return;running=true;$('start').disabled=true;$('pause').disabled=false;visual();timerId=setInterval(()=>{remaining--;if(remaining<=3&&remaining>0)tone(880,.12);visual();if(remaining<=0){clearInterval(timerId);timerId=null;running=false;tone(660,.8);hit();$('start').disabled=round>=4;$('pause').disabled=true;if(round<4){remaining=configured();visual()}}},1000)}$('scenario').addEventListener('change',()=>load(false));$('random').addEventListener('click',()=>load(true));$('hit').addEventListener('click',()=>{audio();hit();stop()});$('restart').addEventListener('click',()=>load(false));$('start').addEventListener('click',start);$('pause').addEventListener('click',stop);$('reset').addEventListener('click',resetTimer);$('minutes').addEventListener('change',resetTimer);$('seconds').addEventListener('change',resetTimer);load(false);</script></body></html>
+{c:'a neighbour organizing a block sale',g:'open on time without breaking the permit conditions',s:'a residential street',p:'a vendor sets up outside the approved area',a:['A municipal inspector arrives earlier than scheduled.','The vendor shows an old map from the organizer that appears to authorize the wrong location.','Correcting the layout requires moving several other tables after sellers have already unpacked.','Choose: admit the organizer supplied the outdated map and delay opening, or leave the layout and risk the permit.']}
+];
+
+const stageNames=['Obstacle','Reversal','Cost','Forced choice'];
+const stageHelp=['The existing plan becomes harder.','An assumption or tactic proves wrong.','Continuing now harms or risks something else.','The character must sacrifice one meaningful outcome.'];
+const $=id=>document.getElementById(id);
+let round=0;
+let remaining=120;
+let timerId=null;
+let running=false;
+let audioCtx=null;
+let gameStarted=false;
+let complete=false;
+
+function currentScenario(){return scenarios[+$('scenario').value||0]}
+function configured(){return Math.max(0,Math.min(60,+$('minutes').value||0))*60+Math.max(0,Math.min(59,+$('seconds').value||0))}
+function selectedStages(){const max=currentScenario().a.length;return Math.max(1,Math.min(max,+$('stages').value||1))}
+function fmt(n){return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
+
+function populateStages(){
+  const max=currentScenario().a.length;
+  $('stages').innerHTML='';
+  for(let i=1;i<=max;i++){
+    const o=document.createElement('option');
+    o.value=i;
+    o.textContent=i+(i===1?' stage':' stages');
+    $('stages').appendChild(o);
+  }
+  $('stages').value='1';
+}
+
+function updateProgress(){
+  const total=selectedStages();
+  if(complete){
+    $('progress').textContent='Complete · '+total+' of '+total+' stages revealed';
+  }else if(round===0){
+    $('progress').textContent='Initial scenario · 0 of '+total+' stages revealed';
+  }else{
+    $('progress').textContent='Stage '+round+' of '+total+' · '+round+' of '+total+' stages revealed';
+  }
+  $('hit').textContent=round>=total?'FINISH NOW':'NEXT STAGE NOW';
+}
+
+function visual(){
+  $('timer').textContent=fmt(remaining);
+  $('timer').classList.toggle('warning',running&&remaining<=3&&remaining>0);
+  $('timer').classList.toggle('running',running&&remaining>3);
+}
+
+function stopTimer(){
+  if(timerId)clearInterval(timerId);
+  timerId=null;
+  running=false;
+  $('start').disabled=complete;
+  $('pause').disabled=true;
+  visual();
+}
+
+function setSetupLocked(locked){
+  $('scenario').disabled=locked;
+  $('random').disabled=locked;
+  $('stages').disabled=locked;
+  $('minutes').disabled=locked;
+  $('seconds').disabled=locked;
+}
+
+function resetCurrentTimer(){
+  stopTimer();
+  remaining=configured();
+  visual();
+}
+
+function audio(){
+  if(!audioCtx){const C=window.AudioContext||window.webkitAudioContext;if(C)audioCtx=new C()}
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+}
+
+function tone(f,d){
+  if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain(),n=audioCtx.currentTime;
+  o.frequency.value=f;
+  g.gain.setValueAtTime(.1,n);
+  g.gain.exponentialRampToValueAtTime(.001,n+d);
+  o.connect(g).connect(audioCtx.destination);
+  o.start();
+  o.stop(n+d);
+}
+
+function load(random=false){
+  stopTimer();
+  if(random)$('scenario').value=Math.floor(Math.random()*scenarios.length);
+  const x=currentScenario();
+  $('character').textContent=x.c;
+  $('goal').textContent=x.g;
+  $('setting').textContent=x.s;
+  $('problem').textContent=x.p;
+  populateStages();
+  round=0;
+  gameStarted=false;
+  complete=false;
+  $('stageName').textContent='Stable scene';
+  $('stageHelp').textContent='Begin the scene. Establish the character pursuing the goal through the starting problem.';
+  $('ambush').textContent='Your scene is stable. For now.';
+  $('status').textContent='Ready to begin the initial writing period.';
+  $('hit').disabled=false;
+  $('start').disabled=false;
+  setSetupLocked(false);
+  remaining=configured();
+  updateProgress();
+  visual();
+}
+
+function revealNextStage(){
+  const total=selectedStages();
+  if(round>=total)return false;
+  const x=currentScenario();
+  const index=round;
+  $('ambush').textContent=x.a[index];
+  $('stageName').textContent=stageNames[index]||('Stage '+(index+1));
+  $('stageHelp').textContent=stageHelp[index]||'Adapt the same scene without erasing what has already happened.';
+  round++;
+  updateProgress();
+  $('status').textContent='Stage '+round+' revealed. You now have the full writing period for this stage.';
+  return true;
+}
+
+function finishGame(){
+  stopTimer();
+  complete=true;
+  remaining=0;
+  visual();
+  updateProgress();
+  $('stageName').textContent='Complete';
+  $('stageHelp').textContent='The selected sequence is finished.';
+  $('status').textContent='Game complete.';
+  $('hit').disabled=true;
+  $('start').disabled=true;
+}
+
+function beginInterval(){
+  if(complete||running)return;
+  audio();
+  if(remaining<=0)remaining=configured();
+  if(remaining<=0){
+    $('status').textContent='Set a writing time greater than zero.';
+    return;
+  }
+  if(!gameStarted){
+    gameStarted=true;
+    setSetupLocked(true);
+    $('status').textContent='Initial scenario writing period in progress.';
+  }
+  running=true;
+  $('start').disabled=true;
+  $('pause').disabled=false;
+  visual();
+  timerId=setInterval(()=>{
+    remaining--;
+    if(remaining<=3&&remaining>0)tone(880,.12);
+    visual();
+    if(remaining<=0){
+      clearInterval(timerId);
+      timerId=null;
+      running=false;
+      tone(660,.8);
+      $('pause').disabled=true;
+      const total=selectedStages();
+      if(round<total){
+        revealNextStage();
+        remaining=configured();
+        visual();
+        beginInterval();
+      }else{
+        finishGame();
+      }
+    }
+  },1000);
+}
+
+function advanceNow(){
+  if(complete)return;
+  audio();
+  stopTimer();
+  if(!gameStarted){
+    gameStarted=true;
+    setSetupLocked(true);
+  }
+  const total=selectedStages();
+  if(round<total){
+    revealNextStage();
+    remaining=configured();
+    visual();
+    beginInterval();
+  }else{
+    finishGame();
+  }
+}
+
+scenarios.forEach((x,i)=>{
+  const o=document.createElement('option');
+  o.value=i;
+  o.textContent=(i+1)+'. '+x.c+' — '+x.g;
+  $('scenario').appendChild(o);
+});
+
+$('scenario').addEventListener('change',()=>load(false));
+$('random').addEventListener('click',()=>load(true));
+$('stages').addEventListener('change',()=>{updateProgress();remaining=configured();visual()});
+$('hit').addEventListener('click',advanceNow);
+$('restart').addEventListener('click',()=>load(false));
+$('start').addEventListener('click',beginInterval);
+$('pause').addEventListener('click',stopTimer);
+$('reset').addEventListener('click',()=>{resetCurrentTimer();$('status').textContent='Current writing-period timer reset.'});
+$('minutes').addEventListener('change',resetCurrentTimer);
+$('seconds').addEventListener('change',resetCurrentTimer);
+load(false);
+</script>
+</body>
+</html>
