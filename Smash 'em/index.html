@@ -3,50 +3,70 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Smash ’em — Destruction Prototype</title>
-  <meta name="description" content="A browser-based destruction prototype: walk into a room, swing a bat, and leave persistent damage behind." />
+  <meta name="theme-color" content="#0f1115" />
+  <title>Smash ’em — Smooth Voxel Destruction</title>
+  <meta name="description" content="A browser-based smooth voxel destruction prototype built with Babylon.js and BVX Kit." />
   <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #0f1115; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    #renderCanvas { width: 100%; height: 100%; touch-action: none; display: block; }
-    #hud { position: fixed; inset: 0; pointer-events: none; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
-    #title { position: absolute; top: max(14px, env(safe-area-inset-top)); left: 16px; font-weight: 900; letter-spacing: .04em; font-size: clamp(18px, 3vw, 28px); }
-    #subtitle { position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 34px); left: 16px; font-size: 12px; opacity: .75; max-width: 58ch; }
-    #status { position: absolute; right: 16px; top: max(14px, env(safe-area-inset-top)); padding: 8px 10px; border-radius: 999px; background: rgba(0,0,0,.45); backdrop-filter: blur(10px); font-size: 12px; }
+    #renderCanvas { width: 100%; height: 100%; touch-action: none; display: block; outline: none; }
+    #hud { position: fixed; inset: 0; pointer-events: none; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.86); }
+    #title { position: absolute; top: max(14px, env(safe-area-inset-top)); left: 16px; font-weight: 900; letter-spacing: .055em; font-size: clamp(18px, 3vw, 28px); }
+    #subtitle { position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 35px); left: 16px; font-size: 12px; opacity: .78; max-width: 64ch; }
+    #status { position: absolute; right: 16px; top: max(14px, env(safe-area-inset-top)); padding: 8px 11px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: rgba(5,7,10,.55); backdrop-filter: blur(12px); font-size: 12px; }
     #crosshair { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; transform: translate(-50%,-50%); opacity: .75; }
     #crosshair:before, #crosshair:after { content:""; position:absolute; background:#fff; border-radius:2px; box-shadow:0 0 8px #000; }
     #crosshair:before { left:8px; top:1px; width:2px; height:16px; }
     #crosshair:after { left:1px; top:8px; width:16px; height:2px; }
-    #tips { position: absolute; left: 16px; bottom: max(16px, env(safe-area-inset-bottom)); max-width: min(520px, calc(100vw - 32px)); padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,.45); backdrop-filter: blur(10px); font-size: 12px; line-height: 1.45; }
+    #tips { position: absolute; left: 16px; bottom: max(16px, env(safe-area-inset-bottom)); max-width: min(620px, calc(100vw - 32px)); padding: 10px 12px; border: 1px solid rgba(255,255,255,.10); border-radius: 12px; background: rgba(5,7,10,.52); backdrop-filter: blur(12px); font-size: 12px; line-height: 1.5; }
     #mobile { position: fixed; inset: 0; pointer-events: none; }
-    .pad { position: absolute; bottom: max(22px, env(safe-area-inset-bottom)); width: 126px; height: 126px; border: 1px solid rgba(255,255,255,.22); border-radius: 50%; background: rgba(255,255,255,.05); pointer-events: auto; touch-action: none; display: none; }
+    .pad { position: absolute; bottom: max(22px, env(safe-area-inset-bottom)); width: 126px; height: 126px; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.09), rgba(255,255,255,.025) 65%); pointer-events: auto; touch-action: none; display: none; box-shadow: inset 0 0 30px rgba(0,0,0,.22); }
     #movePad { left: 18px; }
     #lookPad { right: 18px; }
-    #swingBtn { position: absolute; right: 34px; bottom: calc(max(22px, env(safe-area-inset-bottom)) + 142px); width: 86px; height: 86px; border-radius: 50%; border: 1px solid rgba(255,255,255,.28); background: rgba(190,50,35,.36); color: #fff; font-weight: 900; letter-spacing: .04em; pointer-events: auto; touch-action: none; display:none; }
-    #resetBtn { position: absolute; right: 18px; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateY(-152px); border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.42); color:#fff; border-radius:999px; padding:10px 14px; pointer-events:auto; display:none; }
+    #swingBtn { position: absolute; right: 34px; bottom: calc(max(22px, env(safe-area-inset-bottom)) + 142px); width: 86px; height: 86px; border-radius: 50%; border: 1px solid rgba(255,255,255,.30); background: radial-gradient(circle at 40% 35%, rgba(235,77,53,.66), rgba(119,20,16,.62)); color: #fff; font-weight: 900; letter-spacing: .055em; pointer-events: auto; touch-action: none; display:none; box-shadow: 0 8px 30px rgba(0,0,0,.28); }
+    #resetBtn { position: absolute; right: 18px; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateY(-152px); border: 1px solid rgba(255,255,255,.20); background: rgba(5,7,10,.52); color:#fff; border-radius:999px; padding:10px 14px; pointer-events:auto; display:none; }
     @media (hover:none), (pointer:coarse) {
       .pad, #swingBtn, #resetBtn { display:block; }
-      #tips { max-width: 44vw; font-size: 11px; }
-      #crosshair { opacity:.45; }
+      #tips { max-width: 46vw; font-size: 10.5px; }
+      #crosshair { opacity:.40; }
+      #subtitle { max-width: 54vw; }
+    }
+    @media (max-width: 580px) {
+      #subtitle { display: none; }
+      #status { top: calc(max(14px, env(safe-area-inset-top)) + 40px); right: 12px; }
+      #tips { left: 12px; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 132px); max-width: 52vw; }
     }
   </style>
 </head>
 <body>
-  <canvas id="renderCanvas"></canvas>
+  <canvas id="renderCanvas" tabindex="0" aria-label="Smash 'em 3D destruction prototype"></canvas>
   <div id="hud">
     <div id="title">SMASH ’EM</div>
-    <div id="subtitle">Persistent browser destruction prototype · hit the same spot twice and the damage grows.</div>
-    <div id="status">Ready</div>
+    <div id="subtitle">Smooth BVX voxel wall · persistent damage · same interaction on desktop and mobile.</div>
+    <div id="status">Loading BVX…</div>
     <div id="crosshair" aria-hidden="true"></div>
-    <div id="tips"><strong>Desktop:</strong> WASD move · drag mouse to orbit · click / Space to swing · R resets. <strong>Mobile:</strong> left pad move · right pad look · red button swings.</div>
+    <div id="tips"><strong>Desktop:</strong> WASD move · right-drag mouse to orbit · left click / Space to swing · R resets. <strong>Mobile:</strong> left pad move · right pad look · red button swings.</div>
   </div>
   <div id="mobile">
     <div id="movePad" class="pad" aria-label="Move"></div>
     <div id="lookPad" class="pad" aria-label="Look"></div>
     <button id="swingBtn" aria-label="Swing bat">SMASH</button>
-    <button id="resetBtn" aria-label="Reset scene">RESET</button>
+    <button id="resetBtn" aria-label="Reset destruction">RESET</button>
   </div>
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
-  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-  <script src="app.js"></script>
+  <script>
+    window.addEventListener('error', event => {
+      const status = document.getElementById('status');
+      if (status) status.textContent = 'Load error — open console';
+      console.error('Smash ’em load error', event.error || event.message);
+    });
+    window.addEventListener('unhandledrejection', event => {
+      const status = document.getElementById('status');
+      if (status) status.textContent = 'Runtime error — open console';
+      console.error('Smash ’em runtime error', event.reason);
+    });
+  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
