@@ -190,6 +190,81 @@ Build only the genre-neutral core game first.
 
 Do not add genre-specific decks yet. Horror, romance, fantasy, mystery, science-fiction, or other expansion decks can be considered after the core mechanics have been tested and shown to produce coherent scenes consistently.
 
+## Example 4-Player Round
+
+### Phase 1 — Setup
+**Teaching note:** A scene works best when a character wants something specific.
+
+**Drawn card: Goal + Motivation**
+
+Choose one:
+1. Get someone to tell the truth because the character needs to protect someone.
+2. Recover something important because losing it would expose a mistake.
+3. Convince someone to stay because the character fears what will happen if they leave.
+4. Reach a place in time because someone else is depending on them.
+
+**Group chooses:** Recover something important because losing it would expose a mistake.
+
+The group decides the character is trying to recover a missing envelope before anyone discovers they misplaced it.
+
+### Phase 2 — Pressure
+**Teaching note:** Conflict appears when something meaningfully prevents the character from getting what they want.
+
+**Drawn card: Conflict + Stakes**
+
+Choose one:
+1. Another person wants the opposite outcome, and failure will damage an important relationship.
+2. Someone refuses to cooperate, and failure will reveal something the character wanted hidden.
+3. The character must choose between two incompatible priorities, and either choice has a cost.
+4. The obvious solution is no longer available, and failure will hurt someone else.
+
+**Group chooses:** Someone refuses to cooperate, and failure will reveal something the character wanted hidden.
+
+The group decides a coworker has the envelope but refuses to return it until the character explains why it matters.
+
+### Phase 3 — Escalation
+**Teaching note:** Escalation increases pressure without replacing the original conflict.
+
+**Drawn card: Escalation**
+
+Choose one:
+1. The available time suddenly becomes shorter.
+2. Someone new becomes involved.
+3. Success now carries an additional cost.
+4. New information changes what the character believes.
+
+**Group chooses:** Someone new becomes involved.
+
+The group decides the manager walks into the room and asks what everyone is looking for.
+
+Now the character cannot simply demand the envelope without drawing attention to it.
+
+### Phase 4 — Resolution
+**Teaching note:** A scene should end with a choice, consequence, or change.
+
+**Drawn card: Resolution + Consequence**
+
+Choose one:
+1. The character succeeds, but pays a cost.
+2. The character fails, but learns something important.
+3. The character changes tactics and creates a new problem.
+4. The character gets what they wanted, but not for the reason they expected.
+
+**Group chooses:** The character succeeds, but pays a cost.
+
+The character admits in front of the manager that they misplaced the envelope. The coworker returns it, but the mistake is now public.
+
+### Final Scene Spine
+- **Character wants:** the envelope back.
+- **Why:** they want to hide their mistake.
+- **Conflict:** the coworker refuses to return it without an explanation.
+- **Stakes:** the mistake may be exposed.
+- **Escalation:** the manager enters.
+- **Resolution:** the character admits the truth and gets the envelope back.
+- **Consequence:** they solve the immediate problem but lose face with the manager.
+
+This demonstrates the target result: four random cards, four group decisions, and one coherent scene with cause and effect.
+
 ## Next Build Step
 Design the complete phase/deck architecture and create the first printable cue-card set.
 
