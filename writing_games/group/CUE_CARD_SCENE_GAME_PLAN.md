@@ -73,45 +73,57 @@ Point of View is established before the scene is built and applies to the entire
 
 ### POV Card Set
 
-#### First Person
-**Description:** The narrator is a character in the scene and tells the story using “I” or “we,” limited to what that narrator knows or chooses to reveal.
+To make the differences easy to recognize, the examples below use the same basic moment: Mara places a letter on a table while Daniel asks whether she has read it.
 
-**Examples:**
-- I knew the envelope was missing before anyone else did.
-- I watched the manager enter and tried not to react.
-- I wanted the envelope back, but I could not explain why.
+#### First Person
+**Description:** The narrator is a character in the scene and uses **I/me**, giving the reader that character's direct experience.
+
+**Example:**
+> I put the letter on the table and tried not to look at Daniel.  
+> “You read it?” he asked.  
+> My stomach tightened. “No.”
 
 #### Second Person
-**Description:** The narration addresses the viewpoint character as “you,” placing the reader directly inside that character's experience.
+**Description:** The narration addresses the viewpoint character as **you**, placing the reader directly inside that character's experience.
 
-**Examples:**
-- You know the envelope is gone before anyone says a word.
-- You see the manager enter and force yourself to stay calm.
-- You need the envelope back, but you cannot explain why.
+**Example:**
+> You put the letter on the table and pull your hand away.  
+> “You read it?” Daniel asks.  
+> Your stomach tightens. “No.”
 
 #### Third-Person Limited
-**Description:** The narration uses “he,” “she,” or “they” while staying inside one character's perceptions, knowledge, and internal experience.
+**Description:** The narration uses **he/she/they** but gives access to one character's thoughts, feelings, perceptions, and knowledge.
 
-**Examples:**
-- She knew the envelope was missing before anyone else did.
-- The manager entered, and her stomach tightened.
-- She needed the envelope back, but she could not explain why.
+**Example:**
+> Mara put the letter on the table and forced herself to let go of it.  
+> “You read it?” Daniel asked.  
+> Her stomach tightened. He already suspected something.  
+> “No.”
 
 #### Third-Person Omniscient
-**Description:** The narrator can know the thoughts, knowledge, or circumstances of multiple characters, including things no single character knows.
+**Description:** The narrator can reveal the thoughts, knowledge, or circumstances of multiple characters rather than staying inside only one mind.
 
-**Examples:**
-- She wanted the envelope back, while her coworker already knew exactly why.
-- The manager entered unaware that both of them were hiding something.
-- Neither character realized the envelope contained a second mistake.
+**Example:**
+> Mara put the letter on the table, hoping Daniel would not notice her hesitation.  
+> Daniel noticed immediately. He had already decided she was lying.  
+> “You read it?” he asked.  
+> “No,” Mara said.
 
-#### Third-Person Objective
-**Description:** The narration reports only observable actions, dialogue, and details without directly stating any character's private thoughts.
+#### Third-Person Objective — Camera-Eye
+**Description:** The narration reports only what an outside observer could see or hear and never directly states a character's private thoughts or feelings.
 
-**Examples:**
-- She searched the desk drawers twice and checked the clock.
-- The manager entered. She stopped moving.
-- “Give me the envelope,” she said. “Now.”
+**Example:**
+> Mara put the letter on the table. Her hand rested on it for a moment before she pulled away.  
+> “You read it?” Daniel asked.  
+> Mara looked toward the window.  
+> “No.”
+
+### Quick POV Distinction
+- **First Person:** I
+- **Second Person:** you
+- **Third-Person Limited:** one mind
+- **Third-Person Omniscient:** multiple minds
+- **Third-Person Objective / Camera-Eye:** no minds; observable evidence only
 
 The final printable deck may contain duplicate copies of common POVs if playtesting shows that some POVs should appear more often, but every individual POV card still contains exactly one POV.
 
@@ -167,7 +179,7 @@ The resolution should not merely stop the action. It should produce a consequenc
 ## Player Turn Structure
 1. Players establish a turn order.
 2. The POV deck is shuffled and one mandatory POV card is revealed for the whole group.
-3. The group reads the POV description and examples aloud; that POV becomes a rule for the entire scene and cannot be redrawn.
+3. The group reads the POV description and example aloud; that POV becomes a rule for the entire scene and cannot be redrawn.
 4. The appropriate story-phase deck is shuffled.
 5. A player draws one story card and reads it aloud.
 6. The card briefly explains the writing concept in one sentence.
@@ -182,8 +194,6 @@ The resolution should not merely stop the action. It should produce a consequenc
 The exact number of cards in each story phase is not fixed. Story consistency determines how concepts are combined.
 
 The mandatory POV card is always added before these story-card draws and does not alter the number of player turns.
-
-A likely structure is:
 
 ### 3 players
 0. Mandatory POV card for the group.
@@ -211,41 +221,18 @@ The final card architecture should be tested to ensure every player count produc
 ## Card Design Rules
 Every card should satisfy all applicable rules below.
 
-1. **Universally usable within its phase.**
-   A legal draw cannot make the scene impossible to continue.
-
-2. **Static but adaptable.**
-   Cards cannot depend on dynamically generated text or a particular earlier card.
-
-3. **Specific enough to matter.**
-   Choices should create meaningful story consequences rather than vague prompts.
-
-4. **Generic enough to combine.**
-   Avoid genre-locked details or choices that require a particular setting, technology, relationship, or world.
-
-5. **No false choices.**
-   All options on a regular choice card are valid writing choices. The game should not disguise a multiple-choice quiz as collaborative play.
-
-6. **Maximum four options on choice cards.**
-   The group should be able to read, discuss, and decide quickly.
-
-7. **One-sentence teaching note.**
-   Teaching is embedded into play without slowing the session.
-
-8. **Preserve continuity.**
-   New choices add to or reinterpret established material; they should not casually overwrite it.
-
-9. **Cause-and-effect matters.**
-   Later developments should arise from, complicate, or meaningfully affect what has already happened.
-
-10. **Escalation must genuinely escalate.**
-    Escalation should increase pressure, cost, urgency, uncertainty, opposition, or consequence rather than simply adding unrelated activity.
-
-11. **POV is mandatory and singular.**
-    Every POV card contains exactly one POV. It is drawn before story construction and applies to the entire scene.
-
-12. **POV cards teach by example.**
-    Each POV card contains one brief description and several short examples demonstrating the viewpoint in use.
+1. **Universally usable within its phase.** A legal draw cannot make the scene impossible to continue.
+2. **Static but adaptable.** Cards cannot depend on dynamically generated text or a particular earlier card.
+3. **Specific enough to matter.** Choices should create meaningful story consequences rather than vague prompts.
+4. **Generic enough to combine.** Avoid genre-locked details or choices that require a particular setting, technology, relationship, or world.
+5. **No false choices.** All options on a regular choice card are valid writing choices.
+6. **Maximum four options on choice cards.** The group should be able to read, discuss, and decide quickly.
+7. **One-sentence teaching note.** Teaching is embedded into play without slowing the session.
+8. **Preserve continuity.** New choices add to or reinterpret established material; they should not casually overwrite it.
+9. **Cause-and-effect matters.** Later developments should arise from, complicate, or meaningfully affect what has already happened.
+10. **Escalation must genuinely escalate.** Escalation should increase pressure, cost, urgency, uncertainty, opposition, or consequence rather than simply adding unrelated activity.
+11. **POV is mandatory and singular.** Every POV card contains exactly one POV. It is drawn before story construction and applies to the entire scene.
+12. **POV cards teach by example.** Each POV card contains one brief description and an example demonstrating the viewpoint in use.
 
 ## Desired Story Spine
 By the end of play, the scene should make this structure recognizable:
@@ -253,8 +240,6 @@ By the end of play, the scene should make this structure recognizable:
 **Someone wants something → for a reason → something opposes them → the situation gets worse → a consequential choice or outcome occurs → something changes.**
 
 The POV determines the lens through which the group presents that story spine.
-
-The game succeeds when the players can see how the individual writing concepts combine to create that progression.
 
 ## Facilitation Philosophy
 The facilitator should not need to explain every concept manually. The cards should contain enough teaching information for groups to work independently.
@@ -277,9 +262,11 @@ Do not add genre-specific decks yet. Horror, romance, fantasy, mystery, science-
 ### Mandatory POV Draw — Third-Person Limited
 **Description:** The narration uses “he,” “she,” or “they” while staying inside one character's perceptions, knowledge, and internal experience.
 
-**Examples:**
-- She knew the envelope was missing before anyone else did.
-- The manager entered, and her stomach tightened.
+**Example:**
+> Mara put the letter on the table and forced herself to let go of it.  
+> “You read it?” Daniel asked.  
+> Her stomach tightened. He already suspected something.  
+> “No.”
 
 The group must now construct and describe the entire scene through one character's limited viewpoint.
 
