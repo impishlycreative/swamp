@@ -1,4 +1,4 @@
-# MindMap 1.2
+# MindMap 1.3
 
 A local-first brainstorming and mind-mapping experiment for Swamp.
 
@@ -33,15 +33,14 @@ Examples:
 - Focus selected branch on mobile: **Focus** once.
 - Change colour, label a connection, collapse, center, or delete: **More** then the action — no more than 2 actions from a selected idea.
 - Search and jump: search, choose result — 2 actions.
-- Fit map: 1 action.
-- Export/import/lock: More menu then action — 2 actions.
-- New map: More, New map, confirm — 3 actions.
+- Export/import/lock: utility menu then action — 2 actions.
+- New map: utility menu, New map, confirm — 3 actions.
 
 ## Persistence
 
-Version 1.2 stores the complete map in browser `localStorage` and autosaves changes. JSON export/import preserves map structure, idea text, colours, connection labels, collapsed state, and view state.
+Version 1.3 stores the complete map in browser `localStorage` and autosaves changes. JSON export/import preserves map structure, idea text, colours, connection labels, collapsed state, and view state.
 
-Existing v1/v1.1 maps continue to use the same storage key and are migrated to v1.2 when opened.
+Existing v1.x maps continue to use the same storage key and are migrated when opened.
 
 ## Workspace lock
 
@@ -62,19 +61,20 @@ The same data and application logic are used on desktop and mobile, but the inte
 
 Mobile is **canvas first** rather than a compressed desktop layout.
 
+- The map fills the screen.
+- The top controls become a small floating cluster instead of consuming a permanent row.
 - Selecting an idea does **not** automatically cover the map with the inspector.
 - A compact contextual bar appears with four immediate actions: **Idea, Edit, Focus, More**.
 - The selected idea keeps its direct on-canvas `+` control.
-- **Edit** opens a small bottom sheet containing only the text editor.
+- **Edit** opens a small temporary bottom sheet containing only the text editor.
 - **More** opens the bottom sheet with colour, connection label, collapse, center, delete, and Add Idea.
 - The bottom sheet can be closed with `×` or dragged downward by its handle.
-- The main toolbar is reduced to Add, Search, Fit, and a two-tap utility menu.
-- Export, Import, New map, Lock, and Back to Swamp live in that single utility menu; there are no deeper nested menus.
+- Export, Import, New map, Lock, and Back to Swamp live in a single-level utility menu.
 - One-finger drag pans the canvas.
 - Two-finger pinch zooms.
 - Touch targets are approximately 44 px or larger.
 - Imported or older maps open centered at a readable scale rather than automatically shrinking the entire map to fit the phone screen.
-- Fit remains one tap away when the user wants the whole map overview.
+- Mobile mode is detected by both viewport size and touch/coarse-pointer characteristics so iPhone Safari still receives the mobile UI even when it is presenting a desktop-style viewport.
 
 ## Navigation
 
