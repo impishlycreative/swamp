@@ -39,7 +39,6 @@ Minimalism should come from strong defaults, contextual controls, and progressiv
 - Label a connection: selected child idea → More → label field, at most 2 actions after selection.
 - Collapse/expand, centre, or delete: selected idea → More → action, at most 2 actions after selection.
 - Search and jump: open search, select result — 2 actions.
-- Fit: 1 action.
 - Export, import, or lock on mobile: utility menu → action — 2 actions.
 - New map on mobile: utility menu → New map → confirm — 3 actions.
 
@@ -135,6 +134,7 @@ Use one underlying application and data model, but do **not** force the desktop 
 The mobile product should feel designed for touch from the beginning.
 
 - The map owns almost the entire screen.
+- The top toolbar floats over the canvas instead of taking a dedicated row.
 - Selecting an idea must not automatically open a large inspector.
 - A compact contextual action bar appears for the selected idea.
 - The primary contextual actions are **Idea, Edit, Focus, More**.
@@ -142,7 +142,7 @@ The mobile product should feel designed for touch from the beginning.
 - **Edit** opens a small bottom sheet focused only on text entry.
 - **More** opens the same sheet with colour, connection label, collapse/expand, centre, delete, and Add Idea.
 - The bottom sheet can be dismissed with a close control or by dragging its handle downward.
-- The permanent mobile toolbar is limited to Add, Search, Fit, and a single utility menu.
+- The permanent mobile toolbar is reduced to essential controls plus a single utility menu.
 - The utility menu is one level deep and contains Export, Import, New map, Lock, and Back to Swamp.
 - There must be no nested mobile navigation that breaks the 1/2/3 interaction rule.
 - One-finger canvas panning.
@@ -150,9 +150,10 @@ The mobile product should feel designed for touch from the beginning.
 - Touch targets approximately 44 px or larger.
 - Mobile should favour **readable working scale** over automatically fitting the entire map.
 - Older maps migrating from earlier v1.x releases should open centered at a readable scale.
-- Whole-map Fit remains immediately available when the user wants an overview.
+- Whole-map Fit remains readily available when the user wants an overview.
+- Mobile detection must not rely only on viewport width. iPhone Safari may expose a desktop-like viewport, so the app must also respond to coarse-pointer/touch characteristics.
 
-## Current v1.2 implementation
+## Current v1.3 implementation
 
 Implemented in `MindMap/index.html`:
 
@@ -174,11 +175,15 @@ Implemented in `MindMap/index.html`:
 - JSON export/import.
 - Browser-local workspace lock.
 - Desktop persistent inspector.
+- Full-screen mobile canvas.
+- Floating mobile toolbar.
 - Mobile canvas-first contextual action bar.
 - Mobile compact edit/details bottom sheet.
 - Drag-down dismissal for the mobile bottom sheet.
 - Single-level mobile utility menu.
 - Readable mobile centering rather than forced whole-map fit.
+- Width plus touch/coarse-pointer mobile detection for iPhone Safari desktop-style viewports.
+- Cache-control metadata to reduce stale HTML during active iteration.
 - Link back to the Swamp root.
 
 ## Core product principle
