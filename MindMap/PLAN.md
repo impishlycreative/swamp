@@ -33,13 +33,15 @@ Minimalism should come from strong defaults, contextual controls, and progressiv
 
 - Add an idea from the selected idea: 1 action.
 - Add using the selected idea’s on-canvas `+`: 1 action.
-- Edit selected idea text: immediately available.
-- Change colour: select idea, choose colour — at most 2 actions.
-- Label a connection: select child idea, type label — at most 2 actions.
-- Collapse/expand, focus, centre, or delete: select idea, choose action — at most 2 actions.
+- Edit selected idea text: 1 action on mobile; directly visible on desktop.
+- Focus selected branch: 1 action on mobile or desktop.
+- Change colour: selected idea → More → colour, at most 2 actions after selection.
+- Label a connection: selected child idea → More → label field, at most 2 actions after selection.
+- Collapse/expand, centre, or delete: selected idea → More → action, at most 2 actions after selection.
 - Search and jump: open search, select result — 2 actions.
-- New map: New, confirm — 2 actions.
-- Export, import, zoom, fit, and lock remain directly exposed.
+- Fit: 1 action.
+- Export, import, or lock on mobile: utility menu → action — 2 actions.
+- New map on mobile: utility menu → New map → confirm — 3 actions.
 
 ## Rapid idea capture
 
@@ -50,7 +52,8 @@ When Add Idea is invoked:
 1. Create the child immediately.
 2. Position it automatically.
 3. Select it automatically.
-4. Put keyboard focus directly into its text so the user can type.
+4. Center it at a readable scale.
+5. Put text entry in front of the user immediately.
 
 The selected idea also receives a direct on-canvas `+` affordance.
 
@@ -107,6 +110,7 @@ Initial release is local-first:
 - JSON export.
 - JSON import.
 - Export/import must preserve structure, colours, connection labels, collapsed state, and view state.
+- Keep the storage format backward-compatible across v1.x releases where practical.
 
 ## Authentication — v1
 
@@ -116,7 +120,7 @@ A future hosted release can replace this with proper account authentication and 
 
 ## Desktop and mobile
 
-Use one responsive application rather than separate products.
+Use one underlying application and data model, but do **not** force the desktop interface onto a phone.
 
 ### Desktop
 
@@ -126,17 +130,29 @@ Use one responsive application rather than separate products.
 - Pointer/mouse panning.
 - Keyboard shortcuts for frequent operations.
 
-### Mobile
+### Mobile — canvas-first rule
 
-- Compact toolbar with large touch targets.
-- Inspector becomes a bottom sheet.
+The mobile product should feel designed for touch from the beginning.
+
+- The map owns almost the entire screen.
+- Selecting an idea must not automatically open a large inspector.
+- A compact contextual action bar appears for the selected idea.
+- The primary contextual actions are **Idea, Edit, Focus, More**.
+- The selected idea also retains the direct on-canvas `+`.
+- **Edit** opens a small bottom sheet focused only on text entry.
+- **More** opens the same sheet with colour, connection label, collapse/expand, centre, delete, and Add Idea.
+- The bottom sheet can be dismissed with a close control or by dragging its handle downward.
+- The permanent mobile toolbar is limited to Add, Search, Fit, and a single utility menu.
+- The utility menu is one level deep and contains Export, Import, New map, Lock, and Back to Swamp.
+- There must be no nested mobile navigation that breaks the 1/2/3 interaction rule.
 - One-finger canvas panning.
 - Two-finger pinch zooming.
-- No multi-level mobile menu that violates the interaction budget.
+- Touch targets approximately 44 px or larger.
+- Mobile should favour **readable working scale** over automatically fitting the entire map.
+- Older maps migrating from earlier v1.x releases should open centered at a readable scale.
+- Whole-map Fit remains immediately available when the user wants an overview.
 
-Touch targets should be approximately 44 px where practical.
-
-## Current v1.1 implementation
+## Current v1.2 implementation
 
 Implemented in `MindMap/index.html`:
 
@@ -145,7 +161,7 @@ Implemented in `MindMap/index.html`:
 - Outward branch fanning.
 - Direct Add Idea button.
 - Direct on-canvas `+` for selected ideas.
-- Immediate creation and text focus when adding.
+- Immediate creation and text entry when adding.
 - Idea colour editing.
 - Connection labels.
 - Collapse/expand.
@@ -157,7 +173,12 @@ Implemented in `MindMap/index.html`:
 - Local autosave.
 - JSON export/import.
 - Browser-local workspace lock.
-- Responsive desktop/mobile inspector behavior.
+- Desktop persistent inspector.
+- Mobile canvas-first contextual action bar.
+- Mobile compact edit/details bottom sheet.
+- Drag-down dismissal for the mobile bottom sheet.
+- Single-level mobile utility menu.
+- Readable mobile centering rather than forced whole-map fit.
 - Link back to the Swamp root.
 
 ## Core product principle
