@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Smash ’em — Destruction Prototype</title>
+  <meta name="description" content="A browser-based destruction prototype: walk into a room, swing a bat, and leave persistent damage behind." />
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #0f1115; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    #renderCanvas { width: 100%; height: 100%; touch-action: none; display: block; }
+    #hud { position: fixed; inset: 0; pointer-events: none; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+    #title { position: absolute; top: max(14px, env(safe-area-inset-top)); left: 16px; font-weight: 900; letter-spacing: .04em; font-size: clamp(18px, 3vw, 28px); }
+    #subtitle { position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 34px); left: 16px; font-size: 12px; opacity: .75; max-width: 58ch; }
+    #status { position: absolute; right: 16px; top: max(14px, env(safe-area-inset-top)); padding: 8px 10px; border-radius: 999px; background: rgba(0,0,0,.45); backdrop-filter: blur(10px); font-size: 12px; }
+    #crosshair { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; transform: translate(-50%,-50%); opacity: .75; }
+    #crosshair:before, #crosshair:after { content:""; position:absolute; background:#fff; border-radius:2px; box-shadow:0 0 8px #000; }
+    #crosshair:before { left:8px; top:1px; width:2px; height:16px; }
+    #crosshair:after { left:1px; top:8px; width:16px; height:2px; }
+    #tips { position: absolute; left: 16px; bottom: max(16px, env(safe-area-inset-bottom)); max-width: min(520px, calc(100vw - 32px)); padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,.45); backdrop-filter: blur(10px); font-size: 12px; line-height: 1.45; }
+    #mobile { position: fixed; inset: 0; pointer-events: none; }
+    .pad { position: absolute; bottom: max(22px, env(safe-area-inset-bottom)); width: 126px; height: 126px; border: 1px solid rgba(255,255,255,.22); border-radius: 50%; background: rgba(255,255,255,.05); pointer-events: auto; touch-action: none; display: none; }
+    #movePad { left: 18px; }
+    #lookPad { right: 18px; }
+    #swingBtn { position: absolute; right: 34px; bottom: calc(max(22px, env(safe-area-inset-bottom)) + 142px); width: 86px; height: 86px; border-radius: 50%; border: 1px solid rgba(255,255,255,.28); background: rgba(190,50,35,.36); color: #fff; font-weight: 900; letter-spacing: .04em; pointer-events: auto; touch-action: none; display:none; }
+    #resetBtn { position: absolute; right: 18px; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateY(-152px); border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.42); color:#fff; border-radius:999px; padding:10px 14px; pointer-events:auto; display:none; }
+    @media (hover:none), (pointer:coarse) {
+      .pad, #swingBtn, #resetBtn { display:block; }
+      #tips { max-width: 44vw; font-size: 11px; }
+      #crosshair { opacity:.45; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="renderCanvas"></canvas>
+  <div id="hud">
+    <div id="title">SMASH ’EM</div>
+    <div id="subtitle">Persistent browser destruction prototype · hit the same spot twice and the damage grows.</div>
+    <div id="status">Ready</div>
+    <div id="crosshair" aria-hidden="true"></div>
+    <div id="tips"><strong>Desktop:</strong> WASD move · drag mouse to orbit · click / Space to swing · R resets. <strong>Mobile:</strong> left pad move · right pad look · red button swings.</div>
+  </div>
+  <div id="mobile">
+    <div id="movePad" class="pad" aria-label="Move"></div>
+    <div id="lookPad" class="pad" aria-label="Look"></div>
+    <button id="swingBtn" aria-label="Swing bat">SMASH</button>
+    <button id="resetBtn" aria-label="Reset scene">RESET</button>
+  </div>
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
