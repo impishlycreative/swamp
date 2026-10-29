@@ -34,6 +34,7 @@ These are core product behaviours:
 - Connection lines must have a forgiving hit target larger than the visible stroke.
 - **Drag an idea onto another idea:** re-parent that idea and its entire descendant branch under the new parent.
 - During a drag, the branch and its join must visibly follow the pointer. When hovering a valid new parent, the join must preview the new connection before drop.
+- Once a dragged branch touches a valid destination, that destination should remain latched through a short grace distance rather than immediately dropping the target when the pointer slips away.
 - **Undo:** always one action away; keyboard shortcut `Ctrl/Cmd+Z` on desktop.
 - **Delete:** always ask for confirmation before deleting an idea and its descendants.
 
@@ -70,8 +71,11 @@ The structure must support direct branch movement:
 - The dragged idea's descendants remain attached to it and move with it during the drag preview.
 - The existing incoming join follows the moving branch while dragging.
 - When the pointer enters a valid destination idea, the incoming join previews a connection from that destination to the dragged branch before the user releases it.
+- The destination is **magnetically latched** once touched. The user may move a reasonable distance away while the dotted preview line stretches and still keep that destination active.
+- The latch releases only after the pointer moves beyond the grace zone, at which point the preview returns to the original parent. Current target values are approximately 100 px on desktop and 125 px on touch devices.
+- Entering another valid destination immediately transfers the latch to that destination.
 - An idea cannot be dropped onto itself or one of its own descendants.
-- The destination idea is visually highlighted while dragging over a valid target.
+- The destination idea is visually highlighted while it remains the active drop target.
 - After drop, automatic radial/fan layout reorganizes the branch beneath the new parent.
 - Re-parenting is undoable.
 
@@ -84,6 +88,7 @@ Connections are first-class editable objects in the interaction model even thoug
 - A label created in the properties dialog remains editable afterward from either the line or label itself.
 - An empty committed label removes the visible label without removing the join.
 - Connection-label edits are undoable.
+- Selecting/editing a connection should not implicitly select its child idea merely because the v1.x data model stores the label on that child relationship.
 
 ## Undo model
 
@@ -109,6 +114,7 @@ The history is local to the current browser session and does not need to be expo
 - Smooth radial composition.
 - Clear selection and drop-target states.
 - A re-connecting join should visibly change treatment during drag so the destination relationship is obvious before release.
+- The latched reconnection preview uses a dotted line so the user can see the grace distance stretching before the target releases.
 - Minimal permanent chrome.
 - Strong typography and whitespace.
 - The map should remain the dominant visual element.
@@ -144,7 +150,7 @@ Use one underlying application and data model, but do not force the desktop inte
 
 - Movable contextual properties dialog.
 - Inline text and connection-label editing.
-- Drag-and-drop branch re-parenting with live branch/join preview.
+- Drag-and-drop branch re-parenting with live branch/join preview and target hysteresis.
 - Wheel zoom and pointer panning.
 - Keyboard shortcuts.
 
@@ -158,11 +164,12 @@ Use one underlying application and data model, but do not force the desktop inte
 - Tap idea text to edit inline.
 - Tap a connection to label or relabel it.
 - Touch branch dragging for re-parenting where the gesture can be resolved without interfering with canvas panning.
+- Wider drag-target grace distance than desktop to account for finger imprecision.
 - One-finger canvas panning and two-finger pinch zooming.
 
-## Current v1.5 implementation
+## Current v1.6 implementation
 
-Implemented across `MindMap/index.html`, `MindMap/app.js`, and `MindMap/style.css`:
+Implemented across `MindMap/index.html`, `MindMap/app.js`, `MindMap/style.css`, and `MindMap/drag-hysteresis.js`:
 
 - Central concept and automatic radial layout.
 - Add Idea button and direct on-canvas `+`.
@@ -174,6 +181,7 @@ Implemented across `MindMap/index.html`, `MindMap/app.js`, and `MindMap/style.cs
 - Enlarged invisible join hit target.
 - Drag-and-drop branch re-parenting with descendant preservation and invalid-target protection.
 - Live dragged-branch movement and live join reconnection preview to candidate parents.
+- Sticky candidate-parent hysteresis with a dotted preview that stretches before snapping back to the original parent.
 - Undo toolbar control and `Ctrl/Cmd+Z`.
 - Delete confirmation.
 - Colour editing.
