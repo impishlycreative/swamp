@@ -13,7 +13,6 @@ const TOUCH_RELEASE_PX=125;
 let dragPointerId=null;
 let draggedNode=null;
 let latchedNode=null;
-let lastPointer={x:0,y:0};
 
 function isTouchLike(){
   return matchMedia('(hover:none) and (pointer:coarse)').matches||navigator.maxTouchPoints>0;
@@ -32,7 +31,9 @@ function distanceOutsideRect(x,y,rect){
 function nodeAtPoint(x,y){
   for(const el of originalElementsFromPoint(x,y)){
     const node=el.closest?.('.node');
-    if(node&&node!==draggedNode)return node;
+    // Ignore the branch being dragged. app.js marks every member of that
+    // branch with branch-dragging as soon as the drag becomes active.
+    if(node&&node!==draggedNode&&!node.classList.contains('branch-dragging'))return node;
   }
   return null;
 }
@@ -42,10 +43,10 @@ function stillWithinLatchZone(node,x,y){
   return distanceOutsideRect(x,y,node.getBoundingClientRect())<=releaseDistance();
 }
 
-// The MindMap drag code asks document.elementsFromPoint() which node is under
-// the pointer. While a target is latched, inject it into that hit-test result
-// until the pointer has moved far enough away. The app continues to perform
-// its own validity checks, so self/descendant drops remain blocked.
+// app.js asks document.elementsFromPoint() which node is under the pointer.
+// While a destination is latched, inject it into that hit-test result until
+// the pointer has moved far enough away. app.js still performs its own
+// validity checks, so self/descendant drops remain blocked.
 document.elementsFromPoint=function(x,y){
   const result=originalElementsFromPoint(x,y);
   if(
@@ -65,12 +66,10 @@ document.addEventListener('pointerdown',e=>{
   dragPointerId=e.pointerId;
   draggedNode=node;
   latchedNode=null;
-  lastPointer={x:e.clientX,y:e.clientY};
 },true);
 
 document.addEventListener('pointermove',e=>{
   if(e.pointerId!==dragPointerId)return;
-  lastPointer={x:e.clientX,y:e.clientY};
 
   const touched=nodeAtPoint(e.clientX,e.clientY);
   if(touched){
