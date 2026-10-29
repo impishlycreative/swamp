@@ -11,6 +11,8 @@ The product should combine the strongest ideas found in Miro, FigJam, XMind, Min
 - A map begins with one central concept.
 - Every item is an **idea**, not a “node” in the user interface.
 - Selecting an idea exposes the ability to add another idea from it.
+- Double-clicking an idea on desktop creates a child idea immediately.
+- Double-tapping an idea on touch devices creates a child idea immediately.
 - New first-level ideas automatically distribute evenly around the central concept.
 - Deeper ideas fan outward from their parent so branches naturally continue away from the centre.
 - Connections can carry their own labels.
@@ -31,6 +33,7 @@ Minimalism should come from strong defaults, contextual controls, and progressiv
 
 ### Examples
 
+- Double-click/double-tap an idea to create a child: 1 gesture.
 - Add an idea from the selected idea: 1 action.
 - Add using the selected idea’s on-canvas `+`: 1 action.
 - Edit selected idea text: 1 action on mobile; directly visible on desktop.
@@ -46,7 +49,7 @@ Minimalism should come from strong defaults, contextual controls, and progressiv
 
 Adding an idea should never require a multi-screen flow.
 
-When Add Idea is invoked:
+When Add Idea is invoked — whether from the toolbar, contextual `+`, double-click, or double-tap:
 
 1. Create the child immediately.
 2. Position it automatically.
@@ -125,6 +128,7 @@ Use one underlying application and data model, but do **not** force the desktop 
 
 - Full toolbar labels when space permits.
 - Right-side inspector.
+- Double-click an idea to create a child immediately and begin editing it.
 - Wheel zoom.
 - Pointer/mouse panning.
 - Keyboard shortcuts for frequent operations.
@@ -136,6 +140,7 @@ The mobile product should feel designed for touch from the beginning.
 - The map owns almost the entire screen.
 - The top toolbar floats over the canvas instead of taking a dedicated row.
 - Selecting an idea must not automatically open a large inspector.
+- Double-tap an idea to create a child immediately and begin editing it.
 - A compact contextual action bar appears for the selected idea.
 - The primary contextual actions are **Idea, Edit, Focus, More**.
 - The selected idea also retains the direct on-canvas `+`.
@@ -162,6 +167,8 @@ Implemented in `MindMap/index.html`:
 - Outward branch fanning.
 - Direct Add Idea button.
 - Direct on-canvas `+` for selected ideas.
+- Double-click child creation on desktop.
+- Double-tap child creation on touch devices.
 - Immediate creation and text entry when adding.
 - Idea colour editing.
 - Connection labels.
