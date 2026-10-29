@@ -3,23 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MindMap 1.7.2 — Swamp</title>
+<title>MindMap 1.7.3 — Swamp</title>
 <meta name="description" content="A beautiful local-first brainstorming and mind-mapping workspace.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<link rel="stylesheet" href="style.css?v=1.7.2">
+<link rel="stylesheet" href="style.css?v=1.7.3">
+<style>
+@media(max-width:850px),(hover:none) and (pointer:coarse){
+  #fitTopBtn{display:none!important}
+  #mobileNewTop,#mobileSaveTop{display:inline-flex!important}
+  #mobileNewTop svg,#mobileSaveTop svg{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #mobileSaveTop{background:var(--soft);border-color:#b9cec2;color:var(--accent)}
+  .toolbar{max-width:calc(100vw - 16px)}
+}
+@media(max-width:340px){
+  .toolbar{gap:2px;padding:4px}
+  .btn.icon,#addBtn{width:41px;min-height:41px}
+}
+</style>
 </head>
 <body>
 <div id="auth" class="auth"><div class="card"><div class="mark"></div><h2 id="authTitle">Private workspace</h2><p id="authCopy">Create a local workspace lock. Your map stays in this browser unless you export it.</p><form id="authForm"><div class="field"><label>Name</label><input id="displayName" class="input" maxlength="80" autocomplete="username"></div><div class="field"><label>Passphrase</label><input id="passphrase" class="input" type="password" minlength="6" autocomplete="current-password" required></div><button id="authSubmit" class="btn primary" type="submit">Create workspace</button></form><div class="auth-foot">Browser-local lock only; no credentials or map data are sent to a server.</div></div></div>
 <div id="app" class="app hidden">
-<header class="topbar"><div class="brand"><div class="mark"></div><div><h1>MindMap</h1><small>Swamp · v1.7.2</small></div></div><div class="toolbar"><button id="addBtn" class="btn primary" title="Add idea"><span>＋</span><span class="label">Add Idea</span></button><button id="undoBtn" class="btn icon" title="Undo" aria-label="Undo">↶</button><button id="focusBtn" class="btn desktop-secondary" title="Focus">◎</button><button id="searchBtn" class="btn icon" title="Search">⌕</button><button id="fitTopBtn" class="btn icon mobile-only" title="Fit">⌂</button><div class="spacer"></div><button id="exportBtn" class="btn icon desktop-secondary" title="Export">⇩</button><label for="importInput" class="btn icon desktop-secondary" title="Import">⇧</label><input id="importInput" class="file-input" type="file" accept=".json,application/json"><button id="newBtn" class="btn icon desktop-secondary" title="New map">＋</button><a class="btn ghost icon desktop-secondary" href="../index.html" title="Back">↩</a><button id="lockBtn" class="btn ghost icon desktop-secondary" title="Lock">⌾</button><button id="menuBtn" class="btn icon mobile-only" title="More">•••</button></div></header>
+<header class="topbar"><div class="brand"><div class="mark"></div><div><h1>MindMap</h1><small>Swamp · v1.7.3</small></div></div><div class="toolbar"><button id="addBtn" class="btn primary" title="Add idea"><span>＋</span><span class="label">Add Idea</span></button><button id="undoBtn" class="btn icon" title="Undo" aria-label="Undo">↶</button><button id="focusBtn" class="btn desktop-secondary" title="Focus">◎</button><button id="searchBtn" class="btn icon" title="Search">⌕</button><button id="mobileNewTop" class="btn icon mobile-only" title="New map" aria-label="New map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4"/><path d="M12 10v7"/><path d="M8.5 13.5h7"/></svg></button><button id="mobileSaveTop" class="btn icon mobile-only" title="Save map" aria-label="Save map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h8V3"/><path d="M8 21v-7h8v7"/></svg></button><button id="fitTopBtn" class="btn icon mobile-only" title="Fit">⌂</button><div class="spacer"></div><button id="exportBtn" class="btn icon desktop-secondary" title="Export">⇩</button><label for="importInput" class="btn icon desktop-secondary" title="Import">⇧</label><input id="importInput" class="file-input" type="file" accept=".json,application/json"><button id="newBtn" class="btn icon desktop-secondary" title="New map">＋</button><a class="btn ghost icon desktop-secondary" href="../index.html" title="Back">↩</a><button id="lockBtn" class="btn ghost icon desktop-secondary" title="Lock">⌾</button><button id="menuBtn" class="btn icon mobile-only" title="More">•••</button></div></header>
 <main class="workspace" id="workspace"><div class="grid"></div><svg id="svg" role="application" aria-label="Mind map"><g id="viewport"><g id="edges"></g><g id="labels"></g><g id="nodes"></g></g></svg>
 <section id="inspector" class="floating hidden"><button id="sheetHandle" class="sheet-handle"></button><div id="inspectorHead" class="sheet-head"><h2 id="sheetTitle">Idea</h2><button id="sheetClose" class="sheet-close">×</button></div><p class="hint">Drag this panel by its title. Changes save automatically.</p><div class="field edit-primary"><label>Idea text</label><textarea id="ideaText" maxlength="500"></textarea></div><div class="field edit-primary"><label>Description</label><textarea id="ideaDescription" class="description-input" maxlength="5000" placeholder="Add notes, context, details, or supporting information…"></textarea></div><div class="advanced"><div class="field"><label>Colour</label><div id="colorRow" class="colors"></div></div><div id="edgeField" class="field"><label>Connection label</label><input id="edgeLabel" class="input" maxlength="100"></div><div class="actions"><button id="addChildBtn" class="btn primary">＋ Add Idea</button><button id="collapseBtn" class="btn">Collapse</button><button id="centerBtn" class="btn">Center here</button><button id="deleteBtn" class="btn danger">Delete</button></div></div></section>
 <nav id="mobileContext" class="mobile-context hidden"><button id="contextAdd" class="context-btn primary"><span>＋</span>Idea</button><button id="contextEdit" class="context-btn"><span>✎</span>Edit</button><button id="contextFocus" class="context-btn"><span>◎</span>Focus</button><button id="contextMore" class="context-btn"><span>•••</span>More</button></nav>
 <section id="utilitySheet" class="utility-sheet"><div class="utility-grid"><button id="mobileExport" class="btn">⇩ Export</button><label for="mobileImportInput" class="btn">⇧ Import</label><input id="mobileImportInput" class="file-input" type="file" accept=".json,application/json"><button id="mobileNew" class="btn">＋ New map</button><button id="mobileLock" class="btn">⌾ Lock</button><a class="btn wide" href="../index.html">↩ Back to Swamp</a></div></section>
 <div class="mini"><button id="zoomOut" class="btn icon">−</button><div id="zoomReadout" class="zoom">100%</div><button id="zoomIn" class="btn icon">＋</button><button id="fitBtn" class="btn icon">⌂</button></div><div id="toast" class="toast"></div><div id="searchPanel" class="search hidden"><input id="searchInput" class="input" placeholder="Search ideas and descriptions…"><div id="searchResults" class="search-results"></div></div></main></div>
 <div id="newDialog" class="modal hidden"><div class="card"><h2>Start a fresh map?</h2><p>This replaces the current map in this browser. You can undo it afterward.</p><div style="display:flex;gap:8px"><button id="cancelNew" class="btn">Cancel</button><button id="confirmNew" class="btn danger">Start fresh</button></div></div></div>
-<script src="drag-hysteresis.js?v=1.7.2" defer></script>
-<script src="app.js?v=1.7.2" defer></script>
+<script src="drag-hysteresis.js?v=1.7.3" defer></script>
+<script src="app.js?v=1.7.3" defer></script>
 <script>
 window.addEventListener('DOMContentLoaded',()=>{
   const panel=document.getElementById('searchPanel');
@@ -27,6 +40,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   const input=document.getElementById('searchInput');
   const utilitySheet=document.getElementById('utilitySheet');
   const mobileNew=document.getElementById('mobileNew');
+  const mobileNewTop=document.getElementById('mobileNewTop');
+  const mobileSaveTop=document.getElementById('mobileSaveTop');
   const dismissSearch=e=>{
     if(!panel||panel.classList.contains('hidden'))return;
     const target=e.target;
@@ -37,6 +52,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('pointerdown',dismissSearch,true);
   document.addEventListener('touchstart',dismissSearch,{capture:true,passive:true});
   mobileNew?.addEventListener('click',()=>utilitySheet?.classList.remove('open'),true);
+  mobileNewTop?.addEventListener('click',()=>document.getElementById('newBtn')?.click());
+  mobileSaveTop?.addEventListener('click',()=>document.getElementById('exportBtn')?.click());
 });
 </script>
 </body>
