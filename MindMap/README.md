@@ -1,4 +1,4 @@
-# MindMap 1.6
+# MindMap 1.7
 
 A local-first brainstorming and mind-mapping experiment for Swamp.
 
@@ -11,12 +11,30 @@ A local-first brainstorming and mind-mapping experiment for Swamp.
 - Click directly on an idea's existing text to edit it inline without opening the properties panel.
 - Pressing **Enter** while using the inline text editor commits the edit and does **not** create another idea.
 - Click a connection line or its existing label to add, edit, remove, or relabel the connection text inline.
-- Connection lines have an enlarged invisible hit area so the join itself is practical to select on both mouse and touch interfaces.
+- Editing a connection no longer implicitly selects its child idea or opens that idea's properties panel.
 - Drag a non-root idea onto another idea to re-parent the entire branch; all descendants move with it.
-- While a branch is being dragged, the branch moves visually and its incoming join follows it.
-- When the dragged branch touches a valid new parent, that destination becomes magnetically latched for a short grace distance. The dotted reconnection line stretches as the branch moves away; only after roughly 100 px on desktop or 125 px on touch devices does the preview release and snap back to the original parent.
+- When a dragged branch touches a valid new parent, that destination remains magnetically latched through a short grace distance while the dotted reconnection preview stretches.
 - Undo is always available from the toolbar and with `Ctrl/Cmd+Z`.
 - Deleting an idea always asks for confirmation before removing the idea and its descendants.
+
+## Idea text and descriptions
+
+Each idea now has two separate content fields:
+
+- **Idea text** is the concise text shown inside the bubble.
+- **Description** is longer supporting information, notes, context, or detail that is shown in the idea properties panel rather than inside the bubble.
+- A bubble with a non-empty description shows a small data/notes indicator so the extra content is visible at a glance without cluttering the map.
+- Description edits are autosaved, undoable, included in JSON export/import, and searchable.
+- Existing v1.x maps are automatically upgraded in memory with an empty description field, so old maps continue to work.
+
+## Bubble readability
+
+Version 1.7 improves containment of idea text:
+
+- Idea text wraps into shorter lines instead of running beyond the bubble edge.
+- Bubble radius grows when necessary to accommodate the rendered text.
+- Very long labels use a bounded multi-line treatment with an ellipsis rather than spilling across neighbouring ideas.
+- Layout spacing was increased slightly to account for larger bubbles.
 
 ## Interaction-budget rule
 
@@ -48,9 +66,7 @@ Examples:
 
 ## Persistence
 
-Version 1.6 keeps the v1.x map schema in browser `localStorage` and autosaves changes. JSON export/import preserves structure, idea text, colours, connection labels, collapsed state, and view state.
-
-Existing v1.x maps continue to use the same storage key.
+Version 1.7 keeps the v1.x storage key and autosaves to browser `localStorage`. JSON export/import preserves structure, idea text, descriptions, colours, connection labels, collapsed state, and view state.
 
 ## Workspace lock
 
