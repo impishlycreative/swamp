@@ -1,94 +1,59 @@
-# MindMap 1.3
+# MindMap 1.4
 
 A local-first brainstorming and mind-mapping experiment for Swamp.
 
 ## Core interaction
 
 - Start from a central concept.
-- Select any idea and use **Add Idea** to branch from it.
-- The selected idea also gets a direct `+` control on the canvas.
-- **Double-click an idea on desktop to create a child idea immediately.**
-- **Double-tap an idea on touch devices to do the same.**
-- Adding an idea creates it immediately, selects it, centers it at a readable scale, and opens text editing so the user can type immediately.
-- First-level ideas distribute around the centre in a full 360° ring.
-- Deeper ideas fan outward from their parent so branches continue away from the centre instead of tangling back through the map.
-- Connections can be labelled.
-- Ideas can be recoloured.
-- Branches can be collapsed or isolated with Focus mode.
-- Search, recenter, fit, pan, and zoom are built in.
+- Select an idea and use **Add Idea**, its on-canvas `+`, double-click, or double-tap to create a child idea.
+- A newly created idea opens its properties beside the idea on desktop; that properties panel can be dragged anywhere within the canvas.
+- On mobile, new-idea editing opens in a compact bottom sheet so the map remains usable.
+- Click directly on an idea's existing text to edit it inline without opening the properties panel.
+- Click a connection line or its existing label to add, edit, remove, or relabel the connection text inline.
+- Drag a non-root idea onto another idea to re-parent the entire branch; all of its descendants move with it.
+- Undo is always available from the toolbar and with `Ctrl/Cmd+Z`.
+- Deleting an idea always asks for confirmation before removing the idea and its descendants.
 
 ## Interaction-budget rule
 
-This is a hard product rule, not a suggestion:
+This is a hard product requirement:
 
-- **Common actions: 1 interaction whenever the context is already selected.**
-- **Routine/secondary actions: no more than 2 interactions.**
-- **Anything else: 3 interactions maximum.**
+- Common actions: 1 interaction whenever the context is already selected.
+- Routine/secondary actions: no more than 2 interactions.
+- Anything else: 3 interactions maximum.
 - The same budget applies on desktop and mobile.
-- Important functions must never be buried in deep menus simply to make the interface look minimal.
 
 Examples:
 
-- Double-click/double-tap an idea to create a child: 1 gesture.
-- Add from the selected idea: 1 action.
-- Add directly from a selected canvas idea using its `+`: 1 action.
-- Edit selected idea text on mobile: **Edit** once; the keyboard opens on the text.
-- Focus selected branch on mobile: **Focus** once.
-- Change colour, label a connection, collapse, center, or delete: **More** then the action — no more than 2 actions from a selected idea.
-- Search and jump: search, choose result — 2 actions.
-- Export/import/lock: utility menu then action — 2 actions.
-- New map: utility menu, New map, confirm — 3 actions.
+- Double-click/double-tap an idea to add a child: 1 gesture.
+- Click idea text to edit it inline: 1 gesture.
+- Click a connection to label or relabel it: 1 gesture.
+- Drag a branch onto a new parent to re-parent it: 1 gesture.
+- Undo: 1 action.
+- Delete: Delete, then confirm.
+
+## Layout and organization
+
+- First-level ideas distribute automatically around the central idea.
+- Deeper ideas fan outward from their parent.
+- Re-parenting a branch preserves all descendants and lets the automatic layout reorganize around the new parent.
+- Branches can be collapsed or isolated with Focus mode.
+- Search, recenter, fit, pan, and zoom are built in.
 
 ## Persistence
 
-Version 1.3 stores the complete map in browser `localStorage` and autosaves changes. JSON export/import preserves map structure, idea text, colours, connection labels, collapsed state, and view state.
+Version 1.4 stores the complete map in browser `localStorage` and autosaves changes. JSON export/import preserves structure, idea text, colours, connection labels, collapsed state, and view state.
 
-Existing v1.x maps continue to use the same storage key and are migrated when opened.
+Existing v1.x maps continue to use the same storage key.
 
 ## Workspace lock
 
-The static build includes a browser-local workspace lock using Web Crypto PBKDF2. The passphrase hash and map remain in the browser. This is a local privacy gate, not server-backed multi-user authentication.
+The static build includes a browser-local workspace lock using Web Crypto PBKDF2. This is a local privacy gate, not server-backed multi-user authentication.
 
-## Responsive behaviour
+## Desktop and mobile
 
-The same data and application logic are used on desktop and mobile, but the interaction surface is intentionally different.
+Desktop keeps a movable idea-properties panel and full toolbar controls. Mobile remains canvas-first with floating controls, contextual actions, a compact bottom sheet, one-finger panning, and pinch zoom.
 
-### Desktop
+## Design principle
 
-- Full toolbar controls.
-- Persistent right-side inspector when an idea is selected.
-- Double-click an idea to create a child immediately.
-- Wheel zoom and pointer panning.
-- Keyboard shortcuts for frequent actions.
-
-### Mobile
-
-Mobile is **canvas first** rather than a compressed desktop layout.
-
-- The map fills the screen.
-- The top controls become a small floating cluster instead of consuming a permanent row.
-- Selecting an idea does **not** automatically cover the map with the inspector.
-- Double-tap an idea to create a child immediately.
-- A compact contextual bar appears with four immediate actions: **Idea, Edit, Focus, More**.
-- The selected idea keeps its direct on-canvas `+` control.
-- **Edit** opens a small temporary bottom sheet containing only the text editor.
-- **More** opens the bottom sheet with colour, connection label, collapse, center, delete, and Add Idea.
-- The bottom sheet can be closed with `×` or dragged downward by its handle.
-- Export, Import, New map, Lock, and Back to Swamp live in a single-level utility menu.
-- One-finger drag pans the canvas.
-- Two-finger pinch zooms.
-- Touch targets are approximately 44 px or larger.
-- Imported or older maps open centered at a readable scale rather than automatically shrinking the entire map to fit the phone screen.
-- Mobile mode is detected by both viewport size and touch/coarse-pointer characteristics so iPhone Safari still receives the mobile UI even when it is presenting a desktop-style viewport.
-
-## Navigation
-
-Desktop exposes Back to Swamp directly. Mobile exposes it in the single-level utility menu, keeping it within two taps.
-
-## Design goals
-
-The interface should feel polished, calm, visually balanced, and desirable to use while remaining extremely fast. The map should dominate the screen; controls should appear contextually rather than permanently consuming canvas space.
-
-Minimalism must come from good defaults and progressive presentation, not from hiding important capability.
-
-The central design challenge is to keep the application simple while the user's information becomes complex.
+The map should dominate the screen. Important actions should be immediate and discoverable rather than buried in menus.
