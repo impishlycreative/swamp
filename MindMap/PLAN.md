@@ -29,8 +29,11 @@ These are core product behaviours:
 
 - **Double-click / double-tap an idea:** create a child idea immediately.
 - **Click existing idea text:** edit the text inline on the canvas without requiring the properties dialog.
+- **Press Enter while inline-editing idea text:** commit the edit only; never interpret that Enter as Add Idea.
 - **Click a connection line or its label:** add, edit, remove, or relabel connection text inline.
+- Connection lines must have a forgiving hit target larger than the visible stroke.
 - **Drag an idea onto another idea:** re-parent that idea and its entire descendant branch under the new parent.
+- During a drag, the branch and its join must visibly follow the pointer. When hovering a valid new parent, the join must preview the new connection before drop.
 - **Undo:** always one action away; keyboard shortcut `Ctrl/Cmd+Z` on desktop.
 - **Delete:** always ask for confirmation before deleting an idea and its descendants.
 
@@ -64,11 +67,23 @@ The structure must support direct branch movement:
 
 - The root concept cannot be re-parented.
 - A dragged idea may be dropped on another valid idea.
-- The dragged idea's descendants remain attached to it.
+- The dragged idea's descendants remain attached to it and move with it during the drag preview.
+- The existing incoming join follows the moving branch while dragging.
+- When the pointer enters a valid destination idea, the incoming join previews a connection from that destination to the dragged branch before the user releases it.
 - An idea cannot be dropped onto itself or one of its own descendants.
 - The destination idea is visually highlighted while dragging over a valid target.
 - After drop, automatic radial/fan layout reorganizes the branch beneath the new parent.
 - Re-parenting is undoable.
+
+## Connection editing
+
+Connections are first-class editable objects in the interaction model even though they are stored on the child relationship in v1.x.
+
+- Clicking anywhere on the visible join or its enlarged hit region opens an inline connection-label editor.
+- Clicking an existing connection label opens the same editor.
+- A label created in the properties dialog remains editable afterward from either the line or label itself.
+- An empty committed label removes the visible label without removing the join.
+- Connection-label edits are undoable.
 
 ## Undo model
 
@@ -93,6 +108,7 @@ The history is local to the current browser session and does not need to be expo
 - Muted, harmonious colour palette.
 - Smooth radial composition.
 - Clear selection and drop-target states.
+- A re-connecting join should visibly change treatment during drag so the destination relationship is obvious before release.
 - Minimal permanent chrome.
 - Strong typography and whitespace.
 - The map should remain the dominant visual element.
@@ -128,7 +144,7 @@ Use one underlying application and data model, but do not force the desktop inte
 
 - Movable contextual properties dialog.
 - Inline text and connection-label editing.
-- Drag-and-drop branch re-parenting.
+- Drag-and-drop branch re-parenting with live branch/join preview.
 - Wheel zoom and pointer panning.
 - Keyboard shortcuts.
 
@@ -144,18 +160,20 @@ Use one underlying application and data model, but do not force the desktop inte
 - Touch branch dragging for re-parenting where the gesture can be resolved without interfering with canvas panning.
 - One-finger canvas panning and two-finger pinch zooming.
 
-## Current v1.4 implementation
+## Current v1.5 implementation
 
-Implemented in `MindMap/index.html`:
+Implemented across `MindMap/index.html`, `MindMap/app.js`, and `MindMap/style.css`:
 
 - Central concept and automatic radial layout.
 - Add Idea button and direct on-canvas `+`.
 - Double-click/double-tap child creation.
 - Properties dialog positioned beside new ideas on desktop.
 - Draggable desktop properties dialog.
-- Inline idea-text editing.
-- Inline connection label/relabel editing.
+- Inline idea-text editing with Enter isolated from the Add Idea shortcut.
+- Reliable inline connection label/relabel editing from both the join and existing label.
+- Enlarged invisible join hit target.
 - Drag-and-drop branch re-parenting with descendant preservation and invalid-target protection.
+- Live dragged-branch movement and live join reconnection preview to candidate parents.
 - Undo toolbar control and `Ctrl/Cmd+Z`.
 - Delete confirmation.
 - Colour editing.
