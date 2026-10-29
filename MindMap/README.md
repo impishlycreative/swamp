@@ -1,4 +1,4 @@
-# MindMap 1.5
+# MindMap 1.6
 
 A local-first brainstorming and mind-mapping experiment for Swamp.
 
@@ -13,7 +13,8 @@ A local-first brainstorming and mind-mapping experiment for Swamp.
 - Click a connection line or its existing label to add, edit, remove, or relabel the connection text inline.
 - Connection lines have an enlarged invisible hit area so the join itself is practical to select on both mouse and touch interfaces.
 - Drag a non-root idea onto another idea to re-parent the entire branch; all descendants move with it.
-- While a branch is being dragged, the branch moves visually and its incoming join follows it. When a valid new parent is targeted, the join previews the reconnection to that parent before the drop.
+- While a branch is being dragged, the branch moves visually and its incoming join follows it.
+- When the dragged branch touches a valid new parent, that destination becomes magnetically latched for a short grace distance. The dotted reconnection line stretches as the branch moves away; only after roughly 100 px on desktop or 125 px on touch devices does the preview release and snap back to the original parent.
 - Undo is always available from the toolbar and with `Ctrl/Cmd+Z`.
 - Deleting an idea always asks for confirmation before removing the idea and its descendants.
 
@@ -41,12 +42,13 @@ Examples:
 - Deeper ideas fan outward from their parent.
 - Re-parenting a branch preserves all descendants and lets the automatic layout reorganize around the new parent.
 - The live drag preview shows the branch and connection moving before the structural change is committed.
+- Candidate parents use drag hysteresis so brief pointer movement away from a target does not immediately cancel the intended drop.
 - Branches can be collapsed or isolated with Focus mode.
 - Search, recenter, fit, pan, and zoom are built in.
 
 ## Persistence
 
-Version 1.5 stores the complete map in browser `localStorage` and autosaves changes. JSON export/import preserves structure, idea text, colours, connection labels, collapsed state, and view state.
+Version 1.6 keeps the v1.x map schema in browser `localStorage` and autosaves changes. JSON export/import preserves structure, idea text, colours, connection labels, collapsed state, and view state.
 
 Existing v1.x maps continue to use the same storage key.
 
