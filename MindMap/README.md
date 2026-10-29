@@ -7,6 +7,8 @@ A local-first brainstorming and mind-mapping experiment for Swamp.
 - Start from a central concept.
 - Select any idea and use **Add Idea** to branch from it.
 - The selected idea also gets a direct `+` control on the canvas.
+- **Double-click an idea on desktop to create a child idea immediately.**
+- **Double-tap an idea on touch devices to do the same.**
 - Adding an idea creates it immediately, selects it, centers it at a readable scale, and opens text editing so the user can type immediately.
 - First-level ideas distribute around the centre in a full 360° ring.
 - Deeper ideas fan outward from their parent so branches continue away from the centre instead of tangling back through the map.
@@ -27,6 +29,7 @@ This is a hard product rule, not a suggestion:
 
 Examples:
 
+- Double-click/double-tap an idea to create a child: 1 gesture.
 - Add from the selected idea: 1 action.
 - Add directly from a selected canvas idea using its `+`: 1 action.
 - Edit selected idea text on mobile: **Edit** once; the keyboard opens on the text.
@@ -54,6 +57,7 @@ The same data and application logic are used on desktop and mobile, but the inte
 
 - Full toolbar controls.
 - Persistent right-side inspector when an idea is selected.
+- Double-click an idea to create a child immediately.
 - Wheel zoom and pointer panning.
 - Keyboard shortcuts for frequent actions.
 
@@ -64,6 +68,7 @@ Mobile is **canvas first** rather than a compressed desktop layout.
 - The map fills the screen.
 - The top controls become a small floating cluster instead of consuming a permanent row.
 - Selecting an idea does **not** automatically cover the map with the inspector.
+- Double-tap an idea to create a child immediately.
 - A compact contextual bar appears with four immediate actions: **Idea, Edit, Focus, More**.
 - The selected idea keeps its direct on-canvas `+` control.
 - **Edit** opens a small temporary bottom sheet containing only the text editor.
