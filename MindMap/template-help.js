@@ -65,14 +65,14 @@ function updateExamples(){
   const template=document.getElementById('templateHelpKicker')?.textContent?.trim()||'';
   const title=document.getElementById('templateHelpTitle')?.textContent?.trim()||'';
   const items=EXAMPLES[template]?.[title]||['A new problem appears.','A choice changes what happens next.'];
-  list.innerHTML='';for(const text of items){const li=document.createElement('li');li.textContent=text;list.appendChild(li);}
+  list.replaceChildren(...items.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
 }
 function updateVersionUi(){
   document.title=document.title.replace(/MindMap\s+[^—]+—/,'MindMap 2.6.2 —');const small=document.querySelector('.brand small');if(small)small.textContent='Swamp · v2.6.2';if(app())app().version='2.6.2';
 }
 function watch(){
   ensureUi();updateVersionUi();updateExamples();
-  const dialog=document.getElementById('templateHelpDialog');if(dialog&&!dialog._examplesObserver){const obs=new MutationObserver(updateExamples);obs.observe(dialog,{attributes:true,attributeFilter:['class'],subtree:true,childList:true,characterData:true});dialog._examplesObserver=obs;}
+  const dialog=document.getElementById('templateHelpDialog');if(dialog&&!dialog._examplesObserver){const obs=new MutationObserver(updateExamples);obs.observe(dialog,{attributes:true,attributeFilter:['class']});dialog._examplesObserver=obs;}
 }
 window.addEventListener('DOMContentLoaded',watch);
 setTimeout(watch,0);
