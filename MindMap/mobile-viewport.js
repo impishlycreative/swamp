@@ -5,9 +5,8 @@
   const context=document.getElementById('mobileContext');
   const svg=document.getElementById('svg');
 
-  // On mobile the toolbars are real layout rows, not floating elements that
-  // chase Safari's visual viewport. This keeps them mechanically attached to
-  // the top and bottom of the app while the map occupies the space between.
+  // Mobile toolbars are structural layout rows. Nothing tracks Safari's
+  // scrolling visual viewport, so the bars do not float, chase, or lag.
   if(app&&workspace&&context&&context.parentElement===workspace){
     workspace.insertAdjacentElement('afterend',context);
   }
@@ -68,51 +67,86 @@
 
   if(!svg)return;
 
-  // The original app only starts a canvas pan when the first touch lands on
-  // blank SVG. On a dense map, nodes and wide edge hit areas therefore feel
-  // sticky. For touch input, route a drag that starts on map content through
-  // the app's existing pan code. A tap still reaches the normal node/edge
-  // click handler; only a real drag suppresses that click.
-  const bridged=new Map();
+  // Touch gesture policy:
+  //   drag immediately = pan the map
+  //   tap = normal node/edge action
+  //   hold briefly, then drag a node = move that branch
+  // This removes the sticky feeling caused by nodes and wide edge hit areas
+  // swallowing the first touch while preserving deliberate node dragging.
+  const touches=new Map();
   let suppressClickUntil=0;
-  const PAN_THRESHOLD=6;
+  const PAN_THRESHOLD=7;
+  const NODE_DRAG_HOLD_MS=360;
   const PAN_CONTENT='.node,.edge-hit,.edge,.edge-label-group';
+
+  const pointerInit=(e,x=e.clientX,y=e.clientY,buttons=e.buttons)=>({
+    bubbles:true,cancelable:true,composed:true,
+    pointerId:e.pointerId,pointerType:'touch',isPrimary:e.isPrimary,
+    clientX:x,clientY:y,screenX:e.screenX,screenY:e.screenY,
+    button:0,buttons,width:e.width,height:e.height,pressure:e.pressure
+  });
 
   svg.addEventListener('pointerdown',e=>{
     if(!isMobile()||!e.isTrusted||e.pointerType!=='touch')return;
     if(e.target===svg||e.target.closest?.('.quick-add'))return;
     if(!e.target.closest?.(PAN_CONTENT))return;
 
-    bridged.set(e.pointerId,{x:e.clientX,y:e.clientY,moved:false});
-    e.stopImmediatePropagation();
-
-    const proxy=new PointerEvent('pointerdown',{
-      bubbles:true,cancelable:true,composed:true,
-      pointerId:e.pointerId,pointerType:'touch',isPrimary:e.isPrimary,
-      clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,
-      button:0,buttons:1,width:e.width,height:e.height,pressure:e.pressure
+    const node=e.target.closest?.('.node')||null;
+    const tag=(e.target.tagName||'').toLowerCase();
+    const canNodeDrag=!!node&&!node.classList.contains('root')&&tag!=='text';
+    touches.set(e.pointerId,{
+      x:e.clientX,y:e.clientY,time:performance.now(),
+      mode:'pending',node,canNodeDrag
     });
-    svg.dispatchEvent(proxy);
-
-    // app.js captures the proxy pointer. Release immediately so a stationary
-    // touch can still click the original node/text/edge, while move/up events
-    // continue to bubble through SVG and drive the already-started pan.
-    try{if(svg.hasPointerCapture?.(e.pointerId))svg.releasePointerCapture(e.pointerId);}catch{}
+    // Do not stop the down event. A stationary touch remains a normal tap,
+    // and a held node keeps the app's existing branch-drag behaviour.
   },true);
 
-  svg.addEventListener('pointermove',e=>{
-    const p=bridged.get(e.pointerId);if(!p)return;
-    if(!p.moved&&Math.hypot(e.clientX-p.x,e.clientY-p.y)>=PAN_THRESHOLD){
-      p.moved=true;
-      suppressClickUntil=Date.now()+400;
+  const beginPan=(e,p)=>{
+    // If app.js already armed a node drag, cancel it cleanly before panning.
+    if(p.canNodeDrag&&p.node){
+      try{if(p.node.hasPointerCapture?.(e.pointerId))p.node.releasePointerCapture(e.pointerId);}catch{}
+      p.node.dispatchEvent(new PointerEvent('pointercancel',pointerInit(e,e.clientX,e.clientY,0)));
     }
-    if(p.moved&&e.cancelable)e.preventDefault();
+
+    p.mode='pan';
+    suppressClickUntil=Date.now()+450;
+
+    // Start the app's own pan state at the original finger-down coordinate.
+    svg.dispatchEvent(new PointerEvent('pointerdown',pointerInit(e,p.x,p.y,1)));
+    try{if(svg.hasPointerCapture?.(e.pointerId))svg.releasePointerCapture(e.pointerId);}catch{}
+
+    // Apply the movement that caused the gesture to become a pan.
+    svg.dispatchEvent(new PointerEvent('pointermove',pointerInit(e,e.clientX,e.clientY,1)));
+  };
+
+  svg.addEventListener('pointermove',e=>{
+    const p=touches.get(e.pointerId);if(!p)return;
+    if(p.mode==='pan'){
+      if(e.cancelable)e.preventDefault();
+      return;
+    }
+    if(p.mode==='node')return;
+
+    const dist=Math.hypot(e.clientX-p.x,e.clientY-p.y);
+    if(dist<PAN_THRESHOLD)return;
+
+    // A deliberate hold on a draggable node retains branch dragging.
+    if(p.canNodeDrag&&performance.now()-p.time>=NODE_DRAG_HOLD_MS){
+      p.mode='node';
+      return;
+    }
+
+    // Movement before the hold threshold means the user is navigating.
+    if(e.cancelable)e.preventDefault();
+    e.stopImmediatePropagation();
+    beginPan(e,p);
   },true);
 
   const finish=e=>{
-    const p=bridged.get(e.pointerId);if(!p)return;
-    if(p.moved)suppressClickUntil=Date.now()+400;
-    bridged.delete(e.pointerId);
+    const p=touches.get(e.pointerId);if(!p)return;
+    if(p.mode==='pan')suppressClickUntil=Date.now()+450;
+    touches.delete(e.pointerId);
   };
   svg.addEventListener('pointerup',finish,true);
   svg.addEventListener('pointercancel',finish,true);
