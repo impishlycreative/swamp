@@ -154,7 +154,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(!style){
       style=document.createElement('style');
       style.id='mindmapPrintStyle';
-      style.textContent='@media print{@page{size:landscape;margin:.3in}body{background:#fff!important}body>*{visibility:hidden!important}#app,#workspace,#svg,#svg *{visibility:visible!important}#app{display:block!important;position:static!important}#workspace{position:fixed!important;inset:0!important;background:#fff!important}#workspace>.grid,#inspector,#mobileContext,.mini,.toast,.search,.utility-sheet{display:none!important}#svg{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:#fff!important}}';
+      style.textContent='@media print{@page{size:landscape;margin:.3in}body{background:#fff!important}body>*{visibility:hidden!important}#app,#workspace,#svg,#svg *{visibility:visible!important}#app{display:block!important;position:static!important}.topbar{display:none!important}#workspace{position:fixed!important;inset:0!important;background:#fff!important}#workspace>.grid,#inspector,#mobileContext,.mini,.toast,.search,.utility-sheet{display:none!important}#svg{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background:#fff!important}}';
       document.head.appendChild(style);
     }
     const cleanup=()=>{style?.remove();window.removeEventListener('afterprint',cleanup);};
