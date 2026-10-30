@@ -1,0 +1,125 @@
+{
+  "$schema": "https://impishlycreative.github.io/swamp/MindMap/schema/swamp-mindmap.schema.json",
+  "format": "swamp-mindmap",
+  "schemaVersion": "1.0",
+  "kind": "project",
+  "reference": "https://impishlycreative.github.io/swamp/MindMap/JSON_REFERENCE.md",
+  "exportedAt": "2026-10-30T18:30:00.000Z",
+  "version": "2.6.0",
+  "id": "p_example_novel",
+  "title": "Example Novel Project",
+  "created": "2026-10-30T18:30:00.000Z",
+  "updated": "2026-10-30T18:30:00.000Z",
+  "currentMapId": "m_example_overview",
+  "sessions": {
+    "m_example_overview": {
+      "version": "2.6.0",
+      "id": "m_example_overview",
+      "title": "Novel Overview",
+      "created": "2026-10-30T18:30:00.000Z",
+      "updated": "2026-10-30T18:30:00.000Z",
+      "rootId": "n_overview_root",
+      "nodes": {
+        "n_overview_root": {
+          "id": "n_overview_root",
+          "text": "Novel Overview",
+          "description": "High-level planning map.",
+          "parentId": null,
+          "color": "#F2D8A7",
+          "edgeLabel": "",
+          "collapsed": false,
+          "created": "2026-10-30T18:30:00.000Z",
+          "x": null,
+          "y": null,
+          "targetMapId": null
+        },
+        "n_overview_character": {
+          "id": "n_overview_character",
+          "text": "Protagonist",
+          "description": "Open the detailed character map.",
+          "parentId": "n_overview_root",
+          "color": "#DCEBE4",
+          "edgeLabel": "follows",
+          "collapsed": false,
+          "created": "2026-10-30T18:30:00.000Z",
+          "x": null,
+          "y": null,
+          "targetMapId": "m_example_character"
+        },
+        "n_overview_conflict": {
+          "id": "n_overview_conflict",
+          "text": "Main conflict",
+          "description": "The protagonist discovers a cover-up and has limited time to expose it.",
+          "parentId": "n_overview_root",
+          "color": "#D8E5F2",
+          "edgeLabel": "drives",
+          "collapsed": false,
+          "created": "2026-10-30T18:30:00.000Z",
+          "x": null,
+          "y": null,
+          "targetMapId": null
+        }
+      },
+      "view": {
+        "x": 0,
+        "y": 0,
+        "scale": 1
+      }
+    },
+    "m_example_character": {
+      "version": "2.6.0",
+      "id": "m_example_character",
+      "title": "Protagonist",
+      "created": "2026-10-30T18:30:00.000Z",
+      "updated": "2026-10-30T18:30:00.000Z",
+      "rootId": "n_character_root",
+      "nodes": {
+        "n_character_root": {
+          "id": "n_character_root",
+          "text": "Protagonist",
+          "description": "A cautious archivist who notices records have been altered.",
+          "parentId": null,
+          "color": "#F2D8A7",
+          "edgeLabel": "",
+          "collapsed": false,
+          "created": "2026-10-30T18:30:00.000Z",
+          "x": null,
+          "y": null,
+          "targetMapId": null
+        },
+        "n_character_goal": {
+          "id": "n_character_goal",
+          "text": "Goal",
+          "description": "Prove the records were deliberately changed.",
+          "parentId": "n_character_root",
+          "color": "#DCEBE4",
+          "edgeLabel": "wants",
+          "collapsed": false,
+          "created": "2026-10-30T18:30:00.000Z",
+          "x": null,
+          "y": null,
+          "targetMapId": null
+        },
+        "n_character_fear": {
+          "id": "n_character_fear",
+          "text": "Fear",
+          "description": "Being publicly wrong and losing professional credibility.",
+          "parentId": "n_character_root",
+          "color": "#E7DCF2",
+          "edgeLabel": "held back by",
+          "collapsed": false,
+          "created": "2026-10-30T18:30:00.000Z",
+          "x": null,
+          "y": null,
+          "targetMapId": null
+        }
+      },
+      "view": {
+        "x": 0,
+        "y": 0,
+        "scale": 1
+      }
+    }
+  },
+  "templateHistory": []
+}
