@@ -30,7 +30,35 @@
         left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
         transform:none!important;
         width:100%!important;
+        min-width:0!important;
+        overflow:hidden!important;
         grid-row:1!important;
+      }
+      #app>.topbar .toolbar{
+        display:flex!important;
+        flex-wrap:nowrap!important;
+        align-items:center!important;
+        justify-content:flex-start!important;
+        width:100%!important;
+        min-width:0!important;
+        max-width:none!important;
+        overflow:hidden!important;
+        overflow-x:hidden!important;
+        -webkit-overflow-scrolling:auto!important;
+        gap:3px!important;
+        padding:4px 5px!important;
+      }
+      #app>.topbar .toolbar .map-select{
+        flex:1 1 auto!important;
+        min-width:58px!important;
+        max-width:none!important;
+        width:auto!important;
+      }
+      #app>.topbar .toolbar .btn.icon{
+        flex:0 0 35px!important;
+        width:35px!important;
+        min-width:35px!important;
+        max-width:35px!important;
       }
       #workspace.workspace{
         position:relative!important;
@@ -61,6 +89,11 @@
       }
       #workspace .toast{bottom:16px!important;top:auto!important}
       #workspace .edge-hit{stroke-width:24!important}
+    }
+    @media(max-width:380px){
+      #app>.topbar .toolbar{gap:2px!important;padding-left:3px!important;padding-right:3px!important}
+      #app>.topbar .toolbar .map-select{min-width:48px!important}
+      #app>.topbar .toolbar .btn.icon{flex-basis:32px!important;width:32px!important;min-width:32px!important;max-width:32px!important}
     }
   `;
   document.head.appendChild(style);
