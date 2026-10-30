@@ -22,6 +22,15 @@
 .rapidfire-actions{display:grid;grid-template-columns:1fr 88px;gap:8px;margin-top:14px}
 .rapidfire-check{font-size:1.65rem;line-height:1}
 .rapidfire-help{margin-top:10px;color:var(--muted);font-size:.76rem;text-align:center}
+.export-card{width:min(520px,100%);padding:22px}
+.export-card h2{margin:0 0 6px}
+.export-card>p{margin:0 0 16px;color:var(--muted)}
+.export-options{display:grid;gap:9px}
+.export-option{display:flex;align-items:flex-start;text-align:left;gap:12px;width:100%;padding:13px 14px}
+.export-option strong{display:block;margin-bottom:3px}
+.export-option small{display:block;color:var(--muted);font-weight:500;line-height:1.35}
+.export-icon{font-size:1.35rem;line-height:1.2;min-width:28px;text-align:center}
+.export-cancel{margin-top:12px;width:100%}
 @media(max-width:850px),(hover:none) and (pointer:coarse){
   #fitTopBtn{display:none!important}
   #mobileNewTop,#mobileSaveTop{display:inline-flex!important}
@@ -31,6 +40,7 @@
   .mobile-context .context-btn{min-width:56px;padding:5px 6px}
   .rapidfire-modal{place-items:end center;padding:8px}
   .rapidfire-card{width:100%;max-width:560px;border-radius:24px;padding:18px;margin-bottom:env(safe-area-inset-bottom)}
+  .export-card{width:100%;max-width:560px;border-radius:24px;padding:18px;margin-bottom:env(safe-area-inset-bottom)}
   .rapidfire-card textarea{font-size:16px}
   #rapidfireIdea{min-height:78px}
   #rapidfireDescription{min-height:90px}
@@ -53,225 +63,10 @@
 <div class="mini"><button id="zoomOut" class="btn icon">−</button><div id="zoomReadout" class="zoom">100%</div><button id="zoomIn" class="btn icon">＋</button><button id="fitBtn" class="btn icon">⌂</button></div><div id="toast" class="toast"></div><div id="searchPanel" class="search hidden"><input id="searchInput" class="input" placeholder="Search ideas and descriptions…"><div id="searchResults" class="search-results"></div></div></main></div>
 <div id="newDialog" class="modal hidden"><div class="card"><h2>Start a fresh map?</h2><p>This replaces the current map in this browser. You can undo it afterward.</p><div style="display:flex;gap:8px"><button id="cancelNew" class="btn">Cancel</button><button id="confirmNew" class="btn danger">Start fresh</button></div></div></div>
 <div id="rapidfireDialog" class="modal rapidfire-modal hidden" role="dialog" aria-modal="true" aria-labelledby="rapidfireTitle"><div class="card rapidfire-card"><div class="rapidfire-head"><div><h2 id="rapidfireTitle">Rapidfire</h2><p id="rapidfireParent">Adding ideas</p></div><div id="rapidfireCount" class="rapidfire-count" title="Ideas added this session">0</div></div><form id="rapidfireForm"><div class="field"><label for="rapidfireIdea">Idea</label><textarea id="rapidfireIdea" maxlength="500" required autocomplete="off" placeholder="What comes to mind?"></textarea></div><div class="field"><label for="rapidfireDescription">Description <span style="text-transform:none;letter-spacing:0;font-weight:650">(optional)</span></label><textarea id="rapidfireDescription" maxlength="5000" placeholder="A little context, if useful"></textarea></div><div class="rapidfire-actions"><button id="rapidfireCancel" class="btn" type="button">Cancel</button><button id="rapidfireAccept" class="btn primary rapidfire-check" type="submit" aria-label="Accept idea">✓</button></div></form><div class="rapidfire-help">Enter in Idea accepts · Shift+Enter adds a line · Esc ends Rapidfire</div></div></div>
+<div id="exportDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="exportTitle"><div class="card export-card"><h2 id="exportTitle">Save / Export</h2><p>Choose how to save the current mind map.</p><div class="export-options"><button id="exportJson" class="btn export-option" type="button"><span class="export-icon">{ }</span><span><strong>MindMap data (.json)</strong><small>Structural map file for backup, transfer, and later import.</small></span></button><button id="exportWord" class="btn export-option" type="button"><span class="export-icon">W</span><span><strong>Word outline (.docx)</strong><small>Root idea first, then parent/child branches as indented hierarchical text, including descriptions.</small></span></button><button id="exportPdf" class="btn export-option" type="button"><span class="export-icon">▧</span><span><strong>Visual map (PDF)</strong><small>Fits the current bubble map and opens the browser print dialog for PDF output.</small></span></button></div><button id="exportCancel" class="btn export-cancel" type="button">Cancel</button></div></div>
 <script src="drag-hysteresis.js?v=1.8.4" defer></script>
 <script src="app.js?v=1.8.4" defer></script>
-<script>
-window.addEventListener('DOMContentLoaded',()=>{
-  const panel=document.getElementById('searchPanel');
-  const button=document.getElementById('searchBtn');
-  const input=document.getElementById('searchInput');
-  const utilitySheet=document.getElementById('utilitySheet');
-  const mobileNew=document.getElementById('mobileNew');
-  const mobileNewTop=document.getElementById('mobileNewTop');
-  const mobileSaveTop=document.getElementById('mobileSaveTop');
-  const rapidBtn=document.getElementById('rapidfireBtn');
-  const contextRapid=document.getElementById('contextRapid');
-  const rapidDialog=document.getElementById('rapidfireDialog');
-  const rapidForm=document.getElementById('rapidfireForm');
-  const rapidIdea=document.getElementById('rapidfireIdea');
-  const rapidDescription=document.getElementById('rapidfireDescription');
-  const rapidAccept=document.getElementById('rapidfireAccept');
-  const rapidCancel=document.getElementById('rapidfireCancel');
-  const rapidParent=document.getElementById('rapidfireParent');
-  const rapidCount=document.getElementById('rapidfireCount');
-  const rapid={active:false,parentId:null,parentLabel:'',count:0,busy:false};
-
-  const dismissSearch=e=>{
-    if(!panel||panel.classList.contains('hidden'))return;
-    const target=e.target;
-    if(panel.contains(target)||button?.contains(target))return;
-    panel.classList.add('hidden');
-    input?.blur();
-  };
-  document.addEventListener('pointerdown',dismissSearch,true);
-  document.addEventListener('touchstart',dismissSearch,{capture:true,passive:true});
-  mobileNew?.addEventListener('click',()=>utilitySheet?.classList.remove('open'),true);
-  mobileNewTop?.addEventListener('click',()=>document.getElementById('newBtn')?.click());
-  mobileSaveTop?.addEventListener('click',()=>document.getElementById('exportBtn')?.click());
-
-  const getSelectedNode=()=>document.querySelector('#nodes .node.selected');
-  const getNodeById=id=>Array.from(document.querySelectorAll('#nodes .node')).find(node=>node.dataset.id===id)||null;
-  const getNodeLabel=node=>Array.from(node?.querySelectorAll('.idea-text')||[]).map(t=>t.textContent.trim()).filter(Boolean).join(' ')||'selected idea';
-  const showToast=message=>{
-    const toast=document.getElementById('toast');
-    if(!toast)return;
-    toast.textContent=message;
-    toast.classList.add('show');
-    clearTimeout(toast._rapidTimer);
-    toast._rapidTimer=setTimeout(()=>toast.classList.remove('show'),1500);
-  };
-  const setRapidButtons=active=>{
-    rapidBtn?.classList.toggle('rapid-active',active);
-    contextRapid?.classList.toggle('rapid-active',active);
-  };
-  const resetRapidInputs=()=>{
-    rapidIdea.value='';
-    rapidDescription.value='';
-    requestAnimationFrame(()=>rapidIdea.focus());
-  };
-  const openRapidfireFor=node=>{
-    if(!node?.dataset.id)return;
-    detachRapidChooser();
-    rapid.active=true;
-    rapid.parentId=node.dataset.id;
-    rapid.parentLabel=getNodeLabel(node);
-    rapid.count=0;
-    rapid.busy=false;
-    setRapidButtons(true);
-    panel?.classList.add('hidden');
-    input?.blur();
-    utilitySheet?.classList.remove('open');
-    rapidParent.textContent=`Adding ideas to “${rapid.parentLabel}”`;
-    rapidCount.textContent='0';
-    rapidDialog.classList.remove('hidden');
-    resetRapidInputs();
-  };
-  const endRapidfire=()=>{
-    detachRapidChooser();
-    rapid.active=false;
-    rapid.parentId=null;
-    rapid.parentLabel='';
-    rapid.count=0;
-    rapid.busy=false;
-    rapidDialog.classList.add('hidden');
-    rapidAccept.disabled=false;
-    setRapidButtons(false);
-    rapidIdea.value='';
-    rapidDescription.value='';
-    showToast('Rapidfire ended');
-  };
-  const armOrOpenRapidfire=()=>{
-    const selected=getSelectedNode();
-    if(selected){openRapidfireFor(selected);return;}
-    rapid.active=true;
-    rapid.parentId=null;
-    rapid.count=0;
-    setRapidButtons(true);
-    attachRapidChooser();
-    showToast('Rapidfire on — choose a node');
-  };
-
-  rapidBtn?.addEventListener('click',e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    if(rapid.active)endRapidfire();
-    else armOrOpenRapidfire();
-  });
-  contextRapid?.addEventListener('click',e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    const selected=getSelectedNode();
-    if(selected)openRapidfireFor(selected);
-  });
-
-  const chooseRapidParent=e=>{
-    if(!rapid.active||rapid.parentId||!rapidDialog.classList.contains('hidden')||!e.isTrusted)return;
-    const node=e.target.closest?.('#nodes .node');
-    if(!node)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    openRapidfireFor(node);
-  };
-  let rapidChooserAttached=false;
-  function attachRapidChooser(){
-    if(rapidChooserAttached)return;
-    document.addEventListener('click',chooseRapidParent,true);
-    rapidChooserAttached=true;
-  }
-  function detachRapidChooser(){
-    if(!rapidChooserAttached)return;
-    document.removeEventListener('click',chooseRapidParent,true);
-    rapidChooserAttached=false;
-  }
-
-  const clickSvgNode=node=>{
-    if(!node)return false;
-    return node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
-  };
-
-  const addRapidIdea=()=>{
-    if(rapid.busy||!rapid.parentId)return;
-    const idea=rapidIdea.value.trim();
-    const description=rapidDescription.value.trim();
-    if(!idea){rapidIdea.focus();return;}
-    rapid.busy=true;
-    rapidAccept.disabled=true;
-    let added=false;
-
-    try{
-      let parent=getNodeById(rapid.parentId);
-      if(!parent)throw new Error('Rapidfire parent is no longer available');
-
-      // quickAdd selects the child it creates. Before the next rapid entry,
-      // safely move selection back to the original parent. Touch mode treats
-      // two fast clicks on the same node as a double-tap add, so first click
-      // the currently selected child to reset that tap sequence.
-      if(!parent.classList.contains('selected')){
-        const current=getSelectedNode();
-        if(current&&current.dataset.id!==rapid.parentId)clickSvgNode(current);
-        parent=getNodeById(rapid.parentId);
-        if(!parent||!clickSvgNode(parent))throw new Error('Could not select Rapidfire parent');
-        parent=getNodeById(rapid.parentId);
-        if(!parent?.classList.contains('selected'))throw new Error('Could not select Rapidfire parent');
-      }
-
-      const addButton=document.getElementById('addBtn');
-      if(!addButton||addButton.disabled)throw new Error('Add Idea is unavailable');
-      addButton.click();
-
-      const titleField=document.getElementById('ideaText');
-      const descriptionField=document.getElementById('ideaDescription');
-      if(!titleField||!descriptionField)throw new Error('Idea editor is unavailable');
-
-      titleField.value=idea;
-      titleField.dispatchEvent(new Event('input',{bubbles:true}));
-      descriptionField.value=description;
-      descriptionField.dispatchEvent(new Event('input',{bubbles:true}));
-      descriptionField.dispatchEvent(new Event('blur'));
-
-      rapid.count+=1;
-      rapidCount.textContent=String(rapid.count);
-      added=true;
-    }catch(err){
-      console.error('Rapidfire add failed',err);
-      showToast(err?.message||'Could not add Rapidfire idea');
-    }finally{
-      rapid.busy=false;
-      rapidAccept.disabled=false;
-      if(added)resetRapidInputs();
-      else requestAnimationFrame(()=>rapidIdea.focus());
-    }
-  };
-
-  rapidForm?.addEventListener('submit',e=>{
-    e.preventDefault();
-    addRapidIdea();
-  });
-  rapidDialog?.addEventListener('keydown',e=>{
-    if(e.key==='Escape'){
-      e.preventDefault();
-      e.stopPropagation();
-      endRapidfire();
-      return;
-    }
-    e.stopPropagation();
-  });
-  rapidIdea?.addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!e.shiftKey){
-      e.preventDefault();
-      e.stopPropagation();
-      rapidForm.requestSubmit();
-    }
-  });
-  rapidDescription?.addEventListener('keydown',e=>{
-    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
-      e.preventDefault();
-      e.stopPropagation();
-      rapidForm.requestSubmit();
-    }
-  });
-  rapidCancel?.addEventListener('click',endRapidfire);
-});
-</script>
+<script src="rapidfire.js?v=1.8.4" defer></script>
+<script src="export-tools.js?v=1.8.4" defer></script>
 </body>
 </html>
