@@ -3,7 +3,7 @@ const $=s=>document.querySelector(s);
 const NS='http://www.w3.org/2000/svg';
 const STORAGE_KEY='swamp.mindmap.v1',AUTH_KEY='swamp.mindmap.auth.v1';
 const COLORS=['#F2D8A7','#DCEBE4','#D8E5F2','#E7DCF2','#F2D7DC','#E6E0D3','#CFE4DC','#F0E5C5'];
-const VERSION='1.7';
+const VERSION='1.8.4';
 const state={
   map:null,selected:null,edgeSelected:null,focusRoot:null,view:{x:0,y:0,scale:1},
   pointers:new Map(),pan:null,pinch:null,sheetMode:null,history:[],editSession:null,
@@ -52,14 +52,56 @@ function descendants(id,set=new Set()){set.add(id);children(id).forEach(c=>desce
 function visible(n){let p=n;while(p&&p.parentId){const q=state.map.nodes[p.parentId];if(q&&q.collapsed)return false;p=q;}return state.focusRoot?descendants(state.focusRoot).has(n.id):true;}
 function depth(id){let d=0,n=state.map.nodes[id];while(n&&n.parentId){d++;n=state.map.nodes[n.parentId];}return d;}
 function layout(){
-  const pos={},root=state.map.nodes[state.map.rootId];if(!root)return pos;pos[root.id]={x:0,y:0,a:-Math.PI/2,d:0};
-  const kids=children(root.id),count=Math.max(1,kids.length),radius=Math.max(isMobile()?270:245,Math.min(isMobile()?455:415,230+kids.length*16));
-  kids.forEach((n,i)=>{const a=-Math.PI/2+Math.PI*2*i/count,x=Math.cos(a)*radius,y=Math.sin(a)*radius;pos[n.id]={x,y,a,d:1};branch(n.id,x,y,a,2,pos);});return pos;
+  const pos={},root=state.map.nodes[state.map.rootId];if(!root)return pos;
+  pos[root.id]={x:0,y:0,a:-Math.PI/2,d:0};
+  const kids=children(root.id),count=Math.max(1,kids.length),mobile=isMobile();
+  const radius=Math.max(mobile?285:260,Math.min(mobile?560:520,245+kids.length*17));
+  kids.forEach((n,i)=>{
+    const a=-Math.PI/2+Math.PI*2*i/count;
+    pos[n.id]={x:Math.cos(a)*radius,y:Math.sin(a)*radius,a,d:1};
+  });
+  // Place every first-level child before expanding branches. Descendants can
+  // then see the complete root ring during collision checks and stay out of
+  // neighbouring root sectors.
+  kids.forEach(n=>branch(n.id,pos[n.id].x,pos[n.id].y,pos[n.id].a,2,pos));
+  return pos;
 }
 function branch(id,px,py,base,d,pos){
+  const parent=state.map.nodes[id];if(!parent||parent.collapsed)return;
   const kids=children(id);if(!kids.length)return;
-  const fan=Math.min(Math.PI*.98,Math.PI*.36+kids.length*.13),step=kids.length===1?0:fan/(kids.length-1),dist=Math.max(isMobile()?190:165,(isMobile()?240:220)-d*7)+Math.min(110,kids.length*8);
-  kids.forEach((n,i)=>{const a=base+(kids.length===1?0:-fan/2+i*step),x=px+Math.cos(a)*dist,y=py+Math.sin(a)*dist;pos[n.id]={x,y,a,d};branch(n.id,x,y,a,d+1,pos);});
+  const mobile=isMobile(),count=kids.length;
+  // Secondary branches prefer the hemisphere pointing away from the root.
+  // The fan grows aggressively for Rapidfire-sized sibling sets instead of
+  // squeezing every child into the old narrow arc.
+  const fan=Math.min(Math.PI*1.18,Math.PI*.38+Math.max(0,count-1)*.24);
+  const step=count===1?0:fan/(count-1);
+  const baseDist=Math.max(mobile?210:185,(mobile?245:225)-d*6);
+  const dist=baseDist+Math.max(0,count-3)*28;
+  const clearance=mobile?154:142;
+  const placed=[];
+  kids.forEach((n,i)=>{
+    const a=base+(count===1?0:-fan/2+i*step);
+    let r=dist;
+    let x=px+Math.cos(a)*r,y=py+Math.sin(a)*r;
+    // Keep sibling order/angle stable. If this position collides with an
+    // existing visible node, move only farther outward along the same ray.
+    // This avoids the dense stack seen after large Rapidfire sessions.
+    for(let tries=0;tries<14;tries++){
+      let blocked=false;
+      for(const [otherId,p] of Object.entries(pos)){
+        if(otherId===id||placed.includes(otherId))continue;
+        if(Math.hypot(x-p.x,y-p.y)<clearance){blocked=true;break;}
+      }
+      if(!blocked){
+        for(const otherId of placed){const p=pos[otherId];if(p&&Math.hypot(x-p.x,y-p.y)<clearance){blocked=true;break;}}
+      }
+      if(!blocked)break;
+      r+=mobile?34:30;
+      x=px+Math.cos(a)*r;y=py+Math.sin(a)*r;
+    }
+    pos[n.id]={x,y,a,d};placed.push(n.id);
+  });
+  kids.forEach(n=>branch(n.id,pos[n.id].x,pos[n.id].y,pos[n.id].a,d+1,pos));
 }
 function curve(a,b){const dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy)),nx=-dy/d,ny=dx/d,bend=Math.min(76,d*.2);return`M ${a.x} ${a.y} Q ${(a.x+b.x)/2+nx*bend*.18} ${(a.y+b.y)/2+ny*bend*.18} ${b.x} ${b.y}`;}
 function wrapText(text,maxChars=16,maxLines=5){
@@ -174,7 +216,7 @@ function fit(){const pos=layout(),ids=Object.values(state.map.nodes).filter(visi
 function zoomAt(x,y,f){const old=state.view.scale,next=Math.max(.2,Math.min(2.6,old*f)),wx=(x-state.view.x)/old,wy=(y-state.view.y)/old;state.view.scale=next;state.view.x=x-wx*next;state.view.y=y-wy*next;applyView();save();}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),1300);}
 function showSearch(){$('#searchPanel').classList.remove('hidden');$('#searchInput').value='';search('');setTimeout(()=>$('#searchInput').focus(),10);}function hideSearch(){$('#searchPanel').classList.add('hidden');}
-function esc(s=''){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function esc(s=''){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[c]));}
 function search(q){const out=$('#searchResults');out.innerHTML='';const t=q.trim().toLowerCase(),items=Object.values(state.map.nodes).filter(n=>!t||n.text.toLowerCase().includes(t)||(n.description||'').toLowerCase().includes(t)).slice(0,20);items.forEach(n=>{const b=document.createElement('button');b.className='search-item';b.innerHTML=`${esc(n.text)}<small>${n.description?.trim()?'Idea · has description':n.id===state.map.rootId?'Central concept':'Idea'}</small>`;b.onclick=()=>{state.selected=n.id;state.edgeSelected=null;render();centerOn(n.id);hideSearch();};out.appendChild(b);});}
 
 async function hashPass(pass,salt64){const enc=new TextEncoder(),key=await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveBits']),salt=Uint8Array.from(atob(salt64),c=>c.charCodeAt(0)),bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt,iterations:120000},key,256);return btoa(String.fromCharCode(...new Uint8Array(bits)));}
