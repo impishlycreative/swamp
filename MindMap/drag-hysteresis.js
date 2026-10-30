@@ -9,10 +9,13 @@
 const originalElementsFromPoint=document.elementsFromPoint.bind(document);
 const DESKTOP_RELEASE_PX=100;
 const TOUCH_RELEASE_PX=125;
+const CLICK_MOVE_PX=8;
+const CLICK_RECOVERY_MS=320;
 
 let dragPointerId=null;
 let draggedNode=null;
 let latchedNode=null;
+const clickPointers=new Map();
 
 function isTouchLike(){
   return matchMedia('(hover:none) and (pointer:coarse)').matches||navigator.maxTouchPoints>0;
@@ -63,24 +66,61 @@ document.elementsFromPoint=function(x,y){
 document.addEventListener('pointerdown',e=>{
   const node=e.target.closest?.('.node');
   if(!node||e.target.tagName?.toLowerCase()==='text')return;
+
   dragPointerId=e.pointerId;
   draggedNode=node;
   latchedNode=null;
+
+  // app.js starts a possible drag on every non-root node. Track stationary
+  // presses separately so we can recover the normal click that its drag
+  // cleanup currently suppresses.
+  if(!node.classList.contains('root')){
+    clickPointers.set(e.pointerId,{
+      id:node.dataset.id,
+      x:e.clientX,
+      y:e.clientY,
+      moved:false
+    });
+  }
 },true);
 
 document.addEventListener('pointermove',e=>{
-  if(e.pointerId!==dragPointerId)return;
-
-  const touched=nodeAtPoint(e.clientX,e.clientY);
-  if(touched){
-    latchedNode=touched;
-    return;
+  if(e.pointerId===dragPointerId){
+    const touched=nodeAtPoint(e.clientX,e.clientY);
+    if(touched){
+      latchedNode=touched;
+    }else if(latchedNode&&!stillWithinLatchZone(latchedNode,e.clientX,e.clientY)){
+      latchedNode=null;
+    }
   }
 
-  if(latchedNode&&!stillWithinLatchZone(latchedNode,e.clientX,e.clientY)){
-    latchedNode=null;
+  const click=clickPointers.get(e.pointerId);
+  if(click&&!click.moved&&Math.hypot(e.clientX-click.x,e.clientY-click.y)>=CLICK_MOVE_PX){
+    click.moved=true;
   }
 },true);
+
+function recoverStationaryClick(e){
+  const click=clickPointers.get(e.pointerId);
+  if(!click)return;
+  clickPointers.delete(e.pointerId);
+  if(click.moved)return;
+
+  // app.js sets a 300 ms suppression window even when no drag occurred.
+  // Once that window has expired, send the click only if the node still did
+  // not become selected through the browser's native click path.
+  setTimeout(()=>{
+    const node=Array.from(document.querySelectorAll('#nodes .node'))
+      .find(el=>el.dataset.id===click.id);
+    if(!node||node.classList.contains('selected'))return;
+    node.dispatchEvent(new MouseEvent('click',{
+      bubbles:true,
+      cancelable:true,
+      view:window,
+      detail:1
+    }));
+  },CLICK_RECOVERY_MS);
+}
 
 function clearDrag(e){
   if(e.pointerId!==dragPointerId)return;
@@ -89,7 +129,14 @@ function clearDrag(e){
   latchedNode=null;
 }
 
-document.addEventListener('pointerup',clearDrag,true);
-document.addEventListener('pointercancel',clearDrag,true);
+document.addEventListener('pointerup',e=>{
+  recoverStationaryClick(e);
+  clearDrag(e);
+},true);
+
+document.addEventListener('pointercancel',e=>{
+  clickPointers.delete(e.pointerId);
+  clearDrag(e);
+},true);
 
 })();
