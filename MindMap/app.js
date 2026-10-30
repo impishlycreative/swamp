@@ -6,7 +6,7 @@ const LEGACY_KEY='swamp.mindmap.v1';
 const BACKUP_KEY='swamp.mindmap.project.backup';
 const AUTH_KEY='swamp.mindmap.auth.v1';
 const COLORS=['#F2D8A7','#DCEBE4','#D8E5F2','#E7DCF2','#F2D7DC','#E6E0D3','#CFE4DC','#F0E5C5'];
-const VERSION='2.6.0';
+const VERSION='2.0.0';
 const TEMPLATES=[
   {name:'Three-Act Structure',beats:['Act I — Setup','Inciting Incident','First Plot Point','Act II — Confrontation','Midpoint','Second Plot Point','Act III — Resolution','Climax','Denouement']},
   {name:'Save the Cat',beats:['Opening Image','Theme Stated','Setup','Catalyst','Debate','Break into Two','B Story','Fun and Games','Midpoint','Bad Guys Close In','All Is Lost','Dark Night of the Soul','Break into Three','Finale','Final Image']},
@@ -245,19 +245,28 @@ function render(){
 
 function select(id,doRender=true){if(!state.map.nodes[id])return;state.selected=id;state.edgeSelected=null;if(isMobile())closeSheet(false);if(doRender)render();}
 function inspect(){
-  const n=state.selected&&state.map.nodes[state.selected],panel=$('#inspector'),ctx=$('#mobileContext');$('#addBtn').disabled=!n;$('#focusBtn').disabled=!n;
-  if(!n){panel.classList.add('hidden');ctx.classList.add('hidden');return;}
+  const n=state.selected&&state.map.nodes[state.selected],panel=$('#inspector'),ctx=$('#mobileContext');
+  $('#addBtn').disabled=!n;$('#focusBtn').disabled=!n;
+  if(isMobile()){
+    ctx.classList.remove('hidden');
+    $('#contextEdit').disabled=!n;
+    $('#contextFocus').disabled=!n;
+    $('#contextMore').disabled=!n;
+    $('#contextRapid').disabled=!n;
+  }
+  if(!n){panel.classList.add('hidden');return;}
   if(document.activeElement!==$('#ideaText'))$('#ideaText').value=n.text||'';if(document.activeElement!==$('#ideaDescription'))$('#ideaDescription').value=n.description||'';if(document.activeElement!==$('#edgeLabel'))$('#edgeLabel').value=n.edgeLabel||'';
   $('#edgeField').classList.toggle('hidden',!n.parentId);$('#linkedField').classList.toggle('hidden',!n.targetMapId||!state.project.sessions[n.targetMapId]);$('#collapseBtn').disabled=!children(n.id).length;$('#collapseBtn').textContent=n.collapsed?'Expand':'Collapse';$('#deleteBtn').disabled=n.id===state.map.rootId;$('#resetPosBtn').disabled=!finite(n.x)||!finite(n.y);
   const row=$('#colorRow');row.innerHTML='';COLORS.forEach(color=>{const b=document.createElement('button');b.className='swatch'+(n.color===color?' active':'');b.style.background=color;b.onclick=()=>{if(n.color===color)return;pushUndo('colour change');n.color=color;save(false);render();if(isMobile())openSheet('more');};row.appendChild(b);});
   $('#contextFocus').classList.toggle('active',state.focusRoot===n.id);
-  if(isMobile()){panel.classList.remove('hidden');panel.classList.toggle('mobile-open',!!state.sheetMode);panel.classList.toggle('mobile-edit',state.sheetMode==='edit');panel.classList.toggle('mobile-more',state.sheetMode==='more');ctx.classList.toggle('hidden',!!state.sheetMode);}else{panel.classList.remove('hidden','mobile-open','mobile-edit','mobile-more');ctx.classList.add('hidden');}
+  if(isMobile()){panel.classList.remove('hidden');panel.classList.toggle('mobile-open',!!state.sheetMode);panel.classList.toggle('mobile-edit',state.sheetMode==='edit');panel.classList.toggle('mobile-more',state.sheetMode==='more');ctx.classList.remove('hidden');}else{panel.classList.remove('hidden','mobile-open','mobile-edit','mobile-more');ctx.classList.add('hidden');}
 }
 function positionInspectorNear(id){if(isMobile())return;const g=document.querySelector(`.node[data-id="${id}"]`),panel=$('#inspector'),ws=$('#workspace');if(!g||!panel)return;const gr=g.getBoundingClientRect(),wr=ws.getBoundingClientRect(),pr=panel.getBoundingClientRect();let left=gr.right-wr.left+16,top=gr.top-wr.top-18;if(left+pr.width>wr.width-10)left=gr.left-wr.left-pr.width-16;left=Math.max(10,Math.min(wr.width-pr.width-10,left));top=Math.max(10,Math.min(wr.height-pr.height-10,top));panel.style.right='auto';panel.style.left=left+'px';panel.style.top=top+'px';}
 function openSheet(mode='edit',focus=false){if(!isMobile())return;state.sheetMode=mode;$('#sheetTitle').textContent=mode==='more'?'Idea details':'Edit idea';inspect();if(focus)setTimeout(()=>$('#ideaText').focus(),50);}
 function closeSheet(renderNow=true){state.sheetMode=null;$('#inspector').classList.remove('mobile-open','mobile-edit','mobile-more');if(renderNow&&state.map)inspect();}
 
 function quickAdd(parentId=state.selected){
+  if(!parentId&&isMobile())parentId=state.map?.rootId;
   const parent=state.map.nodes[parentId];if(!parent)return;pushUndo('add idea');const sib=children(parentId),id=uid();
   state.map.nodes[id]={id,text:'New idea',description:'',parentId,color:COLORS[(sib.length+depth(parentId))%COLORS.length],edgeLabel:'',collapsed:false,created:now(),x:null,y:null,targetMapId:null};parent.collapsed=false;state.selected=id;state.edgeSelected=null;save(false);render();centerOn(id);
   requestAnimationFrame(()=>{if(isMobile())openSheet('edit',true);else{positionInspectorNear(id);$('#ideaText').focus();$('#ideaText').select();}});toast('Idea added');
@@ -348,7 +357,7 @@ $('#shortcutsBtn').onclick=openShortcuts;$('#mobileShortcuts').onclick=openShort
 $('#openLinkedBtn').onclick=()=>{const n=state.map.nodes[state.selected];if(n?.targetMapId&&state.project.sessions[n.targetMapId])setCurrentMap(n.targetMapId,true,false);};
 $('#collapseBtn').onclick=toggleCollapse;$('#centerBtn').onclick=()=>centerOn(state.selected);$('#resetPosBtn').onclick=resetPosition;$('#deleteBtn').onclick=removeSelected;
 $('#fitBtn').onclick=fit;$('#fitTopBtn').onclick=fit;$('#zoomIn').onclick=()=>{const v=size();zoomAt(v.w/2,v.h/2,1.2);};$('#zoomOut').onclick=()=>{const v=size();zoomAt(v.w/2,v.h/2,.83);};
-$('#menuBtn').onclick=()=>$('#utilitySheet').classList.toggle('open');$('#contextAdd').onclick=()=>quickAdd();$('#contextEdit').onclick=()=>openSheet('edit',true);$('#contextFocus').onclick=toggleFocus;$('#contextMore').onclick=()=>openSheet('more');$('#sheetClose').onclick=()=>closeSheet();
+$('#menuBtn').onclick=()=>$('#utilitySheet').classList.toggle('open');$('#contextAdd').onclick=()=>quickAdd(state.selected||state.map?.rootId);$('#contextEdit').onclick=()=>openSheet('edit',true);$('#contextFocus').onclick=toggleFocus;$('#contextMore').onclick=()=>openSheet('more');$('#sheetClose').onclick=()=>closeSheet();
 $('#importInput').onchange=e=>{const f=e.target.files[0];if(f)importFile(f);e.target.value='';};$('#mobileImportInput').onchange=e=>{const f=e.target.files[0];if(f)importFile(f);e.target.value='';};
 
 function beginField(key,label){state.editSession={key,label,pushed:false};}
