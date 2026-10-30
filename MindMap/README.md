@@ -1,4 +1,4 @@
-# MindMap 1.8.4
+# MindMap 1.8.5
 
 A local-first brainstorming and mind-mapping workspace for Swamp.
 
@@ -151,14 +151,19 @@ Mobile remains canvas-first with:
 
 ## Current version notes
 
+### 1.8.5
+
+- Restored multi-format Save/Export: structural JSON, hierarchical Word `.docx`, and visual PDF.
+- Word export preserves root-to-branch hierarchy using heading levels and indentation and includes node descriptions.
+- Added a Save/Export format chooser on desktop and mobile.
+- PDF output fits the visual map and excludes the application toolbar.
+
 ### 1.8.4
 
 - Redesigned dense-branch layout for Rapidfire-sized sibling sets.
 - Wider outward fan for secondary branches.
 - Sibling-count-based branch distance.
 - Collision-aware outward displacement while preserving sibling order.
-- Restored multi-format Save/Export: structural JSON, hierarchical Word `.docx`, and visual PDF.
-- Word export preserves root-to-branch hierarchy using heading levels and indentation and includes node descriptions.
 
 ### 1.8.3
 
