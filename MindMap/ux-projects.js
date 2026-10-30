@@ -37,13 +37,16 @@ window.addEventListener('DOMContentLoaded',()=>{
     .utility-project label{display:block;font-size:.72rem;font-weight:850;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
     .utility-project select{width:100%;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font-weight:750;padding:0 10px;margin-bottom:8px}
     .utility-project-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .utility-project-note{margin:8px 0 0;color:var(--muted);font-size:.72rem;line-height:1.35}
     .cloud-save-note{margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-size:.78rem;line-height:1.4;color:var(--muted)}
     @media(max-width:850px),(hover:none) and (pointer:coarse){
       #addBtn{display:none!important}
       #mobileCenterTop,#mobileOpenTop,#mobileLockTop{display:inline-flex!important}
       #mobileSaveTop{background:var(--paper)!important;border-color:var(--line)!important;color:var(--ink)!important}
       #inspector.mobile-more #addChildBtn,#inspector.mobile-more #centerBtn{display:none!important}
-      .toolbar{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+      .toolbar{gap:3px;padding:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+      .toolbar .btn.icon{width:35px;min-height:40px}
+      .toolbar .map-select{min-width:58px;max-width:70px;height:40px;padding-left:6px}
       .toolbar::-webkit-scrollbar{display:none}
     }
   `;
@@ -273,7 +276,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(utilityGrid){
     const box=document.createElement('div');
     box.className='utility-project';
-    box.innerHTML='<label for="projectSelect">Project</label><select id="projectSelect" aria-label="Current project"></select><div class="utility-project-actions"><button id="newProjectBtn" class="btn" type="button">＋ New project</button><button id="renameProjectBtn" class="btn" type="button">✎ Rename</button></div>';
+    box.innerHTML='<label for="projectSelect">Project</label><select id="projectSelect" aria-label="Current project"></select><div class="utility-project-actions"><button id="newProjectBtn" class="btn" type="button">＋ New project</button><button id="renameProjectBtn" class="btn" type="button">✎ Rename</button></div><div class="utility-project-note">A project contains maps. Use the top dropdown to switch maps; the centre bubble is that map’s root idea.</div>';
     utilityGrid.prepend(box);
     projectSelect=box.querySelector('#projectSelect');
     box.querySelector('#newProjectBtn')?.addEventListener('click',newProject);
