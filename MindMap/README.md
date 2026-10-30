@@ -81,6 +81,29 @@ Version 1.8.4 specifically improves dense branches created by Rapidfire:
 - Clicking away from the search panel dismisses it on desktop and touch devices.
 - Selecting a search result selects and centers the matching node.
 
+## Save and export formats
+
+The Save/Export control offers multiple output formats for the **current open mind map**:
+
+- **MindMap data (.json)** — structural map data for backup, transfer, and later import.
+- **Word outline (.docx)** — a text-based hierarchical document. Export starts with the central/root idea and walks outward through each branch. Children appear beneath their parent, deeper descendants remain nested beneath the correct ancestor, and indentation increases with hierarchy depth. Node descriptions are included beneath the corresponding node and are indented with that branch.
+- **Visual map (PDF)** — the bubble map itself, fitted for printing and saved through the browser's PDF/print workflow.
+
+The Word export is intentionally **not** a screenshot or picture of the map. It is a readable outline representation of the map structure. A map like:
+
+```text
+Central concept
+├── Character
+│   ├── Motivation
+│   └── Conflict
+└── Setting
+    └── Location
+```
+
+is represented in Word as a root-first document with progressively indented headings and descriptions so the parent/child structure is preserved in text.
+
+Where the browser supports the native Save As picker, output can be saved to local folders or synced folders such as OneDrive or Google Drive. On supported mobile devices, the native share sheet can also be used for saving/sharing exported files.
+
 ## Interaction-budget rule
 
 This is a hard product requirement:
@@ -98,6 +121,7 @@ Examples:
 - Drag a branch onto a new parent to re-parent it: 1 gesture.
 - Start Rapidfire on a selected node: 1 action.
 - Add each Rapidfire idea after the mode starts: type, then Enter/checkmark.
+- Open Save/Export: 1 action; choose the required output format as the second action.
 - Undo: 1 action.
 - Delete: Delete, then confirm.
 
@@ -122,7 +146,8 @@ Mobile remains canvas-first with:
 - one-finger panning;
 - pinch zoom;
 - drag-and-drop branch re-parenting;
-- direct node selection after drag or Rapidfire activity.
+- direct node selection after drag or Rapidfire activity;
+- multi-format Save/Export access for JSON, Word, and PDF.
 
 ## Current version notes
 
@@ -132,6 +157,8 @@ Mobile remains canvas-first with:
 - Wider outward fan for secondary branches.
 - Sibling-count-based branch distance.
 - Collision-aware outward displacement while preserving sibling order.
+- Restored multi-format Save/Export: structural JSON, hierarchical Word `.docx`, and visual PDF.
+- Word export preserves root-to-branch hierarchy using heading levels and indentation and includes node descriptions.
 
 ### 1.8.3
 
@@ -155,4 +182,4 @@ The map should dominate the screen. Important actions should be immediate and di
 
 ## Maintenance rule
 
-The `MindMap/README.md` should be updated whenever a user-visible MindMap feature, interaction, layout rule, persistence behavior, mobile behavior, or version changes.
+The `MindMap/README.md` should be updated whenever a user-visible MindMap feature, interaction, layout rule, persistence behavior, mobile behavior, export behavior, or version changes.
