@@ -160,10 +160,11 @@ function schedule(){
   requestAnimationFrame(()=>{scheduled=false;sync();});
 }
 
-// Template creation, map switching, import, and normal re-renders all touch
-// these groups. One observer keeps the arc in sync without changing app.js.
-const viewport=document.getElementById('viewport');
-if(viewport)new MutationObserver(schedule).observe(viewport,{childList:true,subtree:true});
+// Template creation, map switching, import, and normal re-renders all replace
+// the node group's children. Watching only that group avoids observing our own
+// story-line SVG updates and prevents needless redraw loops.
+const nodesHost=document.getElementById('nodes');
+if(nodesHost)new MutationObserver(schedule).observe(nodesHost,{childList:true});
 document.addEventListener('change',e=>{if(e.target?.id==='mapSelect')schedule();});
 document.addEventListener('click',e=>{if(e.target?.closest?.('#templateOptions button,#mobileTemplates,#templateBtn'))setTimeout(schedule,0);});
 window.addEventListener('resize',schedule);
