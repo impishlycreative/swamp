@@ -3,6 +3,19 @@ const AUTH_KEY='swamp.mindmap.auth.v1';
 const SESSION_KEY='swamp.mindmap.session-auth.v1';
 const SECRET_KEY='swamp.mindmap.session-secret.v1';
 
+function installVersionBadge(){
+  const card=document.querySelector('#auth .card');
+  if(!card||document.getElementById('authVersion'))return;
+  const match=document.title.match(/MindMap\s+([^\s—]+)/i);
+  const version=match?.[1]||'';
+  if(!version)return;
+  const badge=document.createElement('div');
+  badge.id='authVersion';
+  badge.textContent=`MindMap v${version.replace(/^v/i,'')}`;
+  badge.style.cssText='margin:-4px 0 14px;color:var(--muted,#6e675f);font-size:.78rem;font-weight:800;letter-spacing:.04em;';
+  const title=document.getElementById('authTitle');
+  if(title)title.insertAdjacentElement('afterend',badge);else card.prepend(badge);
+}
 function clearSession(){
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(SECRET_KEY);
@@ -52,6 +65,8 @@ function autoUnlock(){
     pass.value='';
   }
 }
+
+installVersionBadge();
 
 const auth=document.getElementById('auth');
 const app=document.getElementById('app');
