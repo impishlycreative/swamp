@@ -10,13 +10,10 @@ window.addEventListener('DOMContentLoaded',()=>{
   const mobileImportInput=document.getElementById('mobileImportInput');
   const mobileLock=document.getElementById('mobileLock');
   const newBtn=document.getElementById('newBtn');
-  const addBtn=document.getElementById('addBtn');
   const searchBtn=document.getElementById('searchBtn');
   const centerBtn=document.getElementById('centerBtn');
-  const addChildBtn=document.getElementById('addChildBtn');
   const inspector=document.getElementById('inspector');
   const sheetClose=document.getElementById('sheetClose');
-  const sheetHandle=document.getElementById('sheetHandle');
   const ideaText=document.getElementById('ideaText');
   const ideaDescription=document.getElementById('ideaDescription');
   const exportDialog=document.getElementById('exportDialog');
@@ -24,6 +21,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   const mapSelect=document.getElementById('mapSelect');
   const PROJECTS_KEY='swamp.mindmap.projects.v1';
   const ACTIVE_PROJECT_KEY='swamp.mindmap.active-project.v1';
+  const PROJECT_DATA_PREFIX='swamp.mindmap.project.data.';
   const PROJECT_KEY=app()?.projectKey||'swamp.mindmap.project.v2';
   let editSnapshot=null;
   let syncTimer=null;
@@ -66,7 +64,6 @@ window.addEventListener('DOMContentLoaded',()=>{
   openTop.addEventListener('click',()=>{mobileImportInput?.click();openTop.blur();});
   lockTop.addEventListener('click',()=>{mobileLock?.click();lockTop.blur();});
 
-  // The direct toolbar buttons replace duplicate utility-sheet actions on mobile.
   [mobileNew,mobileExport,mobileLock].forEach(el=>{if(el)el.style.display='none';});
   const mobileImportLabel=utilitySheet?.querySelector('label[for="mobileImportInput"]');
   if(mobileImportLabel)mobileImportLabel.style.display='none';
@@ -87,7 +84,6 @@ window.addEventListener('DOMContentLoaded',()=>{
   };
   [newBtn,mobileNew,mobileNewTop].forEach(el=>el?.addEventListener('click',newMapPrompt,true));
 
-  // Dismiss the top-toolbar More sheet by tapping anywhere outside it.
   const dismissUtility=e=>{
     if(!utilitySheet?.classList.contains('open'))return;
     if(utilitySheet.contains(e.target)||menuBtn?.contains(e.target))return;
@@ -96,14 +92,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('pointerdown',dismissUtility,true);
   document.addEventListener('touchstart',dismissUtility,{capture:true,passive:true});
 
-  // iOS can leave a tapped button visually focused. Explicitly release Save focus.
   const releaseSaveFocus=()=>setTimeout(()=>mobileSaveTop?.blur(),0);
   mobileSaveTop?.addEventListener('click',releaseSaveFocus);
   mobileSaveTop?.addEventListener('touchend',releaseSaveFocus,{passive:true});
   document.getElementById('exportCancel')?.addEventListener('click',releaseSaveFocus);
   exportDialog?.addEventListener('pointerdown',e=>{if(e.target===exportDialog)releaseSaveFocus();});
 
-  // Make mobile Edit transactional: Done keeps the edit, Cancel restores the opening values.
   const editActions=document.createElement('div');
   editActions.id='mobileEditConfirm';editActions.className='edit-confirm-actions';
   editActions.innerHTML='<button id="mobileEditCancel" class="btn" type="button">Cancel</button><button id="mobileEditDone" class="btn primary" type="button">Done</button>';
@@ -136,6 +130,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       const node=map.nodes[editSnapshot.nodeId];
       node.text=editSnapshot.text;
       node.description=editSnapshot.description;
+      ideaText?.blur();ideaDescription?.blur();
       if(node.id===map.rootId)map.title=editSnapshot.mapTitle;
       if(ideaText)ideaText.value=editSnapshot.text;
       if(ideaDescription)ideaDescription.value=editSnapshot.description;
@@ -166,7 +161,6 @@ window.addEventListener('DOMContentLoaded',()=>{
     observer.observe(inspector,{attributes:true,attributeFilter:['class']});
   }
 
-  // Clarify cloud-save behaviour without pretending the browser can force a provider.
   if(exportDialog){
     if(exportTitle)exportTitle.textContent='Save / Share / Export';
     const intro=exportDialog.querySelector('.export-card>p');
@@ -178,13 +172,21 @@ window.addEventListener('DOMContentLoaded',()=>{
     existingNote?.insertAdjacentElement('beforebegin',cloud);
   }
 
-  // Multiple local projects. The app still uses its established single-project key internally;
-  // this registry swaps the active project into that key and reloads. Session unlock survives reload.
-  const clone=value=>JSON.parse(JSON.stringify(value));
   const readRegistry=()=>{
     try{
       const parsed=JSON.parse(localStorage.getItem(PROJECTS_KEY)||'null');
-      if(parsed&&typeof parsed==='object'&&parsed.projects&&typeof parsed.projects==='object')return parsed;
+      if(parsed&&typeof parsed==='object'&&parsed.projects&&typeof parsed.projects==='object'){
+        let migrated=false;
+        Object.entries(parsed.projects).forEach(([id,entry])=>{
+          if(!entry?.data)return;
+          const storageKey=entry.storageKey||PROJECT_DATA_PREFIX+id;
+          if(!localStorage.getItem(storageKey))localStorage.setItem(storageKey,JSON.stringify(entry.data));
+          parsed.projects[id]={id,title:entry.data.title||entry.title||'Untitled Project',created:entry.data.created||'',updated:entry.data.updated||entry.updated||'',storageKey};
+          migrated=true;
+        });
+        if(migrated)localStorage.setItem(PROJECTS_KEY,JSON.stringify(parsed));
+        return parsed;
+      }
     }catch{}
     return{version:1,activeProjectId:null,projects:{}};
   };
@@ -193,7 +195,6 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(reg.activeProjectId)localStorage.setItem(ACTIVE_PROJECT_KEY,reg.activeProjectId);
   };
   let projectSelect=null;
-  let renameProjectBtn=null;
 
   const renderProjectSelect=()=>{
     if(!projectSelect)return;
@@ -201,11 +202,11 @@ window.addEventListener('DOMContentLoaded',()=>{
     const currentId=app()?.getProject?.()?.id||reg.activeProjectId;
     projectSelect.innerHTML='';
     Object.values(reg.projects)
-      .sort((a,b)=>String(a?.data?.created||'').localeCompare(String(b?.data?.created||'')))
+      .sort((a,b)=>String(a?.created||'').localeCompare(String(b?.created||'')))
       .forEach(entry=>{
         const option=document.createElement('option');
         option.value=entry.id;
-        option.textContent=(entry.data?.title||entry.title||'Untitled Project').trim()||'Untitled Project';
+        option.textContent=(entry.title||'Untitled Project').trim()||'Untitled Project';
         option.selected=entry.id===currentId;
         projectSelect.appendChild(option);
       });
@@ -216,7 +217,9 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(!current?.id)return;
     app()?.save?.();
     const reg=readRegistry();
-    reg.projects[current.id]={id:current.id,title:current.title||'Untitled Project',updated:current.updated||new Date().toISOString(),data:clone(current)};
+    const storageKey=PROJECT_DATA_PREFIX+current.id;
+    localStorage.setItem(storageKey,JSON.stringify(current));
+    reg.projects[current.id]={id:current.id,title:current.title||'Untitled Project',created:current.created||'',updated:current.updated||new Date().toISOString(),storageKey};
     reg.activeProjectId=current.id;
     writeRegistry(reg);
     renderProjectSelect();
@@ -237,10 +240,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   const switchProject=id=>{
     syncCurrentProject();
     const reg=readRegistry(),entry=reg.projects[id];
-    if(!entry?.data)return;
+    if(!entry)return;
+    const raw=localStorage.getItem(entry.storageKey||PROJECT_DATA_PREFIX+id);
+    if(!raw)return;
     reg.activeProjectId=id;writeRegistry(reg);
     projectSwapInProgress=true;
-    localStorage.setItem(PROJECT_KEY,JSON.stringify(entry.data));
+    localStorage.setItem(PROJECT_KEY,raw);
     location.reload();
   };
   const newProject=()=>{
@@ -249,7 +254,9 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(raw===null)return;
     const name=raw.trim()||'Untitled Project';
     const project=createProject(name),reg=readRegistry();
-    reg.projects[project.id]={id:project.id,title:project.title,updated:project.updated,data:clone(project)};
+    const storageKey=PROJECT_DATA_PREFIX+project.id;
+    localStorage.setItem(storageKey,JSON.stringify(project));
+    reg.projects[project.id]={id:project.id,title:project.title,created:project.created,updated:project.updated,storageKey};
     reg.activeProjectId=project.id;writeRegistry(reg);
     projectSwapInProgress=true;
     localStorage.setItem(PROJECT_KEY,JSON.stringify(project));
@@ -269,9 +276,8 @@ window.addEventListener('DOMContentLoaded',()=>{
     box.innerHTML='<label for="projectSelect">Project</label><select id="projectSelect" aria-label="Current project"></select><div class="utility-project-actions"><button id="newProjectBtn" class="btn" type="button">＋ New project</button><button id="renameProjectBtn" class="btn" type="button">✎ Rename</button></div>';
     utilityGrid.prepend(box);
     projectSelect=box.querySelector('#projectSelect');
-    renameProjectBtn=box.querySelector('#renameProjectBtn');
     box.querySelector('#newProjectBtn')?.addEventListener('click',newProject);
-    renameProjectBtn?.addEventListener('click',renameProject);
+    box.querySelector('#renameProjectBtn')?.addEventListener('click',renameProject);
     projectSelect?.addEventListener('change',e=>switchProject(e.target.value));
   }
 
