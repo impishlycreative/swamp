@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://impishlycreative.github.io/swamp/MindMap/schema/swamp-mindmap.schema.json",
+  "title": "Swamp MindMap export",
+  "description": "Schema for standalone map and complete project JSON exported by the Swamp MindMap application.",
+  "oneOf": [
+    { "$ref": "#/$defs/mapExport" },
+    { "$ref": "#/$defs/projectExport" }
+  ],
+  "$defs": {
+    "exportMetadata": {
+      "type": "object",
+      "required": ["$schema", "format", "schemaVersion", "kind", "reference"],
+      "properties": {
+        "$schema": {
+          "const": "https://impishlycreative.github.io/swamp/MindMap/schema/swamp-mindmap.schema.json"
+        },
+        "format": { "const": "swamp-mindmap" },
+        "schemaVersion": { "const": "1.0" },
+        "kind": { "enum": ["map", "project"] },
+        "reference": {
+          "type": "string",
+          "format": "uri",
+          "description": "Human-readable format and AI generation reference."
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "view": {
+      "type": "object",
+      "required": ["x", "y", "scale"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "scale": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "text", "parentId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "description": { "type": "string" },
+        "parentId": { "type": ["string", "null"] },
+        "color": { "type": "string" },
+        "edgeLabel": { "type": "string" },
+        "collapsed": { "type": "boolean" },
+        "created": { "type": "string" },
+        "x": { "type": ["number", "null"] },
+        "y": { "type": ["number", "null"] },
+        "targetMapId": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "mapCore": {
+      "type": "object",
+      "required": ["version", "id", "title", "rootId", "nodes", "view"],
+      "properties": {
+        "version": { "type": "string" },
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string" },
+        "created": { "type": "string" },
+        "updated": { "type": "string" },
+        "rootId": { "type": "string", "minLength": 1 },
+        "nodes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/node" }
+        },
+        "view": { "$ref": "#/$defs/view" }
+      },
+      "additionalProperties": true
+    },
+    "templateHistoryEntry": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "overviewMapId": { "type": "string" },
+        "created": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "projectCore": {
+      "type": "object",
+      "required": ["version", "id", "title", "currentMapId", "sessions"],
+      "properties": {
+        "version": { "type": "string" },
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string" },
+        "created": { "type": "string" },
+        "updated": { "type": "string" },
+        "currentMapId": { "type": "string", "minLength": 1 },
+        "sessions": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/mapCore" }
+        },
+        "templateHistory": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/templateHistoryEntry" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "mapExport": {
+      "allOf": [
+        { "$ref": "#/$defs/exportMetadata" },
+        { "$ref": "#/$defs/mapCore" },
+        {
+          "type": "object",
+          "properties": { "kind": { "const": "map" } }
+        }
+      ]
+    },
+    "projectExport": {
+      "allOf": [
+        { "$ref": "#/$defs/exportMetadata" },
+        { "$ref": "#/$defs/projectCore" },
+        {
+          "type": "object",
+          "properties": { "kind": { "const": "project" } }
+        }
+      ]
+    }
+  }
+}
