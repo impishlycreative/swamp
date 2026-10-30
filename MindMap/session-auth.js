@@ -16,22 +16,6 @@ function installVersionBadge(){
   const title=document.getElementById('authTitle');
   if(title)title.insertAdjacentElement('afterend',badge);else card.prepend(badge);
 }
-function ensureTopbarVisible(){
-  const topbar=document.querySelector('#app>.topbar');
-  if(!topbar)return;
-  topbar.style.setProperty('display','flex','important');
-  topbar.style.setProperty('visibility','visible','important');
-  topbar.style.setProperty('opacity','1','important');
-  topbar.style.setProperty('z-index','90','important');
-  if(matchMedia('(max-width:850px),(hover:none) and (pointer:coarse)').matches){
-    topbar.style.setProperty('position','relative','important');
-    topbar.style.setProperty('inset','auto','important');
-    topbar.style.setProperty('transform','none','important');
-    topbar.style.setProperty('width','100%','important');
-    topbar.style.setProperty('min-height','51px','important');
-    topbar.style.setProperty('flex','0 0 auto','important');
-  }
-}
 function clearSession(){
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(SECRET_KEY);
@@ -83,8 +67,6 @@ function autoUnlock(){
 }
 
 installVersionBadge();
-ensureTopbarVisible();
-window.addEventListener('resize',ensureTopbarVisible);
 
 const auth=document.getElementById('auth');
 const app=document.getElementById('app');
@@ -92,19 +74,16 @@ if(auth&&app){
   let establishing=false;
   const observer=new MutationObserver(()=>{
     const unlocked=auth.classList.contains('hidden')&&!app.classList.contains('hidden');
-    if(unlocked){
-      ensureTopbarVisible();
-      if(!readSession()&&!establishing){
-        establishing=true;
-        establishSession().finally(()=>{establishing=false;});
-      }
+    if(unlocked&&!readSession()&&!establishing){
+      establishing=true;
+      establishSession().finally(()=>{establishing=false;});
     }
   });
   observer.observe(auth,{attributes:true,attributeFilter:['class']});
 }
 
 document.addEventListener('click',e=>{
-  if(e.target?.closest?.('#lockBtn,#mobileLock'))clearSession();
+  if(e.target?.closest?.('#lockBtn,#mobileLock,#mobileLockTop'))clearSession();
 },true);
 
 autoUnlock();
