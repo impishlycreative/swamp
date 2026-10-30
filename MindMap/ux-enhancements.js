@@ -144,5 +144,5 @@ function init(){
   injectStyles();setupToolbar();watchEditor();closeMoreOnOutsideTap();interceptNewMap();setupProjectUi();clarifySaveFlow();updateVersion();syncCurrentProject();
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')syncCurrentProject();});window.addEventListener('beforeunload',syncCurrentProject);setInterval(()=>{if(!$('#app')?.classList.contains('hidden'))syncCurrentProject();refreshProjectContext();},2500);
 }
-window.addEventListener('DOMContentLoaded',init);
+if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',init);else init();
 })();
