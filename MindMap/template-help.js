@@ -68,16 +68,12 @@ function updateExamples(){
   list.replaceChildren(...items.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
 }
 function updateVersionUi(){
-  document.title=document.title.replace(/MindMap\s+[^—]+—/,'MindMap 2.7.0 —');const small=document.querySelector('.brand small');if(small)small.textContent='Swamp · v2.7.0';if(app())app().version='2.7.0';
+  document.title=document.title.replace(/MindMap\s+[^—]+—/,'MindMap 2.7.1 —');const small=document.querySelector('.brand small');if(small)small.textContent='Swamp · v2.7.1';if(app())app().version='2.7.1';
 }
 function watch(){
   ensureUi();updateVersionUi();updateExamples();
   const dialog=document.getElementById('templateHelpDialog');if(dialog&&!dialog._examplesObserver){const obs=new MutationObserver(updateExamples);obs.observe(dialog,{attributes:true,attributeFilter:['class']});dialog._examplesObserver=obs;}
 }
-function loadUxEnhancements(){
-  if(document.getElementById('mindmapUx27Script'))return;
-  const script=document.createElement('script');script.id='mindmapUx27Script';script.src='ux-enhancements.js?v=2.7.0';script.defer=true;document.head.appendChild(script);
-}
-window.addEventListener('DOMContentLoaded',()=>{watch();loadUxEnhancements();});
-setTimeout(()=>{watch();loadUxEnhancements();},0);
+window.addEventListener('DOMContentLoaded',watch);
+setTimeout(watch,0);
 })();
