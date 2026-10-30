@@ -71,5 +71,5 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
 
   const observer=new MutationObserver(schedule);
-  observer.observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','style']});
+  observer.observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']});
 })();
