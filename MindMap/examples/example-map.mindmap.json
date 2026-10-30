@@ -1,0 +1,60 @@
+{
+  "$schema": "https://impishlycreative.github.io/swamp/MindMap/schema/swamp-mindmap.schema.json",
+  "format": "swamp-mindmap",
+  "schemaVersion": "1.0",
+  "kind": "map",
+  "reference": "https://impishlycreative.github.io/swamp/MindMap/JSON_REFERENCE.md",
+  "exportedAt": "2026-10-30T18:30:00.000Z",
+  "version": "2.6.0",
+  "id": "m_example_overview",
+  "title": "Example Story Map",
+  "created": "2026-10-30T18:30:00.000Z",
+  "updated": "2026-10-30T18:30:00.000Z",
+  "rootId": "n_example_root",
+  "nodes": {
+    "n_example_root": {
+      "id": "n_example_root",
+      "text": "Example Story Map",
+      "description": "A small example showing hierarchy and relationship labels.",
+      "parentId": null,
+      "color": "#F2D8A7",
+      "edgeLabel": "",
+      "collapsed": false,
+      "created": "2026-10-30T18:30:00.000Z",
+      "x": null,
+      "y": null,
+      "targetMapId": null
+    },
+    "n_example_character": {
+      "id": "n_example_character",
+      "text": "Protagonist",
+      "description": "A cautious archivist who finds evidence of a cover-up.",
+      "parentId": "n_example_root",
+      "color": "#DCEBE4",
+      "edgeLabel": "centres on",
+      "collapsed": false,
+      "created": "2026-10-30T18:30:00.000Z",
+      "x": null,
+      "y": null,
+      "targetMapId": null
+    },
+    "n_example_conflict": {
+      "id": "n_example_conflict",
+      "text": "Main conflict",
+      "description": "The evidence will disappear unless it is exposed quickly.",
+      "parentId": "n_example_root",
+      "color": "#D8E5F2",
+      "edgeLabel": "drives",
+      "collapsed": false,
+      "created": "2026-10-30T18:30:00.000Z",
+      "x": null,
+      "y": null,
+      "targetMapId": null
+    }
+  },
+  "view": {
+    "x": 0,
+    "y": 0,
+    "scale": 1
+  }
+}
