@@ -1,4 +1,4 @@
-# MindMap V2 — 3.2.0
+# MindMap V2 — 3.2.1
 
 MindMap V2 is built around one rule: the map is the writing workspace. Supporting features should make the map easier to think with, navigate, connect, and clean up rather than turn the application into a collection of separate screens.
 
@@ -29,6 +29,8 @@ Suggested categories depend on the parent context. Consolidated details remain p
 ### Lenses
 
 Lens temporarily emphasizes useful context around the selected idea while dimming unrelated material. Different writer types use different context rules.
+
+**Clear** removes the active Lens or Thread, restores normal map visibility, and removes the visible Story Thread path.
 
 ### Story Threads
 
@@ -72,11 +74,11 @@ Help and guided tours are context-based. The writer chooses what they are trying
 
 Tour and help copy is intentionally short and plain English.
 
-## Stability architecture in 3.2.0
+## Stability architecture introduced in 3.2.0
 
 ### Unified Undo
 
-Meaningful saved project changes now feed one chronological Undo history. The history intentionally ignores view-only movement such as pan and zoom.
+Meaningful saved project changes feed one chronological Undo history. The history intentionally ignores view-only movement such as pan and zoom.
 
 The unified history covers both base-map and V2 data because it watches the saved project state rather than requiring each feature to maintain its own competing stack.
 
@@ -98,6 +100,7 @@ Relationship path routing is handled by `relationship-routing.js`. Routing no lo
 - consolidation restoration;
 - consolidated details remaining covered by DOCX exporters;
 - Review Ideas remaining reachable from a selected parent;
+- Lens/Thread Clear remaining reachable after the strip rebuilds;
 - centralized loader/version ordering;
 - changelog naming rules.
 
