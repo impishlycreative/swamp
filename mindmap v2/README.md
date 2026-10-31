@@ -1,4 +1,4 @@
-# MindMap V2 3.2.1
+# MindMap V2 3.2.2
 
 A local-first brainstorming and mind-mapping workspace for writers, built around the map as the primary writing surface.
 
@@ -9,7 +9,7 @@ V2 keeps hierarchy, direct idea editing, descriptions, Rapidfire, templates, min
 - Select an idea to get the compact writer action bar.
 - Use **Rapidfire** to capture rough ideas without classifying them while brainstorming.
 - Use **Review Ideas** to sort raw Rapidfire ideas, group them, keep them as nodes, or move them into structured parent details.
-- Use **Lens** to emphasize the selected idea's useful story context. **Clear** returns the map to its normal view and removes any active thread path.
+- Use **Lens** to emphasize the selected idea's useful story context. Muted nodes are intentionally not clickable while the Lens is active. **Clear** returns the map to its normal view and removes any active thread path.
 - Use **Link** to connect ideas across branches without changing their parent/child structure.
 - Use **Story Threads** to trace larger strands through the existing map.
 - Use **Story Health** for objective structural checks such as unresolved setups, clues without payoffs, empty beats, broken links, and explicit needs-work flags.
@@ -62,7 +62,7 @@ Run:
 node "mindmap v2/tests/regression-tests.js"
 ```
 
-The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, loader ordering, and changelog naming rules.
+The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, muted-node interaction, loader ordering, and changelog naming rules.
 
 ## Desktop and mobile
 
@@ -84,7 +84,7 @@ Projects remain local-first in browser storage unless exported. JSON exports ret
 - `consolidation.js` — Rapidfire review and parent-detail consolidation.
 - `v2-experience.js` — Navigator, relationships, Story Walk, Zen, and integration behavior.
 - `relationship-routing.js` — collision-aware relationship routing.
-- `lens-clear-fix.js` — reliable Lens/Thread clear handling across strip rebuilds.
+- `lens-clear-fix.js` — reliable Lens/Thread clearing and Lens interaction locking.
 - `guide-help.js` — contextual help and guided tours.
 - `tests/regression-tests.js` — executable regression checks.
 - `changelog.md` — required running change history.
