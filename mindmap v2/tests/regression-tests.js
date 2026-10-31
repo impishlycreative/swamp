@@ -101,7 +101,9 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
     assert(lensFix.includes('[data-clear-lens]'),'Lens clear control must be handled');
     assert(lensFix.includes('[data-clear-all]'),'combined Lens/Thread clear control must be handled');
     assert(lensFix.includes("document.addEventListener('click'"),'Lens clear must use delegated click handling so strip rebuilds cannot lose it');
-    assert(lensFix.includes('writer.focus(id)'),'Lens clear fallback must reset the writer Lens state');
+    assert(lensFix.includes('lensSourceId'),'Lens clear must remember or recover the node that started the Lens');
+    assert(lensFix.includes('writer.focus(source)'),'Lens clear must toggle off the actual Lens source, not whichever node is currently selected');
+    assert(lensFix.includes('pointer-events:none'),'dimmed Lens content must not remain clickable');
     assert(lensFix.includes("replaceChildren()"),'Lens clear must remove the thread-path overlay too');
   }
   const change=readIfExists('changelog.md');
