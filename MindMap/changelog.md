@@ -14,6 +14,8 @@
 - The minimap is excluded from print/PDF output.
 - Restored a visible `Projects` control beside the desktop map selector.
 - Added a full-width `Projects` title bar to the Projects sheet so its drag surface matches the Idea inspector more closely.
+- Added a `⚡ Rapidfire` button to the Idea inspector so Rapidfire can start directly from the currently selected idea.
+- Added a persistent Rapidfire parent-selection prompt when Rapidfire is started without a selected node.
 
 ### Changed
 - Updated the MindMap page version label from 2.8.1 to 2.8.2.
@@ -25,6 +27,7 @@
 - Changed the `toolbar-system.js` cache key again for the corrected Projects drag handler so the deployed page cannot keep the older non-dragging script.
 - Changed the `toolbar-system.js` cache key to `1.0.6-projectsheader1` for the full-width Projects drag header.
 - Renamed the project selector label from `Project` to `Current project` so the new `Projects` title bar owns the panel heading.
+- Rapidfire started without a selection now enters an explicit `Choose a parent idea` mode instead of relying on a short toast and silently waiting.
 
 ### Fixed
 - Removed the hard-coded version override from `template-help.js` so it can no longer replace the browser-tab title with an older MindMap version after page load.
@@ -36,6 +39,8 @@
 - Projects dragging now tracks pointer movement at the window level so panel movement remains reliable after the pointer leaves the header area.
 - Expanded the Projects drag target from the small selector label to a dedicated full-width title bar, making its draggable area comparable to the Idea panel header.
 - The draggable Projects sheet is clamped inside the MindMap workspace and resets its desktop drag coordinates when switching to the mobile layout.
+- Rapidfire parent selection can now be cancelled by clicking anywhere that is not a node; the click continues to its normal target after cancelling.
+- Starting Rapidfire from the Idea inspector now closes the Idea inspector before opening the Rapidfire entry dialog, preventing stacked editing panels.
 - The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
 
 ### Implementation notes
@@ -44,3 +49,4 @@
 - Story-template rendering still updates Rapidfire labels/placeholders, but no longer owns or mutates the application version.
 - `ux-projects.js` now reads the application version from the page title when creating local project/map records, avoiding another independent UI-version constant.
 - Desktop project management continues to use the existing `ux-projects.js` registry and switching logic; `toolbar-system.js` supplies the desktop Projects entry point, panel exclusivity, title bar, and drag behavior without creating a second project model.
+- Rapidfire chooser mode visually marks nodes as selectable and keeps a persistent instruction banner visible until the user chooses a node or clicks elsewhere to cancel.
