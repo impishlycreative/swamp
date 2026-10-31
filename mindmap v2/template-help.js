@@ -90,7 +90,7 @@ function loadWriterFeatureReview(){
   if(window.__SWAMP_WRITER_FEATURE_REVIEW_LOADING__)return;
   window.__SWAMP_WRITER_FEATURE_REVIEW_LOADING__=true;
   const script=document.createElement('script');
-  script.src='writer-feature-review.js?v=3.0.0-review1';
+  script.src='writer-feature-review.js?v=3.0.0-review2';
   script.async=true;
   document.head.appendChild(script);
 }
