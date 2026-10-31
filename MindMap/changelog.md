@@ -12,7 +12,8 @@
 - Added a compact mobile minimap layout above the bottom toolbar.
 - Added a collapse/restore control; the collapsed state is remembered locally.
 - The minimap is excluded from print/PDF output.
-- Restored a visible `Projects` control beside the desktop map selector. It opens the existing project selector plus New Project and Rename controls, restoring desktop access to maps grouped by project.
+- Restored a visible `Projects` control beside the desktop map selector.
+- Restored a dedicated desktop Projects dialog for project switching, project creation, project rename, and per-project map counts.
 
 ### Changed
 - Updated the MindMap page version label from 2.8.1 to 2.8.2.
@@ -27,6 +28,7 @@
 - Removed the hard-coded `MindMap 2.6.0` browser-title, toolbar-version, and `MindMapApp.version` override from `story-arc.js`. Its story-template sync was the remaining cause of the tab briefly showing 2.8.2 and then reverting to 2.6.0.
 - Removed the hard-coded `2.6.0` map/project version values from `ux-projects.js`. Newly created projects now derive their version from the authoritative page title instead of carrying a separate stale release number.
 - Restored the desktop entry point for multi-project management that was lost when the toolbar was rewritten. The existing project registry, active-project switching, project creation/rename, and per-project map grouping are used unchanged.
+- Opening the desktop Projects UI now dismisses the Idea inspector first so the two panels cannot stack on top of each other.
 - The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
 
 ### Implementation notes
@@ -34,4 +36,4 @@
 - The minimap observes the rendered SVG and viewport transform, avoiding a second independent layout model that could drift out of sync.
 - Story-template rendering still updates Rapidfire labels/placeholders, but no longer owns or mutates the application version.
 - `ux-projects.js` now reads the application version from the page title when creating local project/map records, avoiding another independent UI-version constant.
-- The restored desktop Projects button opens the same utility-sheet project controls used by `ux-projects.js`, avoiding a second project registry or duplicate switching logic.
+- Desktop project management continues to use the existing `ux-projects.js` registry and switching logic; the Projects dialog is only a UI surface over those controls.
