@@ -10,15 +10,19 @@
 ### Changed
 - Bumped the MindMap release from 2.8.2 to 2.9.0 because multi-select and batch branch reparenting are new user-facing functionality rather than a patch-only fix.
 - Loaded `multi-select.js` with the `2.9.0-multiselect1` cache key on desktop and mobile.
+- Changed the core `app.js` version source from the stale hard-coded `2.0.0` value to the authoritative MindMap version in the page title, with `2.9.0` as the fallback.
+- Changed the `app.js` cache key to `2.9.0-coreversion1` so browsers fetch the corrected core version logic immediately.
 
 ### Fixed
 - Multi-select prevents the root idea from being selected, moved, or deleted.
 - Multi-select prevents cycles by rejecting any drop target that is part of one of the branches currently being moved.
 - Selecting a parent branch automatically absorbs separately selected descendants so the same subtree is never moved or deleted twice.
+- `MindMapApp.version`, newly created maps/projects, normalized imports, and saved map metadata now report the 2.9.0 release instead of being rewritten to the old `2.0.0` core constant.
 
 ### Implementation notes
 - Multi-select uses the same map hierarchy data (`parentId`) as normal branch dragging. Reparenting moves each selected branch root while preserving all descendants beneath it.
 - Mobile multi-select uses a long-press gesture so it does not depend on keyboard modifiers; normal single-node controls remain available outside multi-select mode.
+- The HTML `<title>` remains the single release-version source used by both the toolbar and the core application, reducing the chance of future UI/data version drift.
 
 ## 2026-10-31 — 2.8.2
 
