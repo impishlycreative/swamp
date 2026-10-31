@@ -7,6 +7,7 @@
 - Forked the complete current `MindMap` application into `mindmap v2` so V2 can evolve independently while retaining the existing local-first project/map data model and browser storage compatibility.
 - Set the HTML title to `MindMap 3.0.0 V2 — Swamp` directly in the document to avoid the old-version browser-tab flash during startup.
 - Kept desktop and mobile on one data model while adding separate responsive treatments for the new V2 surfaces.
+- Added **MindMap V2** to the repository root `index.html` under Visual experiments, linking directly to `mindmap v2/index.html`.
 
 ### Writer's Navigator
 
