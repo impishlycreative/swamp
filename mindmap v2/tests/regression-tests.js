@@ -48,6 +48,15 @@ const parsed=r=>JSON.parse(r);
   assert.strictEqual(parsed(entry.beforeRaw).sessions.m.nodes.child.text,'Child');
 })();
 
+(function groupSpacingIsUndoable(){
+  const h=new core.UnifiedHistory();
+  const a=project(),b=project();
+  b.sessions.m.nodes.child.x=120;b.sessions.m.nodes.child.y=-40;
+  h.record(raw(a),raw(b),100);
+  assert.strictEqual(h.length,1,'group spacing manual positions must enter unified Undo');
+  assert.strictEqual(core.inferChange(raw(a),raw(b)).label,'manual position');
+})();
+
 (function addIdeaAbsorbsImmediateWriterMetadata(){
   const h=new core.UnifiedHistory();
   const before=project();
@@ -90,12 +99,23 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
   if(index){
     assert(index.includes('core-stability.js'),'index must load centralized core stability/version code');
     assert(index.indexOf('core-stability.js')<index.indexOf('app.js'),'core stability must load before app.js');
+    assert(index.includes('group-layout.js'),'group layout feature must be loaded');
     assert(index.includes('relationship-routing.js'),'routing-only relationship layer must be loaded');
     assert(index.includes('lens-clear-fix.js'),'Lens clear fix must be loaded');
     assert(index.includes('lens-clear-fix.js?build=20261031f'),'desktop Lens Clear fix must have a fresh asset key');
     assert(!index.includes('relationship-integrity.js'),'old feature-specific relationship undo layer must not be loaded');
     assert.strictEqual(readIfExists('relationship-integrity.js'),null,'obsolete relationship-specific undo file must stay removed');
     assert(!/MindMap\s+\d+\.\d+\.\d+\s+V2/.test(index),'index title must not duplicate the semantic version source');
+  }
+  const groupLayout=readIfExists('group-layout.js');
+  if(groupLayout){
+    assert(groupLayout.includes('groupSelectBtn'),'desktop must expose a mouse area-selection control');
+    assert(groupLayout.includes('e.shiftKey'),'Shift-drag must remain available as a fast area-selection shortcut');
+    assert(groupLayout.includes('groupSpaceBtn'),'area selection must expose a one-click Space action');
+    assert(groupLayout.includes('multiSpaceBtn'),'existing desktop/mobile multi-select must also expose Space');
+    assert(groupLayout.includes("id===m.rootId"),'area selection must exclude the central/root idea');
+    assert(groupLayout.includes("classList.contains('writer-dim')"),'Lens-muted ideas must stay out of group layout operations');
+    assert(groupLayout.includes('node.x=Math.round'),'spacing must persist normal manual map positions');
   }
   const lensFix=readIfExists('lens-clear-fix.js');
   if(lensFix){
