@@ -1,5 +1,25 @@
 # MindMap V2 Changelog
 
+## 3.1.0 — 2026-10-31
+
+### Rapidfire review and consolidation
+
+- Bumped MindMap V2 from **3.0.0** to **3.1.0** because this release adds a new saved-data workflow rather than a cosmetic change or bug fix.
+- Rapidfire-created child ideas are now marked as **raw brainstorming ideas**. They stay generic instead of automatically becoming Scene, Character, Clue, or another writer type while the writer is still capturing possibilities.
+- When Rapidfire ends, the parent idea is selected again and the app points the writer to **More → Review Ideas**.
+- Added **Review Ideas** for a parent with raw Rapidfire children. The review screen shows each idea, keeps it selected by default, and suggests a plain-English category based on the parent type and the idea text.
+- Character review categories include Traits, Abilities, Goals, Backstory, Relationships, Secrets, and Other. Scene, Chapter, Location, Clue, Reveal, Setup, Payoff, Subplot, Research, story-beat, and general parents use their own smaller category sets.
+- Category suggestions are only suggestions. The writer can change the category before consolidating.
+- Added three review outcomes: **Move into parent**, **Group under headings**, and **Keep as nodes**.
+- **Move into parent** stores the selected ideas as structured `writer.details` on the parent and removes the original raw child nodes when they are safe leaf nodes. A raw node with children, a linked map, or cross-links stays on the map so consolidation does not silently break existing structure.
+- **Group under headings** creates or reuses category nodes such as Abilities or Backstory and moves the selected ideas beneath them instead of flattening them into parent details.
+- **Keep as nodes** marks the selected ideas as reviewed so they remain on the map and stop appearing as unfinished Rapidfire material.
+- Added a Details section to the normal Edit inspector. Consolidated parent details are shown by category, and a parent with raw children gets a direct **Review Ideas** button there as well.
+- Added **Consolidate** to multi-select. Selected sibling ideas can open the same review screen, even when they were not created by Rapidfire.
+- Added consolidation-specific Undo handling for Move, Group, and Keep actions. Undo restores the previous node/detail state when no later structural edit has replaced it.
+- Added mobile-first review layout with a bottom-oriented review sheet, large category controls, and the primary Move action spanning the width on touch devices.
+- Loaded the new workflow through `consolidation.js?v=3.1.0` and refreshed V2 asset cache keys to 3.1.0.
+
 ## 3.0.0 — 2026-10-31
 
 ### Foundation
