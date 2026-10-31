@@ -9,6 +9,24 @@
 - Kept desktop and mobile on one data model while adding separate responsive treatments for the new V2 surfaces.
 - Added **MindMap V2** to the repository root `index.html` under Visual experiments, linking directly to `mindmap v2/index.html`.
 
+### Writer-first map interactions
+
+- Added a context-sensitive writer action bar directly beside the selected map node on desktop and above the bottom toolbar on mobile.
+- Kept common actions on the map itself: Add, Rapidfire, Lens, Link, Type, Thread, Health, and Branch actions are available from the selected idea without navigating to a separate application view.
+- Added writer-specific node types for scenes, chapters, characters, locations, conflicts, themes, clues, reveals, subplots, objects, research, setups, and payoffs.
+- Added unobtrusive type and story-thread badges directly to map bubbles.
+- Added story threads with one-click map highlighting so Main Plot, Character Arc, Mystery, Romance, Subplot, Foreshadowing, and custom threads can be isolated without leaving the canvas.
+- Added stronger map lenses that highlight the selected idea's useful story context and dim unrelated material. Character, scene, clue, setup, chapter, subplot, and template-beat lenses use their existing hierarchy and cross-links rather than creating duplicate views.
+- Added writer-aware two-click relationships. Selecting **Link** and then another node immediately creates a sensible relationship such as Clue → Reveal, Setup → Payoff, Character → Scene, Scene → Location, Conflict, or Character Relationship when the node types make the intent clear.
+- Added context-aware Rapidfire prompts so brainstorming stays short and changes with the selected idea type, including scene turns, character wants/secrets, location details, clue meanings, and template-beat possibilities.
+- Made existing story-template beats recognizable as writer-aware map objects and added a direct **Ideas** action for linked beat brainstorming maps.
+- Added Story Health overlays directly on the map for unresolved setups/clues, disconnected characters, empty template beats, explicitly marked needs-work ideas, and broken cross-links. Clicking a health item returns directly to the affected node.
+- Added branch-level operations for collapse/expand, deep duplication, automatic positioning, and marking/clearing needs-work status. Duplicating a branch also duplicates relationships contained entirely inside that branch.
+- Added smart child defaults so children created beneath Chapter or Subplot nodes become Scenes automatically while other contexts remain lightweight ideas.
+- Enhanced the existing Writer's Navigator with node type and story-thread metadata while keeping the map as the source of truth.
+- Applied the one-click/two-click interaction rule: frequent actions are immediate, variations use a second selection, and destructive actions remain outside the fast context bar.
+- Added a mobile-first writer action strip with touch-sized controls rather than shrinking the desktop interaction model.
+
 ### Writer's Navigator
 
 - Added a synchronized hierarchical outline with breadcrumbs.
