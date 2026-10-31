@@ -1,5 +1,18 @@
 # MindMap V2 Changelog
 
+## 3.1.1 — 2026-10-31
+
+### Review Ideas visibility fix
+
+- Fixed **Review Ideas** not being visible when the parent of Rapidfire ideas was selected.
+- A selected parent with raw Rapidfire children now gets a temporary **Review Ideas (N)** action directly in the writer bar, immediately before **More**.
+- The Review action appears on both desktop and mobile only when there are ideas waiting to be reviewed, so it does not permanently add another toolbar control.
+- Kept **More → Review Ideas** and the Edit-panel Review Ideas control as secondary ways to reach the same review screen.
+- Hardened Rapidfire capture so each submitted Rapidfire idea is explicitly marked as a raw brainstorming child after it is created instead of relying only on DOM observation.
+- Explicit Rapidfire marking also forces the raw child to stay a generic Idea until the writer reviews it, preventing Chapter smart-child behavior or other type rules from classifying it during capture.
+- Bumped MindMap V2 from **3.1.0** to **3.1.1** because this is a bug/visibility correction to the 3.1.0 consolidation workflow.
+- Refreshed the V2 asset cache keys to 3.1.1 and loaded the selected-parent fix through `consolidation-selection-fix.js?v=3.1.1`.
+
 ## 3.1.0 — 2026-10-31
 
 ### Rapidfire review and consolidation
