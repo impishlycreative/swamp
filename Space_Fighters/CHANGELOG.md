@@ -2,6 +2,19 @@
 
 All notable Space Fighters changes are tracked here.
 
+## 0.1.1 — 2026-10-31
+
+### Added
+
+- Desktop mouse-controlled lateral steering: move the pointer left or right of the combat area's centre to steer in that direction.
+- Right-click missile launch on desktop.
+- Dedicated `desktop-controls.js` input layer so desktop mouse controls do not interfere with mobile touch controls.
+
+### Changed
+
+- Desktop forward/back movement is now documented around W/S while A/D and arrow movement remain available as fallbacks.
+- Browser context menu is suppressed over the combat canvas so right-click can be used for missiles.
+
 ## 0.1.0 — 2026-10-31
 
 ### Added

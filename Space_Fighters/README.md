@@ -1,6 +1,6 @@
 # Space Fighters
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 
 Space Fighters is a single-player 2D arcade combat game built for desktop and mobile. The design combines the immediate feel and power growth of classic vertical shooters such as *1942* with a modern sci-fi campaign structure inspired by mission-based space combat games.
 
@@ -17,7 +17,7 @@ No build step, framework, external assets, or package install is required.
 - Free movement within the combat viewport: forward, backward, left, right, diagonal, and curved movement are all possible.
 - Hold the primary fire control for automatic fire; tapping produces short bursts.
 - Mobile-first virtual joystick plus large FIRE and MISSILE controls.
-- Desktop controls with full feature parity.
+- Desktop mouse steering plus keyboard forward/back control, with keyboard movement fallback.
 - Shields, hull integrity, and lives.
 - Respawn near the death location instead of restarting the mission.
 - Death removes temporary power-ups but keeps persistent upgrades.
@@ -33,16 +33,18 @@ No build step, framework, external assets, or package install is required.
 
 ### Desktop
 
-- **Move:** WASD or arrow keys
-- **Primary fire:** hold Space
-- **Missile:** E
-- **Pause:** P or Escape
+- **Left/right:** move the mouse left or right of the centre of the game area; return it near centre to stop lateral movement.
+- **Forward/back:** W / S.
+- **Primary fire:** hold Space.
+- **Missile:** right-click. E remains available as a keyboard fallback.
+- **Fallback movement:** A / D or arrow keys.
+- **Pause:** P or Escape.
 
 ### Mobile
 
-- **Move:** left virtual joystick
-- **Primary fire:** hold FIRE; tap for a burst
-- **Missile:** tap MISSILE
+- **Move:** left virtual joystick.
+- **Primary fire:** hold FIRE; tap for a burst.
+- **Missile:** tap MISSILE.
 
 ## Campaign flow
 
@@ -64,7 +66,8 @@ Gameplay priorities: mobile-first readability and controls; fast arcade action w
 
 - `index.html` — game shell, HUD, menus, briefing, hangar, result and touch controls.
 - `styles.css` — responsive/mobile-first presentation.
-- `game.js` — game loop, input, combat, enemies, missions, campaign branching, upgrades and persistence.
+- `game.js` — game loop, core input, combat, enemies, missions, campaign branching, upgrades and persistence.
+- `desktop-controls.js` — desktop mouse lateral steering and right-click missile bindings.
 - `VERSION` — current version.
 - `CHANGELOG.md` — release history.
 
