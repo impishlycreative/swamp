@@ -5,7 +5,7 @@
 })(typeof window!=='undefined'?window:null,function(){
   'use strict';
 
-  const VERSION='3.2.1';
+  const VERSION='3.2.2';
   const PROJECT_KEY='swamp.mindmap.project.v2';
   const MAX_HISTORY=100;
   const COALESCE_MS=1400;
