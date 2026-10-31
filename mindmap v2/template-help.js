@@ -86,7 +86,15 @@ function loadWriterUiRefinement(){
   script.async=true;
   document.head.appendChild(script);
 }
-function loadWriterLayers(){loadWriterMap();loadWriterUiRefinement();}
+function loadWriterFeatureReview(){
+  if(window.__SWAMP_WRITER_FEATURE_REVIEW_LOADING__)return;
+  window.__SWAMP_WRITER_FEATURE_REVIEW_LOADING__=true;
+  const script=document.createElement('script');
+  script.src='writer-feature-review.js?v=3.0.0-review1';
+  script.async=true;
+  document.head.appendChild(script);
+}
+function loadWriterLayers(){loadWriterMap();loadWriterUiRefinement();loadWriterFeatureReview();}
 window.addEventListener('DOMContentLoaded',watch);
 setTimeout(watch,0);
 if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',()=>setTimeout(loadWriterLayers,0),{once:true});
