@@ -17,11 +17,14 @@
 - Updated the MindMap page version label from 2.8.1 to 2.8.2.
 - Loaded the new `minimap.js` module after the core MindMap application.
 - Changed the `template-help.js` cache key from the old `v=2.6.3` URL to a new 2.8.2 title-fix URL so browsers cannot reuse the stale title-overriding script.
+- Changed the `story-arc.js` cache key from `v=2.6.2` to a new 2.8.2 title-fix URL so the corrected story-arc code is fetched.
 
 ### Fixed
 - Removed the hard-coded version override from `template-help.js` so it can no longer replace the browser-tab title with an older MindMap version after page load.
+- Removed the hard-coded `MindMap 2.6.0` browser-title, toolbar-version, and `MindMapApp.version` override from `story-arc.js`. Its story-template sync was the remaining cause of the tab briefly showing 2.8.2 and then reverting to 2.6.0.
 - The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
 
 ### Implementation notes
 - Minimap navigation reuses the existing main SVG pointer-pan behavior so viewport changes continue to flow through the application's existing save/view-state path.
 - The minimap observes the rendered SVG and viewport transform, avoiding a second independent layout model that could drift out of sync.
+- Story-template rendering still updates Rapidfire labels/placeholders, but no longer owns or mutates the application version.
