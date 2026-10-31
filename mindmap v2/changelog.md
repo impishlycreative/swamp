@@ -80,6 +80,12 @@
 - Tours do not auto-start; the writer explicitly chooses the context they want help with.
 - Loaded the help system through `guide-help.js?v=3.0.0-guide1` so the new functionality receives its own cache key.
 
+### More menu hang fix
+
+- Fixed a MutationObserver loop that could freeze the page when **More** opened. The writer-feature review layer was repeatedly rewriting the Story Health description, and that rewrite retriggered the same observer indefinitely.
+- Made the More-sheet decorator idempotent: the Story Health description is now changed only when its text actually differs.
+- Cache-busted `writer-feature-review.js` to `review2` so browsers do not retain the looping version after refresh.
+
 ### Writer's Navigator
 
 - Added a synchronized hierarchical outline with breadcrumbs.
