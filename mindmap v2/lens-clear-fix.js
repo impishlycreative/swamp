@@ -4,6 +4,7 @@ window.__SWAMP_LENS_CLEAR_FIX__=true;
 
 const qs=(s,r=document)=>r.querySelector(s);
 const qsa=(s,r=document)=>[...r.querySelectorAll(s)];
+let lensSourceId=null;
 
 function toast(message){
   const el=qs('#toast');if(!el)return;
@@ -11,13 +12,22 @@ function toast(message){
   clearTimeout(el._lensClearTimer);
   el._lensClearTimer=setTimeout(()=>el.classList.remove('show'),1500);
 }
+function selectedNodeId(){return qs('#nodes .node.selected')?.dataset.id||null;}
+function mapNow(){return window.MindMapApp?.getCurrentMap?.()||null;}
+function lensChip(){return qs('#writerLensStrip [data-clear-lens]');}
+function activeThreadChip(){return qs('#writerLensStrip .writer-thread-chip.active[data-thread]');}
+function hasActiveLens(){return !!lensChip();}
 
-function hasActiveLensOrThread(){
-  return !!qs('#writerLensStrip [data-clear-lens],#writerLensStrip .writer-thread-chip.active[data-thread],#writerLensStrip [data-clear-all]');
-}
-
-function fallbackNodeId(){
-  return qs('#nodes .node.selected')?.dataset.id||qs('#nodes .node')?.dataset.id||null;
+function injectInteractionRules(){
+  if(qs('#lensInteractionRules'))return;
+  const style=document.createElement('style');
+  style.id='lensInteractionRules';
+  style.textContent=`
+    #nodes .node.writer-dim,#nodes .node.writer-dim *{pointer-events:none!important;cursor:default!important}
+    #edges .edge.writer-dim,#edges .edge-hit.writer-dim{pointer-events:none!important}
+    #v2LinksLayer .v2-link-group.writer-dim,#v2LinksLayer .v2-link-group.writer-dim *{pointer-events:none!important}
+  `;
+  document.head.appendChild(style);
 }
 
 function clearVisualLayers(){
@@ -25,31 +35,58 @@ function clearVisualLayers(){
   qs('#writerThreadPathLayer')?.replaceChildren();
 }
 
+function inferLensSource(){
+  const chip=lensChip(),map=mapNow();if(!chip||!map)return null;
+  const label=chip.textContent.trim();
+  const matches=qsa('#nodes .node.writer-lens-hit').map(el=>el.dataset.id).filter(id=>map.nodes?.[id]?.text?.trim()===label);
+  if(matches.length===1)return matches[0];
+  const selected=selectedNodeId();
+  if(selected&&matches.includes(selected))return selected;
+  return matches[0]||null;
+}
+
+function syncLensSource(candidate=null){
+  if(!hasActiveLens()){lensSourceId=null;return;}
+  const map=mapNow(),chip=lensChip();
+  if(candidate&&map?.nodes?.[candidate]&&map.nodes[candidate].text?.trim()===chip?.textContent?.trim()){
+    lensSourceId=candidate;return;
+  }
+  if(!lensSourceId||!map?.nodes?.[lensSourceId])lensSourceId=inferLensSource();
+}
+
 function clearLensState(){
-  const id=fallbackNodeId();
   const writer=window.WriterMap;
+  const thread=activeThreadChip();
+  if(thread)thread.click();
 
-  if(typeof writer?.clearLens==='function'){
-    writer.clearLens();
-  }else if(id&&typeof writer?.focus==='function'){
-    // The current writer API exposes Lens as a toggle rather than a clear call.
-    // One call clears when this is the active Lens node; otherwise it switches
-    // to this node, and the second call clears it. Both calls happen before paint.
-    writer.focus(id);
-    if(hasActiveLensOrThread())writer.focus(id);
+  if(hasActiveLens()&&typeof writer?.focus==='function'){
+    const source=lensSourceId||inferLensSource();
+    if(source){
+      writer.focus(source);
+      // If the source was inferred incorrectly, the first call can switch the
+      // Lens to that node. A second call then clears that Lens before paint.
+      if(hasActiveLens())writer.focus(source);
+    }
   }
 
+  lensSourceId=null;
   clearVisualLayers();
-  const strip=qs('#writerLensStrip');
-  if(strip&&hasActiveLensOrThread()){
-    strip.innerHTML='';
-    strip.classList.add('hidden');
-  }
-  toast('Lens cleared');
+  requestAnimationFrame(()=>{
+    clearVisualLayers();
+    if(!hasActiveLens()&&!activeThreadChip())toast('Lens cleared');
+  });
 }
 
 function bind(){
+  injectInteractionRules();
   document.addEventListener('click',e=>{
+    const lensAction=e.target.closest?.('#writerContext [data-writer-action="lens"]');
+    if(lensAction){
+      const candidate=selectedNodeId();
+      setTimeout(()=>syncLensSource(candidate),0);
+      return;
+    }
+
     const clear=e.target.closest?.('#writerLensStrip [data-clear-lens],#writerLensStrip [data-clear-all]');
     if(!clear)return;
     e.preventDefault();
@@ -57,6 +94,9 @@ function bind(){
     e.stopImmediatePropagation();
     clearLensState();
   },true);
+
+  const strip=qs('#writerLensStrip');
+  if(strip)new MutationObserver(()=>syncLensSource()).observe(strip,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 }
 
 window.SwampLensClear={clear:clearLensState};
