@@ -3,12 +3,15 @@
   const proxyButtons=[...document.querySelectorAll('[data-toolbar-target]')];
   const selects=[$('desktopMapSelect'),$('mobileMapSelect')].filter(Boolean);
   const legacyMap=$('mapSelect');
-  const mobileQuery=window.matchMedia('(max-width:850px),(hover:none) and (pointer:coarse)');
   let projectsDrag=null;
 
   function clickTarget(id){
     const target=$(id);
     if(target)target.click();
+  }
+  function isDesktopLayout(){
+    const toolbar=$('desktopToolbar');
+    return !!toolbar&&getComputedStyle(toolbar).display!=='none';
   }
   function dismissIdeaInspector(){
     const inspector=$('inspector');
@@ -19,7 +22,7 @@
     inspector.classList.remove('mobile-open','mobile-edit','mobile-more');
   }
   function resetProjectsPositionForMobile(){
-    if(!mobileQuery.matches)return;
+    if(isDesktopLayout())return;
     const sheet=$('utilitySheet');
     if(!sheet)return;
     sheet.style.left='';
@@ -33,21 +36,23 @@
 
     const style=document.createElement('style');
     style.id='projectsDragStyle';
-    style.textContent='@media(min-width:851px) and (hover:hover) and (pointer:fine){#utilitySheet .utility-project>label{cursor:grab;user-select:none}#utilitySheet .utility-project>label:active{cursor:grabbing}}';
+    style.textContent='#utilitySheet .utility-project>label{display:block;width:100%;padding:3px 0 8px;cursor:grab;user-select:none;touch-action:none}#utilitySheet .utility-project>label:active{cursor:grabbing}';
     document.head.appendChild(style);
 
     sheet.addEventListener('pointerdown',e=>{
       const handle=e.target.closest?.('.utility-project>label');
-      if(!handle||mobileQuery.matches||e.button!==0)return;
+      if(!handle||!isDesktopLayout()||e.button!==0)return;
       const workspace=$('workspace');
       if(!workspace)return;
       const sr=sheet.getBoundingClientRect();
       projectsDrag={pointerId:e.pointerId,dx:e.clientX-sr.left,dy:e.clientY-sr.top};
-      sheet.setPointerCapture?.(e.pointerId);
+      try{handle.setPointerCapture?.(e.pointerId);}catch{}
       e.preventDefault();
+      e.stopPropagation();
     });
-    sheet.addEventListener('pointermove',e=>{
-      if(!projectsDrag||e.pointerId!==projectsDrag.pointerId||mobileQuery.matches)return;
+
+    window.addEventListener('pointermove',e=>{
+      if(!projectsDrag||e.pointerId!==projectsDrag.pointerId||!isDesktopLayout())return;
       const workspace=$('workspace');
       if(!workspace)return;
       const wr=workspace.getBoundingClientRect();
@@ -61,15 +66,15 @@
       sheet.style.left=left+'px';
       sheet.style.top=top+'px';
       e.preventDefault();
-    });
+    },{passive:false});
+
     const endDrag=e=>{
       if(!projectsDrag||e.pointerId!==projectsDrag.pointerId)return;
-      try{sheet.releasePointerCapture?.(e.pointerId);}catch{}
       projectsDrag=null;
     };
-    sheet.addEventListener('pointerup',endDrag);
-    sheet.addEventListener('pointercancel',endDrag);
-    mobileQuery.addEventListener?.('change',resetProjectsPositionForMobile);
+    window.addEventListener('pointerup',endDrag);
+    window.addEventListener('pointercancel',endDrag);
+    window.addEventListener('resize',resetProjectsPositionForMobile);
     resetProjectsPositionForMobile();
   }
   function installProjectsButton(){
