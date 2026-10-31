@@ -78,8 +78,17 @@ function loadWriterMap(){
   script.async=true;
   document.head.appendChild(script);
 }
+function loadWriterUiRefinement(){
+  if(window.__SWAMP_WRITER_UI_REFINEMENT_LOADING__)return;
+  window.__SWAMP_WRITER_UI_REFINEMENT_LOADING__=true;
+  const script=document.createElement('script');
+  script.src='writer-ui-refinement.js?v=3.0.0-ui2';
+  script.async=true;
+  document.head.appendChild(script);
+}
+function loadWriterLayers(){loadWriterMap();loadWriterUiRefinement();}
 window.addEventListener('DOMContentLoaded',watch);
 setTimeout(watch,0);
-if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',()=>setTimeout(loadWriterMap,0),{once:true});
-else setTimeout(loadWriterMap,0);
+if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',()=>setTimeout(loadWriterLayers,0),{once:true});
+else setTimeout(loadWriterLayers,0);
 })();
