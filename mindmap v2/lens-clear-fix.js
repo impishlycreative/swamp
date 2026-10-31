@@ -5,6 +5,7 @@ window.__SWAMP_LENS_CLEAR_FIX__=true;
 const qs=(s,r=document)=>r.querySelector(s);
 const qsa=(s,r=document)=>[...r.querySelectorAll(s)];
 let lensSourceId=null;
+let clearCheckTimer=0;
 
 function toast(message){
   const el=qs('#toast');if(!el)return;
@@ -17,6 +18,7 @@ function mapNow(){return window.MindMapApp?.getCurrentMap?.()||null;}
 function lensChip(){return qs('#writerLensStrip [data-clear-lens]');}
 function activeThreadChip(){return qs('#writerLensStrip .writer-thread-chip.active[data-thread]');}
 function hasActiveLens(){return !!lensChip();}
+function hasActiveFilter(){return hasActiveLens()||!!activeThreadChip();}
 
 function injectInteractionRules(){
   if(qs('#lensInteractionRules'))return;
@@ -54,7 +56,7 @@ function syncLensSource(candidate=null){
   if(!lensSourceId||!map?.nodes?.[lensSourceId])lensSourceId=inferLensSource();
 }
 
-function clearLensState(){
+function fallbackClear(){
   const writer=window.WriterMap;
   const thread=activeThreadChip();
   if(thread)thread.click();
@@ -63,18 +65,36 @@ function clearLensState(){
     const source=lensSourceId||inferLensSource();
     if(source){
       writer.focus(source);
-      // If the source was inferred incorrectly, the first call can switch the
-      // Lens to that node. A second call then clears that Lens before paint.
       if(hasActiveLens())writer.focus(source);
     }
   }
 
   lensSourceId=null;
   clearVisualLayers();
-  requestAnimationFrame(()=>{
+}
+
+function verifyClearAfterNativeHandler(){
+  clearTimeout(clearCheckTimer);
+  clearCheckTimer=setTimeout(()=>{
+    if(hasActiveFilter())fallbackClear();
     clearVisualLayers();
-    if(!hasActiveLens()&&!activeThreadChip())toast('Lens cleared');
-  });
+    requestAnimationFrame(()=>{
+      if(hasActiveFilter())fallbackClear();
+      else toast('Lens cleared');
+    });
+  },0);
+}
+
+function clearLensState(){
+  const clear=qs('#writerLensStrip [data-clear-all]')||lensChip();
+  if(clear){
+    // Let writer-map's own button handler clear its private activeLens/activeThread
+    // state. The verification step below is only a fallback.
+    clear.click();
+    return;
+  }
+  fallbackClear();
+  toast('Lens cleared');
 }
 
 function bind(){
@@ -89,10 +109,9 @@ function bind(){
 
     const clear=e.target.closest?.('#writerLensStrip [data-clear-lens],#writerLensStrip [data-clear-all]');
     if(!clear)return;
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    clearLensState();
+    // Do not prevent or stop this event. writer-map owns the real Lens state and
+    // its direct button listener must receive the desktop mouse click.
+    verifyClearAfterNativeHandler();
   },true);
 
   const strip=qs('#writerLensStrip');
