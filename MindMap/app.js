@@ -6,7 +6,7 @@ const LEGACY_KEY='swamp.mindmap.v1';
 const BACKUP_KEY='swamp.mindmap.project.backup';
 const AUTH_KEY='swamp.mindmap.auth.v1';
 const COLORS=['#F2D8A7','#DCEBE4','#D8E5F2','#E7DCF2','#F2D7DC','#E6E0D3','#CFE4DC','#F0E5C5'];
-const VERSION='2.0.0';
+const VERSION=(document.title.match(/MindMap\s+([^\s—]+)/i)?.[1]||'2.9.0').replace(/^v/i,'');
 const TEMPLATES=[
   {name:'Three-Act Structure',beats:['Act I — Setup','Inciting Incident','First Plot Point','Act II — Confrontation','Midpoint','Second Plot Point','Act III — Resolution','Climax','Denouement']},
   {name:'Save the Cat',beats:['Opening Image','Theme Stated','Setup','Catalyst','Debate','Break into Two','B Story','Fun and Games','Midpoint','Bad Guys Close In','All Is Lost','Dark Night of the Soul','Break into Three','Finale','Final Image']},
