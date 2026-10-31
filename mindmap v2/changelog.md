@@ -27,6 +27,18 @@
 - Applied the one-click/two-click interaction rule: frequent actions are immediate, variations use a second selection, and destructive actions remain outside the fast context bar.
 - Added a mobile-first writer action strip with touch-sized controls rather than shrinking the desktop interaction model.
 
+### Selected-node UI refinement
+
+- Changed normal node selection so it no longer opens the full inspector automatically; selecting a node now keeps the map visible and shows the compact writer action bar only.
+- Added a direct **Edit** action to the writer bar. Clicking node text also opens the inspector intentionally, so detailed editing is available when requested rather than competing with the map.
+- Removed the redundant **Add Idea** action from the writer bar because the selected node already has the one-click `+` child control on the canvas.
+- Moved **Story Health** out of the fast bar and into **More**, keeping it available in two interactions while reducing clutter.
+- Renamed ordinary **Branch** access to **More**; linked template beats retain the direct one-click **Ideas** action.
+- Added a desktop drag handle to the writer bar. The bar can be dragged anywhere in the viewport and remembers its dropped position locally.
+- Added double-click on the drag handle to reattach the writer bar to the selected node.
+- Consolidated mobile selected-node actions into the writer action strip and hid the older duplicate mobile bottom toolbar, leaving one touch-oriented action surface.
+- Added a new cache key for the writer loader so browsers fetch the updated interaction model immediately.
+
 ### Writer's Navigator
 
 - Added a synchronized hierarchical outline with breadcrumbs.
