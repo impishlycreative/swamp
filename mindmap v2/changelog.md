@@ -87,6 +87,3 @@
 - Added V2 actions to the mobile utility sheet and selected-idea inspector.
 - Added `Ctrl/Cmd+Shift+O`, `Ctrl/Cmd+Shift+L`, and `Ctrl/Cmd+Shift+P` shortcuts and documented them in the existing shortcuts dialog.
 
-### Research used
-
-- Reviewed current XMind Outliner/Zen/Pitch behavior, Obsidian Canvas connections/groups/navigation, MindNode Focus Mode, and Heptabase's 2026 mobile whiteboard/navigation updates before selecting V2 features.
