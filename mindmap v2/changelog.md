@@ -1,5 +1,21 @@
 # MindMap V2 Changelog
 
+## 3.3.0 — 2026-10-31
+
+### Area selection and spacing
+
+- Added a desktop **Select area** tool for mouse-based group selection without changing the normal drag-to-pan behavior.
+- Clicking **Select area** arms one drag-selection pass; dragging across blank canvas selects every visible idea whose centre falls inside the box.
+- Added **Shift + drag** on blank canvas as a faster keyboard/mouse shortcut for the same area selection.
+- Area selection can include a parent and its descendants at the same time because it is a layout selection, separate from branch-move selection rules.
+- Added a one-click **Space** action for area selections. It keeps the group's rough shape while pushing overlapping or crowded bubbles apart and respecting nearby unselected bubbles as fixed obstacles.
+- Spacing writes normal manual `x`/`y` map positions, so the result is saved with the map and participates in the unified Undo history.
+- Added **Space** to the existing multi-select bar too, so touch/long-press and Ctrl/Cmd-selected ideas can use the same spacing behavior.
+- Muted Lens nodes are excluded from area selection and spacing while a Lens is active.
+- The central/root idea is excluded from area spacing so group cleanup does not accidentally move the map anchor.
+- Bumped MindMap V2 from **3.2.3** to **3.3.0** because this adds a new group-layout workflow rather than only fixing existing behavior.
+- Added `group-layout.js` and refreshed the core build key so browsers load the 3.3.0 version and the new layout tool.
+
 ## 3.2.3 — 2026-10-31
 
 ### Desktop Lens Clear event fix
