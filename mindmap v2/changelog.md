@@ -13,6 +13,7 @@
 - The first persisted project write after load/unlock is treated as the starting baseline, preventing startup normalization from appearing as a fake Undo action.
 - Unified Undo covers node edits, add/delete, collapse/expand, manual positioning, branch moves, relationships, writer type/thread/flag changes, consolidation, and project/map changes when those changes are saved.
 - Replaced the previously loaded relationship-specific Undo correction layer with a routing-only relationship layer. Collision-aware relationship routing remains active, but it no longer owns its own Undo path.
+- Removed the obsolete relationship-specific Undo file after routing was separated, so there is no dormant second Undo implementation left in V2.
 - Added `core-stability.js` as the runtime source for the MindMap V2 semantic version and unified history behavior.
 - Removed the semantic version from the static browser title and toolbar markup. Runtime branding now comes from the centralized version source.
 - Changed asset query strings to build identifiers rather than using them as a second semantic-version source.
@@ -20,8 +21,8 @@
 - Marked the existing V2 stylesheet in the page so the older experience layer does not inject a second stylesheet with a stale version key.
 - Narrowed Undo-state observation to the actual Undo control instead of watching the complete document tree, avoiding unnecessary work during map rendering.
 - Bumped MindMap V2 from **3.1.3** to **3.2.0** because this changes core application behavior and architecture rather than only correcting a single bug.
-- Added executable regression tests for Undo ordering, collapse/expand/link behavior, view-only changes, text-edit coalescing, Rapidfire/add metadata coalescing, consolidation restoration, consolidated DOCX export coverage, Review Ideas visibility, centralized loader ordering, and changelog naming rules.
-- Added a regression guard that prevents other product names from being introduced into this changelog.
+- Added executable regression tests for Undo ordering, collapse/expand/link behavior, view-only changes, text-edit coalescing, Rapidfire/add metadata coalescing, consolidation restoration, consolidated DOCX export coverage, Review Ideas visibility, centralized loader ordering, obsolete Undo-layer removal, and changelog naming rules.
+- Added regression guards that prevent the removed relationship-specific Undo layer from returning and prevent other product names from being introduced into this changelog.
 
 ## 3.1.3 — 2026-10-31
 
