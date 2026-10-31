@@ -16,6 +16,7 @@
 ### Changed
 - Updated the MindMap page version label from 2.8.1 to 2.8.2.
 - Loaded the new `minimap.js` module after the core MindMap application.
+- Changed the `template-help.js` cache key from the old `v=2.6.3` URL to a new 2.8.2 title-fix URL so browsers cannot reuse the stale title-overriding script.
 
 ### Fixed
 - Removed the hard-coded version override from `template-help.js` so it can no longer replace the browser-tab title with an older MindMap version after page load.
