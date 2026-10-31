@@ -1,5 +1,17 @@
 # MindMap V2 Changelog
 
+## 3.2.3 — 2026-10-31
+
+### Desktop Lens Clear event fix
+
+- Fixed **Clear** working in touch/device emulation but failing during normal desktop mouse use.
+- The extra Lens safety handler no longer cancels the desktop click before the writer Lens module receives it.
+- The writer module's own Clear button handler now gets first responsibility for clearing its private Lens/Thread state.
+- The safety layer verifies the result after the native handler runs and only applies its fallback if a Lens or Thread is still active.
+- Kept muted nodes and muted relationships non-interactive while a Lens is active.
+- Bumped MindMap V2 from **3.2.2** to **3.2.3** because this is a focused desktop interaction fix.
+- Refreshed the core and Lens-clear asset build keys so normal desktop browsing requests the corrected scripts.
+
 ## 3.2.2 — 2026-10-31
 
 ### Lens state and interaction fixes
