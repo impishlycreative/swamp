@@ -26,6 +26,7 @@
 - Changed the `toolbar-system.js` cache key so the restored desktop Projects control is fetched immediately.
 - Changed the `toolbar-system.js` cache key again for the corrected Projects drag handler so the deployed page cannot keep the older non-dragging script.
 - Changed the `toolbar-system.js` cache key to `1.0.6-projectsheader1` for the full-width Projects drag header.
+- Changed the `rapidfire.js` cache key to `2.8.2-parentchooser1` so the improved parent-selection flow and Idea-panel Rapidfire action are fetched immediately.
 - Renamed the project selector label from `Project` to `Current project` so the new `Projects` title bar owns the panel heading.
 - Rapidfire started without a selection now enters an explicit `Choose a parent idea` mode instead of relying on a short toast and silently waiting.
 
