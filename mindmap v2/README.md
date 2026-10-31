@@ -1,4 +1,4 @@
-# MindMap V2 3.3.0
+# MindMap V2 3.3.1
 
 A local-first brainstorming and mind-mapping workspace for writers, built around the map as the primary writing surface.
 
@@ -72,14 +72,14 @@ Run:
 node "mindmap v2/tests/regression-tests.js"
 ```
 
-The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, desktop Clear event handling, muted-node interaction, group-layout loading and persistence, loader ordering, and changelog naming rules.
+The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, desktop Clear event handling, muted-node interaction, group-layout loading and persistence, mobile-shell loading and toolbar behavior, loader ordering, and changelog naming rules.
 
 ## Desktop and mobile
 
 V2 uses one data model but separate responsive treatments.
 
 - Desktop: contextual floating actions, compact Navigator, mouse/keyboard navigation, draggable writer bar, drag-box area selection, and group spacing.
-- Mobile: canvas-first editing, touch-sized actions, full-screen Navigator, bottom-oriented sheets, safe-area-aware controls, compact map navigation, and **Space** through long-press multi-selection.
+- Mobile: a stable top bar for map/global actions and a stable bottom bar for selected-node actions. The bottom bar exposes **Edit, Rapidfire, Lens, Link, More**; the node's own `+` remains the direct Add action. Mobile also keeps touch-sized sheets, safe-area spacing, full-screen Navigator, and **Space** through long-press multi-selection.
 
 ## Persistence
 
@@ -93,6 +93,7 @@ Projects remain local-first in browser storage unless exported. JSON exports ret
 - `writer-map.js` — writer-aware map behavior.
 - `consolidation.js` — Rapidfire review and parent-detail consolidation.
 - `group-layout.js` — desktop area selection and shared group spacing.
+- `mobile-shell.js` — stable mobile toolbar/layout shell and selected-node action bar.
 - `v2-experience.js` — Navigator, relationships, Story Walk, Zen, and integration behavior.
 - `relationship-routing.js` — collision-aware relationship routing.
 - `lens-clear-fix.js` — reliable Lens/Thread clearing and Lens interaction locking.
