@@ -1,5 +1,22 @@
 # MindMap V2 Changelog
 
+## 3.3.1 — 2026-10-31
+
+### Mobile shell and toolbar repair
+
+- Fixed the mobile layout losing its usable toolbar structure and relying on the floating writer bar for selected-node actions.
+- Restored a stable mobile top bar with map selection, Undo, Search, Save / Export, and More.
+- Restored a stable mobile bottom action bar for the selected idea with **Edit, Rapidfire, Lens, Link, More**.
+- The node's own `+` remains the one-tap way to add a child idea, so the mobile action bar does not duplicate Add.
+- Hid the floating desktop writer bar on mobile to prevent overlapping or duplicated controls.
+- Added a dedicated mobile shell layer that overrides the older conflicting mobile toolbar rules, including the rule that explicitly hid the bottom toolbar.
+- Kept desktop-only area-selection controls out of the mobile shell.
+- Kept Lens, multi-select, Story Health, Search, and utility panels positioned above the bottom toolbar and within mobile safe areas.
+- Kept permanent mobile toolbars below modal and sheet layers so Rapidfire, More, Help, and other dialogs can cover the chrome cleanly when opened.
+- Mobile bottom actions proxy the existing writer actions instead of creating a second behavior path.
+- Bumped MindMap V2 from **3.3.0** to **3.3.1** because this is a focused mobile UI regression repair.
+- Added `mobile-shell.js` and refreshed the core/mobile-shell build keys so normal mobile browsing fetches the corrected layout.
+
 ## 3.3.0 — 2026-10-31
 
 ### Area selection and spacing
