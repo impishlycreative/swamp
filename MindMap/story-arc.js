@@ -166,7 +166,6 @@ function updateFocusNav(m){
   ensureUi();const nav=document.getElementById('templateFocusNav'),ctx=findOverviewForMap(m?.id);if(!nav)return;nav.classList.toggle('hidden',!ctx);if(ctx){document.getElementById('templateBackBtn').textContent=`← ${ctx.name||'Template'} overview`;document.getElementById('templateBeatHelpBtn').title=`Help: ${ctx.node.text}`;}
 }
 function updateGlobalUi(){
-  document.title=document.title.replace(/MindMap\s+[^—]+—/,'MindMap 2.6.0 —');const small=document.querySelector('.brand small');if(small)small.textContent='Swamp · v2.6.0';if(app())app().version='2.6.0';
   const exit=document.getElementById('rapidfireCancel');if(exit)exit.textContent='Exit';const idea=document.getElementById('rapidfireIdea');if(idea)idea.placeholder='One short idea';const desc=document.getElementById('rapidfireDescription');if(desc)desc.placeholder='Optional short note';
 }
 function sync(){
