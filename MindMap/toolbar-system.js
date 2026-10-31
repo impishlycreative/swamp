@@ -8,6 +8,14 @@
     const target=$(id);
     if(target)target.click();
   }
+  function dismissIdeaInspector(){
+    const inspector=$('inspector');
+    if(!inspector||inspector.classList.contains('hidden'))return;
+    const svg=$('svg');
+    if(svg)svg.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+    inspector.classList.add('hidden');
+    inspector.classList.remove('mobile-open','mobile-edit','mobile-more');
+  }
   function installProjectsStyles(){
     if($('mindmapProjectsDialogStyles'))return;
     const style=document.createElement('style');
@@ -43,6 +51,7 @@
   function showProjectsDialog(){
     const projectSelect=$('projectSelect');
     if(!projectSelect)return;
+    dismissIdeaInspector();
     $('utilitySheet')?.classList.remove('open');
     closeProjectsDialog();
     installProjectsStyles();
