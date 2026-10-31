@@ -18,13 +18,16 @@
 - Loaded the new `minimap.js` module after the core MindMap application.
 - Changed the `template-help.js` cache key from the old `v=2.6.3` URL to a new 2.8.2 title-fix URL so browsers cannot reuse the stale title-overriding script.
 - Changed the `story-arc.js` cache key from `v=2.6.2` to a new 2.8.2 title-fix URL so the corrected story-arc code is fetched.
+- Changed the `ux-projects.js` cache key to a new 2.8.2 version-fix URL so browsers fetch the corrected project creation logic.
 
 ### Fixed
 - Removed the hard-coded version override from `template-help.js` so it can no longer replace the browser-tab title with an older MindMap version after page load.
 - Removed the hard-coded `MindMap 2.6.0` browser-title, toolbar-version, and `MindMapApp.version` override from `story-arc.js`. Its story-template sync was the remaining cause of the tab briefly showing 2.8.2 and then reverting to 2.6.0.
+- Removed the hard-coded `2.6.0` map/project version values from `ux-projects.js`. Newly created projects now derive their version from the authoritative page title instead of carrying a separate stale release number.
 - The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
 
 ### Implementation notes
 - Minimap navigation reuses the existing main SVG pointer-pan behavior so viewport changes continue to flow through the application's existing save/view-state path.
 - The minimap observes the rendered SVG and viewport transform, avoiding a second independent layout model that could drift out of sync.
 - Story-template rendering still updates Rapidfire labels/placeholders, but no longer owns or mutates the application version.
+- `ux-projects.js` now reads the application version from the page title when creating local project/map records, avoiding another independent UI-version constant.
