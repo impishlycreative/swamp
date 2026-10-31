@@ -17,6 +17,10 @@
 - Updated the MindMap page version label from 2.8.1 to 2.8.2.
 - Loaded the new `minimap.js` module after the core MindMap application.
 
+### Fixed
+- Removed the hard-coded version override from `template-help.js` so it can no longer replace the browser-tab title with an older MindMap version after page load.
+- The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
+
 ### Implementation notes
 - Minimap navigation reuses the existing main SVG pointer-pan behavior so viewport changes continue to flow through the application's existing save/view-state path.
 - The minimap observes the rendered SVG and viewport transform, avoiding a second independent layout model that could drift out of sync.
