@@ -1,5 +1,22 @@
 # MindMap Changelog
 
+## 2026-10-31 — 2.9.2
+
+### Changed
+- Bumped the MindMap release from 2.9.1 to 2.9.2 for the multi-select undo fix.
+- Changed the `multi-select.js` cache key to `2.9.2-undofix1` so browsers fetch the corrected undo behavior immediately.
+- Multi-select refreshes now re-render the current map in place instead of calling `setCurrentMap()` on the current map, which was clearing the core undo history.
+
+### Fixed
+- Batch branch moves can now be undone with either Ctrl/Command-Z or the existing Undo button.
+- Batch branch deletions are now undoable through the same path.
+- Multi-select undo preserves ordering with normal core edits: if a normal edit happens after a batch move, the normal edit is undone first, then the batch move becomes the next undoable action.
+
+### Implementation notes
+- Multi-select keeps a bounded undo stack for its own batch operations and only claims Undo when the current map state still matches the corresponding batch result.
+- Batch undo restores the prior map snapshot in place, then saves and re-renders without resetting the core application's history stack.
+- The core application continues to derive `MindMapApp.version` from the authoritative HTML title, so the 2.9.2 page version is also used for runtime map/project metadata.
+
 ## 2026-10-31 — 2.9.1
 
 ### Changed
