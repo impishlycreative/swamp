@@ -91,9 +91,18 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
     assert(index.includes('core-stability.js'),'index must load centralized core stability/version code');
     assert(index.indexOf('core-stability.js')<index.indexOf('app.js'),'core stability must load before app.js');
     assert(index.includes('relationship-routing.js'),'routing-only relationship layer must be loaded');
+    assert(index.includes('lens-clear-fix.js'),'Lens clear fix must be loaded');
     assert(!index.includes('relationship-integrity.js'),'old feature-specific relationship undo layer must not be loaded');
     assert.strictEqual(readIfExists('relationship-integrity.js'),null,'obsolete relationship-specific undo file must stay removed');
     assert(!/MindMap\s+\d+\.\d+\.\d+\s+V2/.test(index),'index title must not duplicate the semantic version source');
+  }
+  const lensFix=readIfExists('lens-clear-fix.js');
+  if(lensFix){
+    assert(lensFix.includes('[data-clear-lens]'),'Lens clear control must be handled');
+    assert(lensFix.includes('[data-clear-all]'),'combined Lens/Thread clear control must be handled');
+    assert(lensFix.includes("document.addEventListener('click'"),'Lens clear must use delegated click handling so strip rebuilds cannot lose it');
+    assert(lensFix.includes('writer.focus(id)'),'Lens clear fallback must reset the writer Lens state');
+    assert(lensFix.includes("replaceChildren()"),'Lens clear must remove the thread-path overlay too');
   }
   const change=readIfExists('changelog.md');
   if(change){
