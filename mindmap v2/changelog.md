@@ -1,5 +1,24 @@
 # MindMap V2 Changelog
 
+## 3.2.0 — 2026-10-31
+
+### Unified Undo, centralized versioning, and regression coverage
+
+- Added a single project-level Undo history for meaningful data changes across the base map and V2 feature layers.
+- Undo now follows the actual order of saved changes instead of letting relationships, consolidation, and the base map compete through separate histories.
+- Toolbar Undo and Ctrl/Cmd+Z now use the same unified history path.
+- Pan, zoom, viewport changes, and map navigation do not create Undo entries.
+- Consecutive text, description, and connection-label edits are coalesced so normal typing remains one useful Undo action instead of one action per keystroke.
+- Unified Undo covers node edits, add/delete, collapse/expand, manual positioning, branch moves, relationships, writer type/thread/flag changes, consolidation, and project/map changes when those changes are saved.
+- Replaced the previously loaded relationship-specific Undo correction layer with a routing-only relationship layer. Collision-aware relationship routing remains active, but it no longer owns its own Undo path.
+- Added `core-stability.js` as the runtime source for the MindMap V2 semantic version and unified history behavior.
+- Removed the semantic version from the static browser title and toolbar markup. Runtime branding now comes from the centralized version source.
+- Changed asset query strings to build identifiers rather than using them as a second semantic-version source.
+- Marked the existing V2 stylesheet in the page so the older experience layer does not inject a second stylesheet with a stale version key.
+- Bumped MindMap V2 from **3.1.3** to **3.2.0** because this changes core application behavior and architecture rather than only correcting a single bug.
+- Added executable regression tests for Undo ordering, collapse/expand/link behavior, view-only changes, text-edit coalescing, consolidation restoration, consolidated DOCX export coverage, Review Ideas visibility, centralized loader ordering, and changelog naming rules.
+- Added a regression guard that prevents other product names from being introduced into this changelog.
+
 ## 3.1.3 — 2026-10-31
 
 ### Relationship routing and undo fixes
