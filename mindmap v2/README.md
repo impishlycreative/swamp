@@ -1,8 +1,8 @@
-# MindMap V2 3.2.3
+# MindMap V2 3.3.0
 
 A local-first brainstorming and mind-mapping workspace for writers, built around the map as the primary writing surface.
 
-V2 keeps hierarchy, direct idea editing, descriptions, Rapidfire, templates, minimap navigation, focus/collapse, search, drag re-parenting, local autosave, JSON/Word/PDF export, and desktop/mobile interaction. It adds writer-aware relationships, lenses, threads, guided help, story health, consolidation, and a stability layer that keeps Undo and versioning consistent across those features.
+V2 keeps hierarchy, direct idea editing, descriptions, Rapidfire, templates, minimap navigation, focus/collapse, search, drag re-parenting, local autosave, JSON/Word/PDF export, and desktop/mobile interaction. It adds writer-aware relationships, lenses, threads, guided help, story health, consolidation, group layout tools, and a stability layer that keeps Undo and versioning consistent across those features.
 
 ## Core writing workflow
 
@@ -11,9 +11,18 @@ V2 keeps hierarchy, direct idea editing, descriptions, Rapidfire, templates, min
 - Use **Review Ideas** to sort raw Rapidfire ideas, group them, keep them as nodes, or move them into structured parent details.
 - Use **Lens** to emphasize the selected idea's useful story context. Muted nodes are intentionally not clickable while the Lens is active. **Clear** returns the map to its normal view and removes any active thread path.
 - Use **Link** to connect ideas across branches without changing their parent/child structure.
+- Use **Select area** on desktop to drag a box around a cluster of ideas, then press **Space** to give them breathing room while keeping their rough shape.
 - Use **Story Threads** to trace larger strands through the existing map.
 - Use **Story Health** for objective structural checks such as unresolved setups, clues without payoffs, empty beats, broken links, and explicit needs-work flags.
 - Use story templates as working story skeletons with linked brainstorming maps for each beat.
+
+## Group layout
+
+Desktop has a mouse-first **Select area** tool. Click it, drag across blank canvas around the ideas you want, then use **Space**. **Shift + drag** on blank canvas is the faster shortcut.
+
+Spacing uses the current bubble sizes and nearby visible ideas. It pushes crowded selected bubbles apart without flattening the group into a row or grid. The central/root idea stays fixed. The resulting positions are normal saved map positions and can be undone.
+
+The existing multi-select bar also gets **Space**, so Ctrl/Cmd-selected ideas on desktop and long-press multi-selection on touch devices can use the same spacing behavior.
 
 ## Navigation
 
@@ -49,6 +58,7 @@ As of 3.2.0, meaningful project changes share one chronological Undo history.
 - Relationships and consolidation no longer need to win against separate feature-specific histories.
 - Pan, zoom, viewport movement, and map navigation are ignored by Undo.
 - Normal typing is coalesced into useful edit-sized Undo actions.
+- Group spacing is stored as normal manual positions, so one spacing operation participates in the same Undo path.
 
 ## Versioning
 
@@ -62,14 +72,14 @@ Run:
 node "mindmap v2/tests/regression-tests.js"
 ```
 
-The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, desktop Clear event handling, muted-node interaction, loader ordering, and changelog naming rules.
+The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, desktop Clear event handling, muted-node interaction, group-layout loading and persistence, loader ordering, and changelog naming rules.
 
 ## Desktop and mobile
 
 V2 uses one data model but separate responsive treatments.
 
-- Desktop: contextual floating actions, compact Navigator, mouse/keyboard navigation, draggable writer bar.
-- Mobile: canvas-first editing, touch-sized actions, full-screen Navigator, bottom-oriented sheets, safe-area-aware controls, and compact map navigation.
+- Desktop: contextual floating actions, compact Navigator, mouse/keyboard navigation, draggable writer bar, drag-box area selection, and group spacing.
+- Mobile: canvas-first editing, touch-sized actions, full-screen Navigator, bottom-oriented sheets, safe-area-aware controls, compact map navigation, and **Space** through long-press multi-selection.
 
 ## Persistence
 
@@ -82,6 +92,7 @@ Projects remain local-first in browser storage unless exported. JSON exports ret
 - `app.js` — base map data model, rendering, editing, storage, and core interactions.
 - `writer-map.js` — writer-aware map behavior.
 - `consolidation.js` — Rapidfire review and parent-detail consolidation.
+- `group-layout.js` — desktop area selection and shared group spacing.
 - `v2-experience.js` — Navigator, relationships, Story Walk, Zen, and integration behavior.
 - `relationship-routing.js` — collision-aware relationship routing.
 - `lens-clear-fix.js` — reliable Lens/Thread clearing and Lens interaction locking.
