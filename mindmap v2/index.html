@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MindMap 3.1.1 V2 — Swamp</title>
+<title>MindMap 3.1.2 V2 — Swamp</title>
 <meta name="description" content="Swamp MindMap V2: a local-first writer-focused brainstorming workspace with hierarchical outlining, cross-branch relationships, Story Walk, rapid capture, and mobile-first navigation.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<link rel="stylesheet" href="style.css?v=3.1.1">
-<link rel="stylesheet" href="toolbar-system.css?v=3.1.1">
-<link rel="stylesheet" href="v2-experience.css?v=3.1.1">
+<link rel="stylesheet" href="style.css?v=3.1.2">
+<link rel="stylesheet" href="toolbar-system.css?v=3.1.2">
+<link rel="stylesheet" href="v2-experience.css?v=3.1.2">
 <style>
 #rapidfireBtn.rapid-active{background:#6f5518;border-color:#6f5518;color:#fff}
 .context-btn.rapid-active{background:#f0e5c5;color:#6f5518}
@@ -48,7 +48,7 @@
 
 <div id="app" class="app hidden">
 <header id="desktopToolbar" aria-label="MindMap toolbar">
-  <div class="tb-brand"><div class="tb-brand-mark" aria-hidden="true"></div><div class="tb-brand-copy"><strong>MindMap</strong><small data-toolbar-version>V2 · 3.1.1</small></div></div>
+  <div class="tb-brand"><div class="tb-brand-mark" aria-hidden="true"></div><div class="tb-brand-copy"><strong>MindMap</strong><small data-toolbar-version>V2 · 3.1.2</small></div></div>
   <div class="tb-row">
     <select id="desktopMapSelect" class="tb-select" aria-label="Current mind map"></select>
     <button class="tb-button tb-primary" type="button" data-toolbar-target="addBtn" title="Add idea">＋ Add Idea</button>
@@ -128,23 +128,23 @@
 <div id="shortcutsDialog" class="modal shortcuts-modal hidden" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle"><div class="card shortcuts-card"><h2 id="shortcutsTitle">Keyboard shortcuts</h2><p>Common actions stay one keystroke or one chord away.</p><div class="shortcuts-grid"><span class="kbd">Enter</span><span>Add child idea</span><span class="kbd">Ctrl/⌘ K</span><span>Search</span><span class="kbd">Ctrl/⌘ Z</span><span>Undo</span><span class="kbd">Ctrl/⌘ S</span><span>Save current map</span><span class="kbd">Ctrl/⌘ ⇧ S</span><span>Save complete project</span><span class="kbd">Ctrl/⌘ E</span><span>Export Word outline</span><span class="kbd">Ctrl/⌘ P</span><span>Export visual PDF</span><span class="kbd">F</span><span>Focus / unfocus branch</span><span class="kbd">C</span><span>Collapse / expand branch</span><span class="kbd">Home</span><span>Fit map</span><span class="kbd">Delete</span><span>Delete selected idea</span><span class="kbd">Esc</span><span>Close panel / exit focus</span><span class="kbd">?</span><span>Show shortcuts</span></div><button id="shortcutsClose" class="btn shortcuts-close">Close</button></div></div>
 <div id="exportDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="exportTitle"><div class="card export-card"><h2 id="exportTitle">Save / Export</h2><p>Save the current map or the complete multi-map project.</p><div class="export-options"><button id="exportJson" class="btn export-option" type="button"><span class="export-icon">{ }</span><span><strong>Current map (.mindmap.json)</strong><small>One map, including hierarchy, descriptions, linked-map references, relationships, and manual positions.</small></span></button><button id="exportProject" class="btn export-option" type="button"><span class="export-icon">▦</span><span><strong>Complete project (.mindmap-project.json)</strong><small>Every map, story-template beat, relationship, link, saved position, and viewport.</small></span></button><button id="exportWord" class="btn export-option" type="button"><span class="export-icon">W</span><span><strong>Word outline (.docx)</strong><small>Current map as hierarchical text with descriptions.</small></span></button><button id="exportPdf" class="btn export-option" type="button"><span class="export-icon">▧</span><span><strong>Visual map (PDF)</strong><small>Fits the current bubble map and opens the browser print dialog for PDF output.</small></span></button></div><div class="project-note">Import accepts either a single map or a complete project. Single maps are added to the current project.</div><button id="exportCancel" class="btn export-cancel" type="button">Cancel</button></div></div>
 
-<script src="toolbar-system.js?v=3.1.1" defer></script>
-<script src="drag-hysteresis.js?v=3.1.1" defer></script>
-<script src="app.js?v=3.1.1" defer></script>
-<script src="minimap.js?v=3.1.1" defer></script>
-<script src="session-auth.js?v=3.1.1" defer></script>
-<script src="story-arc.js?v=3.1.1" defer></script>
-<script src="template-initial-view.js?v=3.1.1-view1" defer></script>
-<script src="template-help.js?v=3.1.1-writer3" defer></script>
-<script src="rapidfire.js?v=3.1.1" defer></script>
-<script src="ux-projects.js?v=3.1.1" defer></script>
-<script src="mobile-viewport.js?v=3.1.1" defer></script>
-<script src="multi-select.js?v=3.1.1" defer></script>
-<script src="export-tools.js?v=3.1.1" defer></script>
-<script src="word-export-linked.js?v=3.1.1" defer></script>
-<script src="v2-experience.js?v=3.1.1" defer></script>
-<script src="guide-help.js?v=3.1.1-guide2" defer></script>
-<script src="consolidation.js?v=3.1.1" defer></script>
-<script src="consolidation-selection-fix.js?v=3.1.1" defer></script>
+<script src="toolbar-system.js?v=3.1.2" defer></script>
+<script src="drag-hysteresis.js?v=3.1.2" defer></script>
+<script src="app.js?v=3.1.2" defer></script>
+<script src="minimap.js?v=3.1.2" defer></script>
+<script src="session-auth.js?v=3.1.2" defer></script>
+<script src="story-arc.js?v=3.1.2" defer></script>
+<script src="template-initial-view.js?v=3.1.2-view1" defer></script>
+<script src="template-help.js?v=3.1.2-writer3" defer></script>
+<script src="rapidfire.js?v=3.1.2" defer></script>
+<script src="ux-projects.js?v=3.1.2" defer></script>
+<script src="mobile-viewport.js?v=3.1.2" defer></script>
+<script src="multi-select.js?v=3.1.2" defer></script>
+<script src="export-tools.js?v=3.1.2" defer></script>
+<script src="word-export-linked.js?v=3.1.2" defer></script>
+<script src="v2-experience.js?v=3.1.2" defer></script>
+<script src="guide-help.js?v=3.1.2-guide2" defer></script>
+<script src="consolidation.js?v=3.1.2" defer></script>
+<script src="consolidation-selection-fix.js?v=3.1.2" defer></script>
 </body>
 </html>
