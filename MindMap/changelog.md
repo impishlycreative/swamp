@@ -16,6 +16,9 @@
 - Added a full-width `Projects` title bar to the Projects sheet so its drag surface matches the Idea inspector more closely.
 - Added a `⚡ Rapidfire` button to the Idea inspector so Rapidfire can start directly from the currently selected idea.
 - Added a persistent Rapidfire parent-selection prompt when Rapidfire is started without a selected node.
+- Added multi-select branch handling for brainstorming maps. On desktop, Ctrl-click or Command-click toggles ideas into the selection; on mobile, long-press enters multi-select and subsequent taps toggle ideas.
+- Added a floating multi-select action bar with `Delete` and `Clear` controls. On mobile it sits above the bottom toolbar.
+- Selected branches can be dragged together onto another node to make that node their new parent.
 
 ### Changed
 - Updated the MindMap page version label from 2.8.1 to 2.8.2.
@@ -27,6 +30,7 @@
 - Changed the `toolbar-system.js` cache key again for the corrected Projects drag handler so the deployed page cannot keep the older non-dragging script.
 - Changed the `toolbar-system.js` cache key to `1.0.6-projectsheader1` for the full-width Projects drag header.
 - Changed the `rapidfire.js` cache key to `2.8.2-parentchooser1` so the improved parent-selection flow and Idea-panel Rapidfire action are fetched immediately.
+- Loaded `multi-select.js` with the `2.8.2-multiselect1` cache key on desktop and mobile.
 - Renamed the project selector label from `Project` to `Current project` so the new `Projects` title bar owns the panel heading.
 - Rapidfire started without a selection now enters an explicit `Choose a parent idea` mode instead of relying on a short toast and silently waiting.
 
@@ -42,6 +46,9 @@
 - The draggable Projects sheet is clamped inside the MindMap workspace and resets its desktop drag coordinates when switching to the mobile layout.
 - Rapidfire parent selection can now be cancelled by clicking anywhere that is not a node; the click continues to its normal target after cancelling.
 - Starting Rapidfire from the Idea inspector now closes the Idea inspector before opening the Rapidfire entry dialog, preventing stacked editing panels.
+- Multi-select prevents the root idea from being selected, moved, or deleted.
+- Multi-select prevents cycles by rejecting any drop target that is part of one of the branches currently being moved.
+- Selecting a parent branch automatically absorbs separately selected descendants so the same subtree is never moved or deleted twice.
 - The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
 
 ### Implementation notes
@@ -51,3 +58,5 @@
 - `ux-projects.js` now reads the application version from the page title when creating local project/map records, avoiding another independent UI-version constant.
 - Desktop project management continues to use the existing `ux-projects.js` registry and switching logic; `toolbar-system.js` supplies the desktop Projects entry point, panel exclusivity, title bar, and drag behavior without creating a second project model.
 - Rapidfire chooser mode visually marks nodes as selectable and keeps a persistent instruction banner visible until the user chooses a node or clicks elsewhere to cancel.
+- Multi-select uses the same map hierarchy data (`parentId`) as normal branch dragging. Reparenting moves each selected branch root while preserving all descendants beneath it.
+- Mobile multi-select uses a long-press gesture so it does not depend on keyboard modifiers; normal single-node controls remain available outside multi-select mode.
