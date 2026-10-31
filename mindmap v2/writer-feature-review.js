@@ -173,7 +173,7 @@ function enhanceMore(){
     }
   });
   const health=qs('[data-writer-refine="health"]',grid);
-  if(health){const small=qs('small',health);if(small)small.textContent='Check objective structural issues only';}
+  if(health){const small=qs('small',health);if(small&&small.textContent!=='Check objective structural issues only')small.textContent='Check objective structural issues only';}
 }
 function watchMore(){
   const sheet=qs('#writerBranchSheet');if(!sheet||moreObserver)return;
