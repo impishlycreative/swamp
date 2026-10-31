@@ -48,6 +48,20 @@ const parsed=r=>JSON.parse(r);
   assert.strictEqual(parsed(entry.beforeRaw).sessions.m.nodes.child.text,'Child');
 })();
 
+(function addIdeaAbsorbsImmediateWriterMetadata(){
+  const h=new core.UnifiedHistory();
+  const before=project();
+  const added=JSON.parse(JSON.stringify(before));
+  added.sessions.m.nodes.idea={id:'idea',text:'New idea',description:'',parentId:'child',collapsed:false,created:'x',x:null,y:null};
+  const tagged=JSON.parse(JSON.stringify(added));
+  tagged.sessions.m.nodes.idea.writer={rawBrainstorm:true,type:'general'};
+  h.record(raw(before),raw(added),100);
+  h.record(raw(added),raw(tagged),400);
+  assert.strictEqual(h.length,1,'Rapidfire/smart-type metadata should stay in the Add Idea undo action');
+  const entry=h.takeUndo(raw(tagged));
+  assert(!parsed(entry.beforeRaw).sessions.m.nodes.idea,'one undo should remove the newly added idea and its derived metadata');
+})();
+
 (function consolidationRestoresRawNode(){
   const h=new core.UnifiedHistory();
   const before=project();
