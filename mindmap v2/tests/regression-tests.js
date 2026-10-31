@@ -92,6 +92,7 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
     assert(index.indexOf('core-stability.js')<index.indexOf('app.js'),'core stability must load before app.js');
     assert(index.includes('relationship-routing.js'),'routing-only relationship layer must be loaded');
     assert(!index.includes('relationship-integrity.js'),'old feature-specific relationship undo layer must not be loaded');
+    assert.strictEqual(readIfExists('relationship-integrity.js'),null,'obsolete relationship-specific undo file must stay removed');
     assert(!/MindMap\s+\d+\.\d+\.\d+\s+V2/.test(index),'index title must not duplicate the semantic version source');
   }
   const change=readIfExists('changelog.md');
