@@ -100,12 +100,27 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
     assert(index.includes('core-stability.js'),'index must load centralized core stability/version code');
     assert(index.indexOf('core-stability.js')<index.indexOf('app.js'),'core stability must load before app.js');
     assert(index.includes('group-layout.js'),'group layout feature must be loaded');
+    assert(index.includes('mobile-shell.js'),'mobile shell repair must be loaded');
+    assert(index.includes('mobile-shell.js?build=20261031h'),'mobile shell repair must have a fresh asset key');
+    assert(index.includes('core-stability.js?build=20261031h'),'3.3.1 core must have a fresh asset key');
+    assert(index.indexOf('mobile-shell.js')>index.indexOf('group-layout.js'),'mobile shell must load after group layout so it can override desktop-only chrome on mobile');
     assert(index.includes('relationship-routing.js'),'routing-only relationship layer must be loaded');
     assert(index.includes('lens-clear-fix.js'),'Lens clear fix must be loaded');
     assert(index.includes('lens-clear-fix.js?build=20261031f'),'desktop Lens Clear fix must have a fresh asset key');
     assert(!index.includes('relationship-integrity.js'),'old feature-specific relationship undo layer must not be loaded');
     assert.strictEqual(readIfExists('relationship-integrity.js'),null,'obsolete relationship-specific undo file must stay removed');
     assert(!/MindMap\s+\d+\.\d+\.\d+\s+V2/.test(index),'index title must not duplicate the semantic version source');
+  }
+  const mobileShell=readIfExists('mobile-shell.js');
+  if(mobileShell){
+    assert(mobileShell.includes('body #mobileToolbar{display:flex!important'),'mobile top toolbar must be forced visible in the mobile shell');
+    assert(mobileShell.includes('body #mobileBottomToolbar{display:flex!important'),'mobile bottom toolbar must be forced visible in the mobile shell');
+    assert(mobileShell.includes('body #writerContext{display:none!important'),'desktop floating writer bar must stay hidden on mobile');
+    for(const action of ["key:'edit'","key:'rapid'","key:'lens'","key:'link'","key:'more'"])assert(mobileShell.includes(action),`mobile selected-node bar must keep ${action}`);
+    assert(mobileShell.includes('clickFirst'),'mobile actions must proxy one existing writer action instead of firing multiple paths');
+    assert(!mobileShell.includes("?.click()||"),'mobile action fallbacks must not double-fire because click() returns undefined');
+    assert(mobileShell.includes('env(safe-area-inset-bottom)'),'mobile bottom toolbar must respect the device safe area');
+    assert(mobileShell.includes('z-index:110!important'),'permanent mobile chrome must stay below modal/sheet layers');
   }
   const groupLayout=readIfExists('group-layout.js');
   if(groupLayout){
