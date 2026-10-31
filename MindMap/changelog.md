@@ -13,7 +13,7 @@
 - Added a collapse/restore control; the collapsed state is remembered locally.
 - The minimap is excluded from print/PDF output.
 - Restored a visible `Projects` control beside the desktop map selector.
-- Restored a dedicated desktop Projects dialog for project switching, project creation, project rename, and per-project map counts.
+- The desktop Projects sheet can now be dragged by its `PROJECT` header, using the same workspace-bounded behavior as the Idea inspector.
 
 ### Changed
 - Updated the MindMap page version label from 2.8.1 to 2.8.2.
@@ -29,6 +29,7 @@
 - Removed the hard-coded `2.6.0` map/project version values from `ux-projects.js`. Newly created projects now derive their version from the authoritative page title instead of carrying a separate stale release number.
 - Restored the desktop entry point for multi-project management that was lost when the toolbar was rewritten. The existing project registry, active-project switching, project creation/rename, and per-project map grouping are used unchanged.
 - Opening the desktop Projects UI now dismisses the Idea inspector first so the two panels cannot stack on top of each other.
+- The draggable Projects sheet is clamped inside the MindMap workspace and resets its desktop drag coordinates when switching to the mobile layout.
 - The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
 
 ### Implementation notes
@@ -36,4 +37,4 @@
 - The minimap observes the rendered SVG and viewport transform, avoiding a second independent layout model that could drift out of sync.
 - Story-template rendering still updates Rapidfire labels/placeholders, but no longer owns or mutates the application version.
 - `ux-projects.js` now reads the application version from the page title when creating local project/map records, avoiding another independent UI-version constant.
-- Desktop project management continues to use the existing `ux-projects.js` registry and switching logic; the Projects dialog is only a UI surface over those controls.
+- Desktop project management continues to use the existing `ux-projects.js` registry and switching logic; `toolbar-system.js` supplies the desktop Projects entry point, panel exclusivity, and drag behavior without creating a second project model.
