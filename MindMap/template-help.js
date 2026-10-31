@@ -47,7 +47,6 @@ const EXAMPLES={
   }
 };
 
-const app=()=>window.MindMapApp;
 function ensureUi(){
   if(!document.getElementById('templateHelpExampleStyles')){
     const style=document.createElement('style');style.id='templateHelpExampleStyles';style.textContent=`
@@ -67,11 +66,8 @@ function updateExamples(){
   const items=EXAMPLES[template]?.[title]||['A new problem appears.','A choice changes what happens next.'];
   list.replaceChildren(...items.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
 }
-function updateVersionUi(){
-  document.title=document.title.replace(/MindMap\s+[^—]+—/,'MindMap 2.7.1 —');const small=document.querySelector('.brand small');if(small)small.textContent='Swamp · v2.7.1';if(app())app().version='2.7.1';
-}
 function watch(){
-  ensureUi();updateVersionUi();updateExamples();
+  ensureUi();updateExamples();
   const dialog=document.getElementById('templateHelpDialog');if(dialog&&!dialog._examplesObserver){const obs=new MutationObserver(updateExamples);obs.observe(dialog,{attributes:true,attributeFilter:['class']});dialog._examplesObserver=obs;}
 }
 window.addEventListener('DOMContentLoaded',watch);
