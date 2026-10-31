@@ -3,6 +3,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   const button=document.getElementById('searchBtn');
   const input=document.getElementById('searchInput');
   const utilitySheet=document.getElementById('utilitySheet');
+  const workspace=document.getElementById('workspace');
+  const inspector=document.getElementById('inspector');
   const mobileNew=document.getElementById('mobileNew');
   const mobileNewTop=document.getElementById('mobileNewTop');
   const mobileSaveTop=document.getElementById('mobileSaveTop');
@@ -16,7 +18,45 @@ window.addEventListener('DOMContentLoaded',()=>{
   const rapidCancel=document.getElementById('rapidfireCancel');
   const rapidParent=document.getElementById('rapidfireParent');
   const rapidCount=document.getElementById('rapidfireCount');
-  const rapid={active:false,parentId:null,parentLabel:'',count:0,busy:false};
+  const rapid={active:false,choosing:false,parentId:null,parentLabel:'',count:0,busy:false};
+
+  const chooserStyle=document.createElement('style');
+  chooserStyle.id='rapidfireChooserStyle';
+  chooserStyle.textContent=`
+    #rapidfireChooserPrompt{position:absolute;z-index:85;top:16px;left:50%;transform:translateX(-50%);max-width:min(560px,calc(100% - 28px));padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:0 8px 24px rgba(0,0,0,.14);font-weight:850;text-align:center;pointer-events:none}
+    #rapidfireChooserPrompt small{display:block;margin-top:3px;color:var(--muted);font-size:.74rem;font-weight:650}
+    #rapidfireChooserPrompt.hidden{display:none}
+    .workspace.rapidfire-choosing #nodes .node{cursor:pointer}
+    .workspace.rapidfire-choosing #nodes .node .body{stroke:var(--accent)!important;stroke-width:3px;filter:drop-shadow(0 0 4px rgba(111,85,24,.28))}
+    #rapidfireFromIdeaBtn.rapid-active{background:#6f5518;border-color:#6f5518;color:#fff}
+  `;
+  document.head.appendChild(chooserStyle);
+
+  let chooserPrompt=document.getElementById('rapidfireChooserPrompt');
+  if(!chooserPrompt&&workspace){
+    chooserPrompt=document.createElement('div');
+    chooserPrompt.id='rapidfireChooserPrompt';
+    chooserPrompt.className='hidden';
+    chooserPrompt.innerHTML='⚡ Choose a parent idea<small>Click a node to start Rapidfire · click anywhere else to cancel</small>';
+    workspace.appendChild(chooserPrompt);
+  }
+
+  let rapidFromIdeaBtn=document.getElementById('rapidfireFromIdeaBtn');
+  if(!rapidFromIdeaBtn&&inspector){
+    const actions=inspector.querySelector('.actions');
+    const addChild=document.getElementById('addChildBtn');
+    if(actions){
+      rapidFromIdeaBtn=document.createElement('button');
+      rapidFromIdeaBtn.id='rapidfireFromIdeaBtn';
+      rapidFromIdeaBtn.className='btn';
+      rapidFromIdeaBtn.type='button';
+      rapidFromIdeaBtn.textContent='⚡ Rapidfire';
+      rapidFromIdeaBtn.title='Rapidfire ideas under this idea';
+      rapidFromIdeaBtn.setAttribute('aria-label','Rapidfire ideas under this idea');
+      if(addChild?.parentElement===actions)addChild.insertAdjacentElement('afterend',rapidFromIdeaBtn);
+      else actions.prepend(rapidFromIdeaBtn);
+    }
+  }
 
   const dismissSearch=e=>{
     if(!panel||panel.classList.contains('hidden'))return;
@@ -45,15 +85,50 @@ window.addEventListener('DOMContentLoaded',()=>{
   const setRapidButtons=active=>{
     rapidBtn?.classList.toggle('rapid-active',active);
     contextRapid?.classList.toggle('rapid-active',active);
+    rapidFromIdeaBtn?.classList.toggle('rapid-active',active);
+  };
+  const setChooserVisible=visible=>{
+    rapid.choosing=visible;
+    workspace?.classList.toggle('rapidfire-choosing',visible);
+    chooserPrompt?.classList.toggle('hidden',!visible);
   };
   const resetRapidInputs=()=>{
     rapidIdea.value='';
     rapidDescription.value='';
     requestAnimationFrame(()=>rapidIdea.focus());
   };
+  const hideInspector=()=>{
+    inspector?.classList.add('hidden');
+    inspector?.classList.remove('mobile-open','mobile-edit','mobile-more');
+  };
+
+  function attachRapidChooser(){
+    if(rapidChooserAttached)return;
+    document.addEventListener('click',chooseRapidParent,true);
+    rapidChooserAttached=true;
+  }
+  function detachRapidChooser(){
+    if(!rapidChooserAttached)return;
+    document.removeEventListener('click',chooseRapidParent,true);
+    rapidChooserAttached=false;
+  }
+  function cancelRapidChooser(showMessage=true){
+    if(!rapid.choosing)return;
+    detachRapidChooser();
+    setChooserVisible(false);
+    rapid.active=false;
+    rapid.parentId=null;
+    rapid.parentLabel='';
+    rapid.count=0;
+    rapid.busy=false;
+    setRapidButtons(false);
+    if(showMessage)showToast('Rapidfire cancelled');
+  }
+
   const openRapidfireFor=node=>{
     if(!node?.dataset.id)return;
     detachRapidChooser();
+    setChooserVisible(false);
     rapid.active=true;
     rapid.parentId=node.dataset.id;
     rapid.parentLabel=getNodeLabel(node);
@@ -63,13 +138,16 @@ window.addEventListener('DOMContentLoaded',()=>{
     panel?.classList.add('hidden');
     input?.blur();
     utilitySheet?.classList.remove('open');
+    hideInspector();
     rapidParent.textContent=`Adding ideas to “${rapid.parentLabel}”`;
     rapidCount.textContent='0';
     rapidDialog.classList.remove('hidden');
     resetRapidInputs();
   };
   const endRapidfire=()=>{
+    if(rapid.choosing){cancelRapidChooser();return;}
     detachRapidChooser();
+    setChooserVisible(false);
     rapid.active=false;
     rapid.parentId=null;
     rapid.parentLabel='';
@@ -87,10 +165,15 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(selected){openRapidfireFor(selected);return;}
     rapid.active=true;
     rapid.parentId=null;
+    rapid.parentLabel='';
     rapid.count=0;
+    rapid.busy=false;
     setRapidButtons(true);
+    panel?.classList.add('hidden');
+    input?.blur();
+    utilitySheet?.classList.remove('open');
+    setChooserVisible(true);
     attachRapidChooser();
-    showToast('Rapidfire on — choose a node');
   };
 
   rapidBtn?.addEventListener('click',e=>{
@@ -102,29 +185,30 @@ window.addEventListener('DOMContentLoaded',()=>{
   contextRapid?.addEventListener('click',e=>{
     e.preventDefault();
     e.stopPropagation();
+    if(rapid.active)endRapidfire();
+    else armOrOpenRapidfire();
+  });
+  rapidFromIdeaBtn?.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
     const selected=getSelectedNode();
     if(selected)openRapidfireFor(selected);
+    else armOrOpenRapidfire();
   });
 
   const chooseRapidParent=e=>{
-    if(!rapid.active||rapid.parentId||!rapidDialog.classList.contains('hidden')||!e.isTrusted)return;
+    if(!rapid.active||!rapid.choosing||rapid.parentId||!rapidDialog.classList.contains('hidden')||!e.isTrusted)return;
+    if(e.target.closest?.('#rapidfireBtn,#contextRapid,#rapidfireFromIdeaBtn'))return;
     const node=e.target.closest?.('#nodes .node');
-    if(!node)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    openRapidfireFor(node);
+    if(node){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      openRapidfireFor(node);
+      return;
+    }
+    cancelRapidChooser();
   };
   let rapidChooserAttached=false;
-  function attachRapidChooser(){
-    if(rapidChooserAttached)return;
-    document.addEventListener('click',chooseRapidParent,true);
-    rapidChooserAttached=true;
-  }
-  function detachRapidChooser(){
-    if(!rapidChooserAttached)return;
-    document.removeEventListener('click',chooseRapidParent,true);
-    rapidChooserAttached=false;
-  }
 
   const clickSvgNode=node=>{
     if(!node)return false;
@@ -144,10 +228,6 @@ window.addEventListener('DOMContentLoaded',()=>{
       let parent=getNodeById(rapid.parentId);
       if(!parent)throw new Error('Rapidfire parent is no longer available');
 
-      // quickAdd selects the child it creates. Before the next rapid entry,
-      // safely move selection back to the original parent. Touch mode treats
-      // two fast clicks on the same node as a double-tap add, so first click
-      // the currently selected child to reset that tap sequence.
       if(!parent.classList.contains('selected')){
         const current=getSelectedNode();
         if(current&&current.dataset.id!==rapid.parentId)clickSvgNode(current);
@@ -198,6 +278,13 @@ window.addEventListener('DOMContentLoaded',()=>{
     }
     e.stopPropagation();
   });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&rapid.choosing){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      cancelRapidChooser();
+    }
+  },true);
   rapidIdea?.addEventListener('keydown',e=>{
     if(e.key==='Enter'&&!e.shiftKey){
       e.preventDefault();
