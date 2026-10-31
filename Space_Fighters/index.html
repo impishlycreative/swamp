@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#050816">
+  <meta name="description" content="Space Fighters — a mobile-first retro arcade space combat game with modern sci-fi progression.">
+  <title>Space Fighters v0.1.0</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app" class="app" aria-label="Space Fighters game">
+    <canvas id="gameCanvas" aria-label="Space Fighters combat area"></canvas>
+
+    <section id="hud" class="hud hidden" aria-live="polite">
+      <div class="hud-top">
+        <div class="hud-block"><span class="hud-label">SHIELD</span><div class="meter"><span id="shieldBar" class="meter-fill shield"></span></div></div>
+        <div class="hud-block"><span class="hud-label">HULL</span><div class="meter"><span id="hullBar" class="meter-fill hull"></span></div></div>
+        <div class="hud-stat"><span class="hud-label">LIVES</span><strong id="livesValue">3</strong></div>
+        <div class="hud-stat"><span class="hud-label">SCORE</span><strong id="scoreValue">0</strong></div>
+      </div>
+      <div class="hud-bottom">
+        <div><span class="hud-label">MISSION</span><strong id="missionLabel">01</strong></div>
+        <div><span class="hud-label">OBJECTIVE</span><strong id="objectiveLabel">0 / 0</strong></div>
+        <div><span class="hud-label">MISSILES</span><strong id="missileValue">2</strong></div>
+      </div>
+    </section>
+
+    <div id="touchControls" class="touch-controls hidden" aria-label="Touch controls">
+      <div id="joystick" class="joystick" role="application" aria-label="Movement joystick"><div id="joystickKnob" class="joystick-knob"></div></div>
+      <div class="action-cluster"><button id="specialButton" class="action-button special" type="button" aria-label="Fire missile">MISSILE</button><button id="fireButton" class="action-button fire" type="button" aria-label="Fire primary weapon">FIRE</button></div>
+    </div>
+
+    <section id="startScreen" class="panel-screen">
+      <div class="panel hero-panel">
+        <p class="eyebrow">RETRO ARCADE · MODERN SCI-FI</p><h1>SPACE FIGHTERS</h1><p class="version">v0.1.0</p>
+        <p class="lede">Fly straight into a scrolling war zone. Move anywhere in the combat window, build your fighter, survive escalating waves, and fight through a campaign that can branch when you lose.</p>
+        <div class="button-row"><button id="startButton" class="primary-button" type="button">START CAMPAIGN</button><button id="hangarButton" class="secondary-button" type="button">HANGAR</button></div>
+        <p class="control-copy"><strong>Desktop:</strong> WASD / arrows to move · hold Space to fire · E for missile · P to pause</p>
+        <p class="control-copy"><strong>Mobile:</strong> left thumb to move · hold FIRE · tap MISSILE</p>
+      </div>
+    </section>
+
+    <section id="briefingScreen" class="panel-screen hidden"><div class="panel briefing-panel"><p id="briefingSector" class="eyebrow">SECTOR</p><h2 id="briefingTitle">Mission</h2><p id="briefingText" class="briefing-text"></p><div class="objective-card"><span class="hud-label">PRIMARY OBJECTIVE</span><strong id="briefingObjective"></strong></div><div class="button-row"><button id="launchButton" class="primary-button" type="button">LAUNCH</button><button id="skipButton" class="secondary-button" type="button">SKIP BRIEFING</button></div></div></section>
+
+    <section id="hangarScreen" class="panel-screen hidden"><div class="panel hangar-panel"><p class="eyebrow">PERSISTENT UPGRADES</p><h2>HANGAR</h2><p class="credits">Credits: <strong id="creditsValue">0</strong></p><div id="upgradeGrid" class="upgrade-grid"></div><div class="button-row"><button id="hangarContinueButton" class="primary-button" type="button">CONTINUE</button><button id="hangarResetButton" class="secondary-button danger" type="button">RESET SAVE</button></div></div></section>
+
+    <section id="resultScreen" class="panel-screen hidden"><div class="panel result-panel"><p id="resultEyebrow" class="eyebrow">MISSION COMPLETE</p><h2 id="resultTitle">Victory</h2><p id="resultText"></p><div class="result-stats"><div><span class="hud-label">SCORE</span><strong id="resultScore">0</strong></div><div><span class="hud-label">CREDITS</span><strong id="resultCredits">+0</strong></div><div><span class="hud-label">KILLS</span><strong id="resultKills">0</strong></div></div><div class="button-row"><button id="resultContinueButton" class="primary-button" type="button">CONTINUE</button><button id="resultHangarButton" class="secondary-button" type="button">HANGAR</button></div></div></section>
+
+    <section id="pauseScreen" class="panel-screen hidden"><div class="panel compact-panel"><p class="eyebrow">GAME PAUSED</p><h2>Paused</h2><button id="resumeButton" class="primary-button" type="button">RESUME</button></div></section>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
