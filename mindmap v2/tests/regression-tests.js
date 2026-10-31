@@ -92,6 +92,7 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
     assert(index.indexOf('core-stability.js')<index.indexOf('app.js'),'core stability must load before app.js');
     assert(index.includes('relationship-routing.js'),'routing-only relationship layer must be loaded');
     assert(index.includes('lens-clear-fix.js'),'Lens clear fix must be loaded');
+    assert(index.includes('lens-clear-fix.js?build=20261031f'),'desktop Lens Clear fix must have a fresh asset key');
     assert(!index.includes('relationship-integrity.js'),'old feature-specific relationship undo layer must not be loaded');
     assert.strictEqual(readIfExists('relationship-integrity.js'),null,'obsolete relationship-specific undo file must stay removed');
     assert(!/MindMap\s+\d+\.\d+\.\d+\s+V2/.test(index),'index title must not duplicate the semantic version source');
@@ -100,10 +101,12 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
   if(lensFix){
     assert(lensFix.includes('[data-clear-lens]'),'Lens clear control must be handled');
     assert(lensFix.includes('[data-clear-all]'),'combined Lens/Thread clear control must be handled');
-    assert(lensFix.includes("document.addEventListener('click'"),'Lens clear must use delegated click handling so strip rebuilds cannot lose it');
-    assert(lensFix.includes('lensSourceId'),'Lens clear must remember or recover the node that started the Lens');
-    assert(lensFix.includes('writer.focus(source)'),'Lens clear must toggle off the actual Lens source, not whichever node is currently selected');
-    assert(lensFix.includes('pointer-events:none'),'dimmed Lens content must not remain clickable');
+    assert(lensFix.includes("document.addEventListener('click'"),'Lens clear must observe rebuilt strip controls');
+    assert(lensFix.includes('verifyClearAfterNativeHandler'),'Lens clear fallback must run after the writer module gets the click');
+    assert(!lensFix.includes('stopImmediatePropagation()'),'Lens safety handler must not block the writer module desktop click handler');
+    assert(!lensFix.includes('e.preventDefault()'),'Lens safety handler must not cancel the normal desktop Clear click');
+    assert(lensFix.includes('writer.focus(source)'),'Lens clear fallback must still be able to reset stuck Lens state');
+    assert(lensFix.includes('pointer-events:none!important'),'muted Lens content must remain non-interactive');
     assert(lensFix.includes("replaceChildren()"),'Lens clear must remove the thread-path overlay too');
   }
   const change=readIfExists('changelog.md');
