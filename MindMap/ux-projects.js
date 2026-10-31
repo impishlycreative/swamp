@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   const ACTIVE_PROJECT_KEY='swamp.mindmap.active-project.v1';
   const PROJECT_DATA_PREFIX='swamp.mindmap.project.data.';
   const PROJECT_KEY=app()?.projectKey||'swamp.mindmap.project.v2';
+  const APP_VERSION=(document.title.match(/MindMap\s+([^\s—]+)/i)?.[1]||'2.8.2').replace(/^v/i,'');
   let editSnapshot=null;
   let syncTimer=null;
   let projectSwapInProgress=false;
@@ -235,10 +236,10 @@ window.addEventListener('DOMContentLoaded',()=>{
   const createProject=name=>{
     const timestamp=new Date().toISOString();
     const rootId=uid('i_'),mapId=uid('m_'),projectId=uid('p_');
-    const map={version:'2.6.0',id:mapId,title:'Untitled Mind Map',created:timestamp,updated:timestamp,rootId,
+    const map={version:APP_VERSION,id:mapId,title:'Untitled Mind Map',created:timestamp,updated:timestamp,rootId,
       nodes:{[rootId]:{id:rootId,text:'Untitled Mind Map',description:'',parentId:null,color:'#F2D8A7',edgeLabel:'',collapsed:false,created:timestamp,x:null,y:null,targetMapId:null}},
       view:{x:0,y:0,scale:1}};
-    return{version:'2.6.0',id:projectId,title:name||'Untitled Project',created:timestamp,updated:timestamp,currentMapId:mapId,sessions:{[mapId]:map},templateHistory:[]};
+    return{version:APP_VERSION,id:projectId,title:name||'Untitled Project',created:timestamp,updated:timestamp,currentMapId:mapId,sessions:{[mapId]:map},templateHistory:[]};
   };
   const switchProject=id=>{
     syncCurrentProject();
