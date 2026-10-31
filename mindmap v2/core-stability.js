@@ -82,6 +82,8 @@
       if(coalesce&&last&&last.label===meta.label&&last.mapId===meta.mapId&&last.afterFingerprint===beforeFingerprint&&time-last.time<COALESCE_MS){
         last.afterRaw=afterRaw;last.afterFingerprint=afterFingerprint;last.time=time;return true;
       }
+      const derivedAfterAdd=last&&last.label==='add idea'&&(meta.label==='writer detail'||meta.label==='idea type')&&last.mapId===meta.mapId&&last.afterFingerprint===beforeFingerprint&&time-last.time<700;
+      if(derivedAfterAdd){last.afterRaw=afterRaw;last.afterFingerprint=afterFingerprint;last.time=time;return true;}
       this.entries.push({beforeRaw,afterRaw,beforeFingerprint,afterFingerprint,label:meta.label,mapId:meta.mapId,time});
       if(this.entries.length>this.max)this.entries.shift();return true;
     }
@@ -94,7 +96,7 @@
     if(win.__SWAMP_CORE_STABILITY__)return win.SwampMindMapCore;
     win.__SWAMP_CORE_STABILITY__=true;
     const doc=win.document,history=new UnifiedHistory();
-    let restoring=false,enabled=false,lastRaw=null,originalSetItem=null;
+    let restoring=false,enabled=false,initialized=false,lastRaw=null,originalSetItem=null;
 
     function applyVersion(){
       const wantedTitle=`MindMap ${VERSION} V2 — Swamp`;
@@ -112,7 +114,7 @@
       const can=history.canUndo(currentRaw());
       undoControls().forEach(el=>{const disabled=!can;if(el.disabled!==disabled)el.disabled=disabled;if(can){if(el.hasAttribute('aria-disabled'))el.removeAttribute('aria-disabled');}else if(el.getAttribute('aria-disabled')!=='true')el.setAttribute('aria-disabled','true');});
     }
-    function record(before,after){if(!enabled||restoring||!before||!after)return;history.record(before,after);lastRaw=after;syncUndo();}
+    function record(before,after){if(!enabled||restoring||!after)return;if(!initialized){initialized=true;lastRaw=after;syncUndo();return;}if(!before)return;history.record(before,after);lastRaw=after;syncUndo();}
 
     try{
       const proto=win.Storage?.prototype;
@@ -169,11 +171,11 @@
     function poll(){
       const raw=currentRaw();
       if(enabled&&!restoring&&raw&&lastRaw&&raw!==lastRaw&&fingerprint(raw)!==fingerprint(lastRaw))record(lastRaw,raw);
-      if(raw)lastRaw=raw;applyVersion();syncUndo();
+      if(raw){lastRaw=raw;if(!initialized&&win.MindMapApp?.getCurrentMap?.())initialized=true;}applyVersion();syncUndo();
     }
     function boot(){lastRaw=currentRaw();enabled=true;applyVersion();syncUndo();
       const title=doc.querySelector('title');if(title)new MutationObserver(applyVersion).observe(title,{childList:true,characterData:true,subtree:true});
-      new MutationObserver(()=>{applyVersion();syncUndo();}).observe(doc.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled']});
+      const undo=doc.getElementById('undoBtn');if(undo)new MutationObserver(syncUndo).observe(undo,{attributes:true,attributeFilter:['disabled']});
       win.setInterval(poll,500);
     }
     if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
