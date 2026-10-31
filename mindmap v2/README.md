@@ -1,4 +1,4 @@
-# MindMap V2 3.2.2
+# MindMap V2 3.2.3
 
 A local-first brainstorming and mind-mapping workspace for writers, built around the map as the primary writing surface.
 
@@ -62,7 +62,7 @@ Run:
 node "mindmap v2/tests/regression-tests.js"
 ```
 
-The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, muted-node interaction, loader ordering, and changelog naming rules.
+The suite covers key workflows that have previously regressed, including Undo ordering, collapse/expand/link behavior, consolidation restoration, DOCX consolidated-detail coverage, Review Ideas visibility, Lens clearing, desktop Clear event handling, muted-node interaction, loader ordering, and changelog naming rules.
 
 ## Desktop and mobile
 
