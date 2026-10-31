@@ -22,6 +22,7 @@
 - Changed the `story-arc.js` cache key from `v=2.6.2` to a new 2.8.2 title-fix URL so the corrected story-arc code is fetched.
 - Changed the `ux-projects.js` cache key to a new 2.8.2 version-fix URL so browsers fetch the corrected project creation logic.
 - Changed the `toolbar-system.js` cache key so the restored desktop Projects control is fetched immediately.
+- Changed the `toolbar-system.js` cache key again for the corrected Projects drag handler so the deployed page cannot keep the older non-dragging script.
 
 ### Fixed
 - Removed the hard-coded version override from `template-help.js` so it can no longer replace the browser-tab title with an older MindMap version after page load.
@@ -29,6 +30,8 @@
 - Removed the hard-coded `2.6.0` map/project version values from `ux-projects.js`. Newly created projects now derive their version from the authoritative page title instead of carrying a separate stale release number.
 - Restored the desktop entry point for multi-project management that was lost when the toolbar was rewritten. The existing project registry, active-project switching, project creation/rename, and per-project map grouping are used unchanged.
 - Opening the desktop Projects UI now dismisses the Idea inspector first so the two panels cannot stack on top of each other.
+- Fixed Projects dragging on desktop by detecting the actual visible desktop toolbar instead of disabling drag based on coarse-pointer/touch media queries, which could misclassify touchscreen-capable Windows machines.
+- Projects dragging now tracks pointer movement at the window level and uses a wider `PROJECT` drag handle, making the panel movement reliable after the pointer leaves the header area.
 - The draggable Projects sheet is clamped inside the MindMap workspace and resets its desktop drag coordinates when switching to the mobile layout.
 - The HTML `<title>` is now the authoritative source for the browser-tab version, while the toolbar reads that same title for its displayed version.
 
