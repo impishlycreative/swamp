@@ -5,10 +5,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   const workspace=document.getElementById('workspace');
   const svg=document.getElementById('svg');
   const nodesLayer=document.getElementById('nodes');
+  const undoBtn=document.getElementById('undoBtn');
   if(!workspace||!svg||!nodesLayer)return;
 
   const isMobile=()=>matchMedia('(max-width:850px),(hover:none) and (pointer:coarse)').matches||(navigator.maxTouchPoints>0&&Math.min(screen.width,screen.height)<900);
   const selected=new Set();
+  const batchUndo=[];
   let selectedMapId=null;
   let drag=null;
   let mobileTap=null;
@@ -17,6 +19,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   let clearingCoreSelection=false;
   const LONG_PRESS_MS=460;
   const MOVE_THRESHOLD=8;
+  const MAX_BATCH_UNDO=60;
 
   const style=document.createElement('style');
   style.id='mindmapMultiSelectStyles';
@@ -99,6 +102,32 @@ window.addEventListener('DOMContentLoaded',()=>{
     return out;
   };
 
+  const mapFingerprint=m=>{
+    if(!m)return'';
+    const nodes=Object.values(m.nodes||{}).map(node=>({
+      id:node.id,
+      text:node.text,
+      description:node.description||'',
+      parentId:node.parentId||null,
+      color:node.color||'',
+      edgeLabel:node.edgeLabel||'',
+      collapsed:!!node.collapsed,
+      x:Number.isFinite(node.x)?node.x:null,
+      y:Number.isFinite(node.y)?node.y:null,
+      targetMapId:node.targetMapId||null
+    })).sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+    return JSON.stringify({id:m.id,title:m.title||'',rootId:m.rootId,nodes});
+  };
+
+  const canUndoBatch=()=>{
+    const entry=batchUndo[batchUndo.length-1],m=ensureMap();
+    return !!entry&&!!m&&entry.mapId===m.id&&mapFingerprint(m)===entry.afterFingerprint;
+  };
+
+  const syncUndoButton=()=>{
+    if(canUndoBatch()&&undoBtn)undoBtn.disabled=false;
+  };
+
   const updateBar=()=>{
     pruneSelection();
     const summary=bar.querySelector('.multi-summary');
@@ -111,6 +140,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     pruneSelection();
     document.querySelectorAll('#nodes .node').forEach(node=>node.classList.toggle('multi-selected',selected.has(node.dataset.id)));
     updateBar();
+    syncUndoButton();
   };
 
   const clearDropTarget=()=>document.querySelectorAll('#nodes .node.multi-drop-target').forEach(node=>node.classList.remove('multi-drop-target'));
@@ -134,8 +164,33 @@ window.addEventListener('DOMContentLoaded',()=>{
     const m=ensureMap();
     if(!m)return;
     app()?.save?.();
-    app()?.setCurrentMap?.(m.id,false,false);
+    window.dispatchEvent(new Event('resize'));
     requestAnimationFrame(applyMarks);
+  };
+
+  const recordBatchUndo=(before,label)=>{
+    const m=ensureMap();
+    if(!m)return;
+    batchUndo.push({mapId:m.id,before,label,afterFingerprint:mapFingerprint(m)});
+    if(batchUndo.length>MAX_BATCH_UNDO)batchUndo.shift();
+    syncUndoButton();
+  };
+
+  const undoBatch=()=>{
+    if(!canUndoBatch())return false;
+    const entry=batchUndo.pop(),m=ensureMap();
+    if(!entry||!m)return false;
+    let snapshot=null;
+    try{snapshot=JSON.parse(entry.before);}catch{return false;}
+    Object.keys(m).forEach(key=>delete m[key]);
+    Object.assign(m,snapshot);
+    selected.clear();
+    drag=null;
+    mobileTap=null;
+    clearDropTarget();
+    refreshMap();
+    toast(`Undid ${entry.label}`);
+    return true;
   };
 
   const toggleSelection=id=>{
@@ -245,6 +300,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     }
     const m=ensureMap();
     if(!m?.nodes?.[d.target])return true;
+    const before=JSON.stringify(m);
     d.roots.forEach(id=>{
       const node=m.nodes[id];
       if(!node)return;
@@ -254,6 +310,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     });
     m.nodes[d.target].collapsed=false;
     app()?.save?.();
+    recordBatchUndo(before,'branch move');
     refreshMap();
     toast(`${d.roots.length} branch${d.roots.length===1?'':'es'} moved`);
     return true;
@@ -269,9 +326,11 @@ window.addEventListener('DOMContentLoaded',()=>{
       ?`Delete the selected idea${extra?` and its ${extra} child idea${extra===1?'':'s'}`:''}?`
       :`Delete ${selected.size} selected ideas${extra?` and ${extra} child idea${extra===1?'':'s'}`:''}?`;
     if(!confirm(message))return;
+    const before=JSON.stringify(m);
     all.forEach(id=>delete m.nodes[id]);
     selected.clear();
     app()?.save?.();
+    recordBatchUndo(before,'branch deletion');
     refreshMap();
     toast('Selected ideas deleted');
   };
@@ -384,10 +443,15 @@ window.addEventListener('DOMContentLoaded',()=>{
   },true);
 
   document.addEventListener('keydown',e=>{
-    if(!selected.size)return;
     const tag=(e.target?.tagName||'').toLowerCase();
     const typing=tag==='input'||tag==='textarea'||e.target?.isContentEditable;
-    if(typing)return;
+    const ctrl=e.ctrlKey||e.metaKey;
+    if(!typing&&ctrl&&e.key.toLowerCase()==='z'&&!e.shiftKey&&undoBatch()){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    if(!selected.size||typing)return;
     if(e.key==='Delete'||e.key==='Backspace'){
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -397,6 +461,12 @@ window.addEventListener('DOMContentLoaded',()=>{
       e.stopImmediatePropagation();
       clearSelection();
     }
+  },true);
+
+  undoBtn?.addEventListener('click',e=>{
+    if(!undoBatch())return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
   },true);
 
   bar.querySelector('#multiDeleteBtn')?.addEventListener('click',deleteSelection);
