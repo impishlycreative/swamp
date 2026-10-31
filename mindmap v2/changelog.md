@@ -1,5 +1,19 @@
 # MindMap V2 Changelog
 
+## 3.2.2 — 2026-10-31
+
+### Lens state and interaction fixes
+
+- Fixed **Clear** leaving the internal Lens state active even after the dimming/highlight classes were removed.
+- Lens activation now remembers the node that actually started the Lens, and **Clear** toggles off that exact Lens instead of using whichever node happens to be selected later.
+- Added a fallback that can recover the Lens source from the active Lens chip and highlighted nodes if the stored source is unavailable.
+- Dimmed nodes are now non-interactive while a Lens is active, so clicking a muted-out node no longer changes selection or opens its actions.
+- Dimmed hierarchy edges and dimmed cross-branch relationships are also non-interactive while filtered by the Lens.
+- Clearing still removes the Story Thread path overlay and restores normal interaction in the same action.
+- Added regression guards for Lens-source tracking, internal-state clearing, and disabled pointer interaction on muted content.
+- Bumped MindMap V2 from **3.2.1** to **3.2.2** because these are focused Lens behavior fixes.
+- Refreshed the core and Lens-fix build keys so browsers fetch the corrected code.
+
 ## 3.2.1 — 2026-10-31
 
 ### Lens clear fix
