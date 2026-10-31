@@ -86,6 +86,15 @@
 - Made the More-sheet decorator idempotent: the Story Health description is now changed only when its text actually differs.
 - Cache-busted `writer-feature-review.js` to `review2` so browsers do not retain the looping version after refresh.
 
+### Plain-English help and tours
+
+- Rewrote the guided tours in short, plain-English steps instead of textbook-style explanations.
+- Cut most tours to three focused steps so each screen explains one thing at a time.
+- Reworked searchable help copy to use everyday wording and direct instructions rather than terms such as hierarchy, semantic links, structural facts, or narrative strands where they were not needed.
+- Simplified help headings to **Right now**, **Show me**, **What do you want to do?**, **Good for**, and **Do this**.
+- Kept feature names such as Lens, Rapidfire, Story Threads, and Story Health where the user needs to recognize the actual control.
+- Simplified **Help for this idea** to say what it does rather than describe the help system itself.
+
 ### Writer's Navigator
 
 - Added a synchronized hierarchical outline with breadcrumbs.
