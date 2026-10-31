@@ -48,6 +48,23 @@
 - Kept the existing **Fit** command unchanged; writers can still fit the complete template whenever they explicitly ask for it.
 - The minimap remains the intended way to understand and navigate the parts of a long story structure that begin outside the main viewport.
 
+### Writer feature review and consolidation
+
+- Simplified the selected-node writer bar to its strongest everyday actions: **Edit, Rapidfire, Lens, Link, More**. Type and Thread were removed from the permanent bar so the canvas stays primary.
+- Made desktop type badges actionable: clicking a node's type badge opens the type picker directly. On mobile, **Idea type** is available under **More** as a two-tap variation.
+- Made existing thread badges actionable on desktop and added **Story thread** under **More** for assigning or changing a thread, including on mobile.
+- Reduced the normal type picker to types that currently change application behavior: **Idea, Scene, Chapter, Character, Location, Clue, Reveal, Subplot, Research, Setup, Payoff**. Conflict, Theme, and Object are no longer offered as new dedicated types until they have a stronger behavioral use case.
+- Added concise explanations to each offered type so the writer can see why that type exists before choosing it.
+- Upgraded active Story Threads from simple tags/highlighting into visible paths drawn through their mapped nodes. Thread paths show clear start/end points; single-point threads are visibly identified and can be surfaced by Story Health.
+- Added writer-specific visual semantics to cross-branch relationships so Clue → Reveal, Setup → Payoff, Character → Scene, and Scene → Location links are easier to distinguish directly on the canvas.
+- Expanded Rapidfire beyond placeholder changes by adding short context prompts. Scene brainstorming offers Obstacle/Reversal/Consequence; Character offers Want/Fear/Secret/Contradiction/Choice; Clue, Location, Setup, Payoff, Research, Subplot, Chapter, Reveal, and story beats each get similarly concise writer-focused directions.
+- Narrowed Story Health to objective structural facts the map can prove. It now checks needs-work markers, clues without reveal/payoff relationships, setups without payoffs, empty template beats, broken relationships, and threads with only one mapped point. It no longer treats a disconnected character as automatically being a story problem.
+- Added a clear Health statement that the checks are structural facts only and do not judge writing quality.
+- Renamed **Duplicate branch** to **Explore alternative**, keeping the same deep-copy behavior and internal relationship preservation but making the writing use case explicit.
+- Corrected smart-child behavior so **Chapter → Scene** remains automatic, while a Subplot no longer silently forces every new child to become a Scene.
+- Simplified the Writer's Navigator footer so Navigator stays a navigation surface: select an idea to return to and center it on the map; writing actions remain on the map itself.
+- Added a fresh cache key for the reviewed writer feature layer.
+
 ### Writer's Navigator
 
 - Added a synchronized hierarchical outline with breadcrumbs.
@@ -86,4 +103,3 @@
 - Added a direct Navigator control to the mobile top toolbar.
 - Added V2 actions to the mobile utility sheet and selected-idea inspector.
 - Added `Ctrl/Cmd+Shift+O`, `Ctrl/Cmd+Shift+L`, and `Ctrl/Cmd+Shift+P` shortcuts and documented them in the existing shortcuts dialog.
-
