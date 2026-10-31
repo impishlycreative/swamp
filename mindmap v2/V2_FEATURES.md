@@ -1,4 +1,4 @@
-# MindMap V2 — 3.2.3
+# MindMap V2 — 3.3.0
 
 MindMap V2 is built around one rule: the map is the writing workspace. Supporting features should make the map easier to think with, navigate, connect, and clean up rather than turn the application into a collection of separate screens.
 
@@ -31,6 +31,16 @@ Suggested categories depend on the parent context. Consolidated details remain p
 Lens temporarily emphasizes useful context around the selected idea while dimming unrelated material. Different writer types use different context rules.
 
 Muted nodes, muted hierarchy connections, and muted cross-branch relationships do not accept pointer interaction while the Lens is active. **Clear** lets the writer Lens module clear its own private state first; the safety layer checks afterward and only uses a fallback if a Lens or Thread remains active.
+
+### Group layout
+
+Desktop has a mouse-first **Select area** tool. One click arms area selection and the next drag across blank canvas selects the visible ideas inside the box. **Shift + drag** provides the same selection without first pressing the toolbar control.
+
+Area selection is for layout rather than branch ownership, so it can select a parent and its visible descendants together. The root idea and Lens-muted ideas are excluded.
+
+The resulting selection has a one-click **Space** action. Space keeps the rough two-dimensional shape of the selected cluster while pushing crowded circles apart and accounting for nearby unselected circles. It saves the resulting positions as normal manual map positions, so Undo can restore the previous arrangement.
+
+The existing multi-select bar also exposes **Space**, allowing Ctrl/Cmd-selected branches on desktop and long-press selections on touch devices to use the same spacing behavior.
 
 ### Story Threads
 
@@ -97,6 +107,7 @@ Relationship path routing is handled by `relationship-routing.js`. Routing no lo
 - collapse → expand → link → Undo ordering;
 - ignoring pan/zoom in Undo history;
 - text-edit coalescing;
+- group spacing entering Undo as manual positioning;
 - consolidation restoration;
 - consolidated details remaining covered by DOCX exporters;
 - Review Ideas remaining reachable from a selected parent;
@@ -104,6 +115,7 @@ Relationship path routing is handled by `relationship-routing.js`. Routing no lo
 - Lens Clear resetting the actual Lens state;
 - normal desktop Clear clicks reaching the writer module;
 - muted Lens content remaining non-interactive;
+- area-selection and spacing controls remaining loaded;
 - centralized loader/version ordering;
 - changelog naming rules.
 
