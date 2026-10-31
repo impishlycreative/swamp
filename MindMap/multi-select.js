@@ -14,6 +14,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   let mobileTap=null;
   let longPress=null;
   let suppressClickUntil=0;
+  let clearingCoreSelection=false;
   const LONG_PRESS_MS=460;
   const MOVE_THRESHOLD=8;
 
@@ -121,7 +122,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   };
 
   const clearCoreSelection=()=>{
-    svg.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+    clearingCoreSelection=true;
+    try{
+      svg.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+    }finally{
+      clearingCoreSelection=false;
+    }
   };
 
   const refreshMap=()=>{
@@ -357,6 +363,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   },true);
 
   document.addEventListener('click',e=>{
+    if(clearingCoreSelection)return;
     if(e.isTrusted&&Date.now()<suppressClickUntil&&e.target.closest?.('#svg')){
       e.preventDefault();
       e.stopImmediatePropagation();
