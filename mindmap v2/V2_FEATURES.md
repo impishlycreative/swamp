@@ -1,4 +1,4 @@
-# MindMap V2 — 3.2.1
+# MindMap V2 — 3.2.2
 
 MindMap V2 is built around one rule: the map is the writing workspace. Supporting features should make the map easier to think with, navigate, connect, and clean up rather than turn the application into a collection of separate screens.
 
@@ -30,7 +30,7 @@ Suggested categories depend on the parent context. Consolidated details remain p
 
 Lens temporarily emphasizes useful context around the selected idea while dimming unrelated material. Different writer types use different context rules.
 
-**Clear** removes the active Lens or Thread, restores normal map visibility, and removes the visible Story Thread path.
+Muted nodes, muted hierarchy connections, and muted cross-branch relationships do not accept pointer interaction while the Lens is active. **Clear** removes the actual active Lens or Thread state, restores normal map visibility and interaction, and removes the visible Story Thread path.
 
 ### Story Threads
 
@@ -101,6 +101,8 @@ Relationship path routing is handled by `relationship-routing.js`. Routing no lo
 - consolidated details remaining covered by DOCX exporters;
 - Review Ideas remaining reachable from a selected parent;
 - Lens/Thread Clear remaining reachable after the strip rebuilds;
+- Lens Clear resetting the actual Lens source state;
+- muted Lens content remaining non-interactive;
 - centralized loader/version ordering;
 - changelog naming rules.
 
