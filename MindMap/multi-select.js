@@ -121,7 +121,6 @@ window.addEventListener('DOMContentLoaded',()=>{
   };
 
   const clearCoreSelection=()=>{
-    if(!svg)return;
     svg.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
   };
 
@@ -197,9 +196,9 @@ window.addEventListener('DOMContentLoaded',()=>{
     try{node.setPointerCapture?.(e.pointerId);}catch{}
   };
 
-  const restorePreview=()=>{
-    if(!drag)return;
-    drag.original.forEach((pos,id)=>{
+  const restorePreview=d=>{
+    if(!d)return;
+    d.original.forEach((pos,id)=>{
       const node=document.querySelector(`#nodes .node[data-id="${CSS.escape(id)}"]`);
       if(!node)return;
       node.setAttribute('transform',`translate(${pos.x} ${pos.y})`);
@@ -229,8 +228,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   const finishDrag=e=>{
     if(!drag||e.pointerId!==drag.pointerId)return false;
     const d=drag;
+    restorePreview(d);
     drag=null;
-    restorePreview();
     if(!d.moved)return false;
     suppressClickUntil=Date.now()+500;
     if(!d.target){
@@ -286,10 +285,10 @@ window.addEventListener('DOMContentLoaded',()=>{
     record.timer=setTimeout(()=>{
       if(longPress!==record)return;
       longPress=null;
-      suppressClickUntil=Date.now()+700;
       try{if(node.hasPointerCapture?.(e.pointerId))node.releasePointerCapture(e.pointerId);}catch{}
       try{node.dispatchEvent(new PointerEvent('pointercancel',{bubbles:true,cancelable:true,pointerId:e.pointerId,pointerType:'touch',clientX:e.clientX,clientY:e.clientY,button:0,buttons:0}));}catch{}
       toggleSelection(id);
+      suppressClickUntil=Date.now()+700;
       toast('Multi-select on — tap more ideas or drag a selected idea');
     },LONG_PRESS_MS);
     longPress=record;
@@ -304,8 +303,8 @@ window.addEventListener('DOMContentLoaded',()=>{
       if((e.ctrlKey||e.metaKey)&&node){
         e.preventDefault();
         e.stopImmediatePropagation();
-        suppressClickUntil=Date.now()+350;
         toggleSelection(id);
+        suppressClickUntil=Date.now()+350;
         return;
       }
       if(selected.size&&node&&selected.has(id)&&e.button===0){
@@ -345,8 +344,8 @@ window.addEventListener('DOMContentLoaded',()=>{
       const tap=mobileTap;
       mobileTap=null;
       if(!moved){
-        suppressClickUntil=Date.now()+500;
         toggleSelection(tap.id);
+        suppressClickUntil=Date.now()+500;
       }
     }
   },true);
@@ -354,18 +353,21 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('pointercancel',e=>{
     if(longPress&&e.pointerId===longPress.pointerId)cancelLongPress();
     if(mobileTap&&e.pointerId===mobileTap.pointerId)mobileTap=null;
-    if(drag&&e.pointerId===drag.pointerId){restorePreview();drag=null;applyMarks();}
+    if(drag&&e.pointerId===drag.pointerId){const d=drag;restorePreview(d);drag=null;applyMarks();}
   },true);
 
   document.addEventListener('click',e=>{
-    if(Date.now()<suppressClickUntil&&e.target.closest?.('#svg')){
+    if(e.isTrusted&&Date.now()<suppressClickUntil&&e.target.closest?.('#svg')){
       e.preventDefault();
       e.stopImmediatePropagation();
       return;
     }
     if(!selected.size||e.target.closest?.('#multiSelectBar'))return;
     const node=e.target.closest?.('#nodes .node');
-    if(isMobile())return;
+    if(isMobile()){
+      if(!node&&e.target.closest?.('#svg'))clearSelection();
+      return;
+    }
     if(node&&selected.has(node.dataset.id)){
       e.preventDefault();
       e.stopImmediatePropagation();
