@@ -6,6 +6,7 @@ const qs=(s,r=document)=>r.querySelector(s);
 const qsa=(s,r=document)=>[...r.querySelectorAll(s)];
 const isMobile=()=>matchMedia('(max-width:850px)').matches||matchMedia('(hover:none) and (pointer:coarse)').matches;
 let observer=null;
+let writerObserver=null;
 let syncRaf=0;
 
 function injectStyles(){
@@ -24,7 +25,7 @@ function injectStyles(){
       body #mobileBottomToolbar{display:flex!important;grid-row:3!important;position:relative!important;inset:auto!important;align-items:stretch!important;width:100%!important;min-width:0!important;margin:0!important;padding:6px 7px calc(6px + env(safe-area-inset-bottom))!important;gap:4px!important;background:rgba(252,251,247,.985)!important;border:0!important;border-top:1px solid rgba(126,112,94,.18)!important;box-shadow:0 -3px 12px rgba(49,42,34,.07)!important;z-index:160!important}
       body #mobileBottomToolbar .tb-bottom-action{display:flex!important;flex:1 1 0!important;min-width:0!important;height:54px!important;border:0!important;border-radius:13px!important;background:transparent!important;color:var(--ink)!important;padding:4px 2px!important;font:inherit!important;font-size:.69rem!important;font-weight:820!important;line-height:1.05!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;white-space:nowrap!important}
       body #mobileBottomToolbar .tb-bottom-action .tb-glyph{display:block!important;font-size:1.08rem!important;line-height:1!important}
-      body #mobileBottomToolbar .tb-bottom-action:active{background:var(--soft)!important;color:var(--accent)!important}
+      body #mobileBottomToolbar .tb-bottom-action:active,body #mobileBottomToolbar .tb-bottom-action.is-active{background:var(--soft)!important;color:var(--accent)!important}
       body #mobileBottomToolbar .tb-bottom-action:disabled{opacity:.35!important}
       body #writerContext{display:none!important}
       body #groupSelectBtn,body #groupLayoutBar{display:none!important}
@@ -45,12 +46,20 @@ function injectStyles(){
   document.head.appendChild(style);
 }
 
+function clickFirst(...selectors){
+  for(const selector of selectors){
+    const el=qs(selector);
+    if(el){el.click();return true;}
+  }
+  return false;
+}
+
 const ACTIONS=[
-  {key:'edit',glyph:'✎',label:'Edit',run:()=>qs('#writerContext [data-writer-refine="edit"]')?.click()||qs('#contextEdit')?.click()},
-  {key:'rapid',glyph:'⚡',label:'Rapid',run:()=>qs('#writerContext [data-writer-action="rapid"]')?.click()||qs('#contextRapid')?.click()},
-  {key:'lens',glyph:'◎',label:'Lens',run:()=>qs('#writerContext [data-writer-action="lens"]')?.click()},
-  {key:'link',glyph:'↗',label:'Link',run:()=>qs('#writerContext [data-writer-action="link"]')?.click()},
-  {key:'more',glyph:'•••',label:'More',run:()=>qs('#writerContext [data-writer-action="branch"]')?.click()||qs('#contextMore')?.click()}
+  {key:'edit',glyph:'✎',label:'Edit',run:()=>clickFirst('#writerContext [data-writer-refine="edit"]','#contextEdit')},
+  {key:'rapid',glyph:'⚡',label:'Rapid',run:()=>clickFirst('#writerContext [data-writer-action="rapid"]','#contextRapid')},
+  {key:'lens',glyph:'◎',label:'Lens',run:()=>clickFirst('#writerContext [data-writer-action="lens"]')},
+  {key:'link',glyph:'↗',label:'Link',run:()=>clickFirst('#writerContext [data-writer-action="link"]')},
+  {key:'more',glyph:'•••',label:'More',run:()=>clickFirst('#writerContext [data-writer-action="branch"]','#contextMore')}
 ];
 
 function rebuildBottom(){
@@ -66,26 +75,40 @@ function rebuildBottom(){
   });
 }
 function selected(){return qs('#nodes .node.selected');}
+function actionSource(key){
+  if(key==='edit')return qs('#writerContext [data-writer-refine="edit"]')||qs('#contextEdit');
+  if(key==='more')return qs('#writerContext [data-writer-action="branch"]')||qs('#contextMore');
+  if(key==='rapid')return qs('#writerContext [data-writer-action="rapid"]')||qs('#contextRapid');
+  return qs(`#writerContext [data-writer-action="${key}"]`);
+}
 function sync(){
   if(!isMobile())return;
   rebuildBottom();
   const hasSelected=!!selected();
   qsa('#mobileBottomToolbar [data-mobile-action]').forEach(btn=>{
-    const key=btn.dataset.mobileAction;
-    const source=key==='edit'?qs('#writerContext [data-writer-refine="edit"]'):
-      key==='more'?qs('#writerContext [data-writer-action="branch"]'):
-      qs(`#writerContext [data-writer-action="${key}"]`);
+    const source=actionSource(btn.dataset.mobileAction);
     btn.disabled=!hasSelected||!source;
     btn.classList.toggle('is-active',!!source&&(source.classList.contains('active')||source.getAttribute('aria-pressed')==='true'));
   });
   document.body.classList.toggle('mobile-node-selected',hasSelected);
 }
 function scheduleSync(){cancelAnimationFrame(syncRaf);syncRaf=requestAnimationFrame(sync);}
+function watchWriter(){
+  const writer=qs('#writerContext');
+  if(!writer||writerObserver)return false;
+  writerObserver=new MutationObserver(scheduleSync);
+  writerObserver.observe(writer,{childList:true,subtree:true,attributes:true,attributeFilter:['class','aria-pressed']});
+  scheduleSync();
+  return true;
+}
 function bind(){
-  injectStyles();rebuildBottom();sync();
+  injectStyles();rebuildBottom();sync();watchWriter();
   const nodes=qs('#nodes');
   if(nodes){observer=new MutationObserver(scheduleSync);observer.observe(nodes,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});}
-  const writer=qs('#writerContext');if(writer)new MutationObserver(scheduleSync).observe(writer,{childList:true,subtree:true,attributes:true,attributeFilter:['class','aria-pressed']});
+  if(!writerObserver){
+    const bodyObserver=new MutationObserver(()=>{if(watchWriter())bodyObserver.disconnect();});
+    bodyObserver.observe(document.body,{childList:true,subtree:true});
+  }
   document.addEventListener('click',scheduleSync,true);
   window.addEventListener('resize',scheduleSync,{passive:true});
   window.addEventListener('orientationchange',scheduleSync,{passive:true});
