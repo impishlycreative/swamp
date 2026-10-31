@@ -39,6 +39,15 @@
 - Consolidated mobile selected-node actions into the writer action strip and hid the older duplicate mobile bottom toolbar, leaving one touch-oriented action surface.
 - Added a new cache key for the writer loader so browsers fetch the updated interaction model immediately.
 
+### Story template initial viewport
+
+- Changed newly created story-template overviews so they no longer begin by shrinking the complete storyline to fit on screen.
+- The initial view now centers on the opening section of the story and chooses a readable zoom that shows a useful chunk of beats: roughly three beats on a phone and about five to seven on wider screens.
+- The initial framing is applied only once to newly created template overviews and is saved with the map so later navigation and zoom choices are preserved.
+- After the opening view is framed, the temporary centered beat is deselected so the template opens as a clean canvas.
+- Kept the existing **Fit** command unchanged; writers can still fit the complete template whenever they explicitly ask for it.
+- The minimap remains the intended way to understand and navigate the parts of a long story structure that begin outside the main viewport.
+
 ### Writer's Navigator
 
 - Added a synchronized hierarchical outline with breadcrumbs.
