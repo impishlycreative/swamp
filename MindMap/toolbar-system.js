@@ -8,6 +8,31 @@
     const target=$(id);
     if(target)target.click();
   }
+  function installProjectsButton(){
+    const mapSelect=$('desktopMapSelect');
+    const row=mapSelect?.closest('.tb-row');
+    if(!mapSelect||!row||$('desktopProjectsBtn'))return;
+    const button=document.createElement('button');
+    button.id='desktopProjectsBtn';
+    button.type='button';
+    button.className='tb-button';
+    button.title='Switch, create, or rename projects';
+    button.setAttribute('aria-label','Projects');
+    button.textContent='▣ Projects';
+    button.addEventListener('click',()=>{
+      const sheet=$('utilitySheet');
+      if(!sheet)return;
+      sheet.classList.add('open');
+      requestAnimationFrame(()=>{
+        const projectSelect=$('projectSelect');
+        if(projectSelect){
+          projectSelect.focus();
+          projectSelect.scrollIntoView({block:'nearest'});
+        }
+      });
+    });
+    mapSelect.insertAdjacentElement('afterend',button);
+  }
   function syncVersion(){
     const match=document.title.match(/MindMap\s+([^\s—]+)/i);
     const version=match?.[1]||'';
@@ -57,10 +82,11 @@
     new MutationObserver(syncAllButtons).observe(target,{attributes:true,attributeFilter:['disabled','class','aria-pressed']});
   });
 
-  document.addEventListener('mindmap:render',()=>{syncMaps();syncAllButtons();});
-  window.addEventListener('pageshow',()=>{syncMaps();syncAllButtons();});
+  document.addEventListener('mindmap:render',()=>{installProjectsButton();syncMaps();syncAllButtons();});
+  window.addEventListener('pageshow',()=>{installProjectsButton();syncMaps();syncAllButtons();});
+  installProjectsButton();
   syncVersion();
   syncMaps();
   syncAllButtons();
-  requestAnimationFrame(()=>{syncMaps();syncAllButtons();});
+  requestAnimationFrame(()=>{installProjectsButton();syncMaps();syncAllButtons();});
 })();
