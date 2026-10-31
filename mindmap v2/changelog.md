@@ -1,5 +1,17 @@
 # MindMap V2 Changelog
 
+## 3.2.1 — 2026-10-31
+
+### Lens clear fix
+
+- Fixed **Clear** in the Lens/Thread strip not reliably clearing the active Lens state.
+- Clear now uses delegated click handling, so rebuilding the Lens strip cannot leave the new Clear button without a working action.
+- Clearing removes node dimming/highlights and the visible Story Thread path in the same action.
+- Added a fallback that resets the writer Lens toggle state even when the selected node is not the node that originally started the Lens.
+- Added a regression guard that requires the Lens clear handler to remain loaded and cover both the Lens chip and the combined **Clear** control.
+- Bumped MindMap V2 from **3.2.0** to **3.2.1** because this is a focused behavior fix.
+- Refreshed the core and Lens-fix build keys so browsers fetch the corrected 3.2.1 code.
+
 ## 3.2.0 — 2026-10-31
 
 ### Unified Undo, centralized versioning, and regression coverage
