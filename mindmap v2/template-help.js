@@ -70,6 +70,16 @@ function watch(){
   ensureUi();updateExamples();
   const dialog=document.getElementById('templateHelpDialog');if(dialog&&!dialog._examplesObserver){const obs=new MutationObserver(updateExamples);obs.observe(dialog,{attributes:true,attributeFilter:['class']});dialog._examplesObserver=obs;}
 }
+function loadWriterMap(){
+  if(window.__SWAMP_WRITER_MAP_LOADING__)return;
+  window.__SWAMP_WRITER_MAP_LOADING__=true;
+  const script=document.createElement('script');
+  script.src='writer-map.js?v=3.0.0-writer1';
+  script.async=true;
+  document.head.appendChild(script);
+}
 window.addEventListener('DOMContentLoaded',watch);
 setTimeout(watch,0);
+if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',()=>setTimeout(loadWriterMap,0),{once:true});
+else setTimeout(loadWriterMap,0);
 })();
