@@ -1,5 +1,20 @@
 # MindMap V2 Changelog
 
+## 3.1.3 — 2026-10-31
+
+### Relationship routing and undo fixes
+
+- Fixed the Undo sequence where collapsing a branch, expanding it, creating a relationship, and then pressing **Undo** could collapse the branch instead of removing the relationship.
+- Relationship changes now participate in front of the normal map Undo path when they are the most recent data-changing action. Both the toolbar Undo control and Ctrl/Cmd+Z remove the relationship first.
+- After the relationship is undone, the older base-map history remains available, so a second Undo can still undo the earlier expand/collapse action as expected.
+- The relationship undo state is disarmed when a later real node change occurs, preventing an old link action from incorrectly jumping ahead of a newer edit.
+- Fixed relationship paths being able to run underneath unrelated nodes. Relationship rendering now tests several curved routes and prefers a path that clears visible node circles with padding.
+- Relationship labels are included in the collision check so the label is also kept away from unrelated nodes where possible.
+- The routing applies to both the generic V2 relationship system and writer-aware links because both render through the same relationship layer.
+- Added `relationship-integrity.js` as the shared relationship routing/undo correction layer.
+- Bumped MindMap V2 from **3.1.2** to **3.1.3** because these are relationship/Undo bug fixes rather than new writing features.
+- Refreshed V2 asset cache keys to 3.1.3.
+
 ## 3.1.2 — 2026-10-31
 
 ### DOCX consolidated-details export fix
