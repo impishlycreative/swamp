@@ -1,5 +1,19 @@
 # MindMap V2 Changelog
 
+## 3.1.2 — 2026-10-31
+
+### DOCX consolidated-details export fix
+
+- Fixed Word exports dropping ideas that had been moved into a parent through **Rapidfire → Review Ideas → Move into parent**.
+- Both DOCX export paths now read structured `writer.details` from every exported node instead of exporting only the node title, description, and child hierarchy.
+- Consolidated details are written directly beneath their parent under a **Details** section, grouped with the same plain-English category names used by Review Ideas, such as Traits, Abilities, Goals, Backstory, Secrets, Conflict, Setting, Payoff, and Research categories.
+- Each consolidated idea is exported as a bullet. If the original Rapidfire idea also had a description, that description is written immediately beneath the bullet.
+- The linked-map Word exporter applies the same behavior while following story-template beat maps, so consolidated details inside linked beat maps are included as well.
+- The base Word exporter was updated too, preventing consolidated details from disappearing if the active DOCX export path changes later.
+- Updated the Word export description to state that DOCX output includes consolidated details.
+- Bumped MindMap V2 from **3.1.1** to **3.1.2** because this corrects lost content in an existing export workflow.
+- Refreshed V2 asset cache keys to 3.1.2.
+
 ## 3.1.1 — 2026-10-31
 
 ### Review Ideas visibility fix
