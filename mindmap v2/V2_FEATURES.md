@@ -1,4 +1,4 @@
-# MindMap V2 — 3.3.0
+# MindMap V2 — 3.3.1
 
 MindMap V2 is built around one rule: the map is the writing workspace. Supporting features should make the map easier to think with, navigate, connect, and clean up rather than turn the application into a collection of separate screens.
 
@@ -6,7 +6,9 @@ MindMap V2 is built around one rule: the map is the writing workspace. Supportin
 
 ### Context actions
 
-Selecting an idea exposes the small writer action bar. The everyday actions stay close to the node: Edit, Rapidfire, Lens, Link, and More. Context-only actions appear when they are actually useful, such as Review Ideas on a parent with raw Rapidfire children.
+Selecting an idea exposes the small writer action bar on desktop. The everyday actions stay close to the node: Edit, Rapidfire, Lens, Link, and More. Context-only actions appear when they are actually useful, such as Review Ideas on a parent with raw Rapidfire children.
+
+On mobile, those selected-node actions live in the stable bottom toolbar instead of a floating desktop-style bar.
 
 ### Writer-aware idea types
 
@@ -78,6 +80,17 @@ Story Walk presents the hierarchy as a readable sequence and provides parent, ch
 
 Zen Canvas hides unnecessary chrome while keeping the map usable.
 
+## Mobile shell
+
+Mobile uses two stable toolbar layers instead of depending on the floating desktop writer bar.
+
+- The top bar handles map/global actions: current map, Undo, Search, Save / Export, and More.
+- The bottom bar handles the selected idea: **Edit, Rapidfire, Lens, Link, More**.
+- The node's own `+` remains the direct Add action.
+- The floating desktop writer bar and desktop area-selection controls stay hidden on mobile.
+- Safe-area padding is applied to the permanent toolbars.
+- Rapidfire, More, Help, Search, and other sheets remain above the permanent bars when open.
+
 ## Help
 
 Help and guided tours are context-based. The writer chooses what they are trying to do, such as learning the map, building a story, developing a character or scene, tracking clues/payoffs, working a subplot, or using a story template.
@@ -116,6 +129,7 @@ Relationship path routing is handled by `relationship-routing.js`. Routing no lo
 - normal desktop Clear clicks reaching the writer module;
 - muted Lens content remaining non-interactive;
 - area-selection and spacing controls remaining loaded;
+- mobile top/bottom toolbar loading and action wiring;
 - centralized loader/version ordering;
 - changelog naming rules.
 
