@@ -65,6 +65,21 @@
 - Simplified the Writer's Navigator footer so Navigator stays a navigation surface: select an idea to return to and center it on the map; writing actions remain on the map itself.
 - Added a fresh cache key for the reviewed writer feature layer.
 
+### Contextual help and guided tours
+
+- Replaced the existing `?` shortcut entry point with **Help & guided tours** while retaining keyboard shortcuts as a searchable help topic.
+- Added user-chosen guided tours for **Learn the map**, **Build a story**, **Develop a character**, **Develop a scene**, **Track clues and payoffs**, **Develop a subplot**, and **Use a story template**.
+- Kept the tour flow inside the click-count rule: open Help in one click and select a tour context in the second click; choosing the context starts the tour immediately without an extra confirmation screen.
+- Added live spotlight tours that point at the actual canvas, selected nodes, writer action bar, minimap, template controls, and Navigator when those controls are available.
+- Added context detection based on the selected writer node type and current map, so Help surfaces a matching tour such as Character, Scene, Mystery/Setup-Payoff, Subplot, or Template.
+- Added **Help for this idea** under the selected node's **More** menu for contextual explanations without adding another permanent writer-bar control.
+- Added searchable function help for the map, editing, Rapidfire, Lens, writer links, writer types, Story Threads, Story Health, templates, minimap, Navigator, Focus/Collapse, branch tools, Story Walk, save/export, mobile use, and keyboard shortcuts.
+- Kept help content short and practical, explaining what a feature is for, when to use it, and the few actions needed to use it.
+- Added mobile-first help presentation: the help hub becomes a bottom-oriented sheet and tour steps stay above safe areas while spotlighting the relevant touch target.
+- Added `?` keyboard access to Help & guided tours when focus is not inside an editable control.
+- Tours do not auto-start; the writer explicitly chooses the context they want help with.
+- Loaded the help system through `guide-help.js?v=3.0.0-guide1` so the new functionality receives its own cache key.
+
 ### Writer's Navigator
 
 - Added a synchronized hierarchical outline with breadcrumbs.
