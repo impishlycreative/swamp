@@ -1,5 +1,18 @@
 # MindMap Changelog
 
+## 2026-10-31 — 2.9.1
+
+### Changed
+- Bumped the MindMap release from 2.9.0 to 2.9.1 for the desktop Ctrl/Command-click multi-select fix.
+- Changed the `multi-select.js` cache key to `2.9.1-ctrlfix1` so browsers fetch the corrected selection logic immediately.
+
+### Fixed
+- Fixed Ctrl-click and Command-click multi-select immediately clearing itself after a node was selected.
+- The internal synthetic map click used to clear the app's normal single-node selection is now distinguished from a real empty-map click, so it no longer clears the multi-select set.
+
+### Implementation notes
+- The core application continues to derive `MindMapApp.version` from the authoritative HTML title, so the 2.9.1 page version is also used for runtime map/project metadata.
+
 ## 2026-10-31 — 2.9.0
 
 ### Added
