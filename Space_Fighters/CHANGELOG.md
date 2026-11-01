@@ -2,6 +2,14 @@
 
 All notable Space Fighters changes are tracked here.
 
+## 0.2.1 — 2026-11-01
+
+### Fixed
+
+- Lifted the mobile joystick and FIRE/MISSILE controls above iPhone Safari's visible bottom browser toolbar.
+- Kept the full-screen combat canvas while reserving extra bottom clearance only for coarse-pointer browser mode on iOS/WebKit.
+- Added a cache-busting version query for `game.js` and synchronized visible/browser-title version branding to 0.2.1.
+
 ## 0.2.0 — 2026-10-31
 
 ### Changed
