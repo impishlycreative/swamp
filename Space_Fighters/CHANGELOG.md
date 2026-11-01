@@ -2,18 +2,34 @@
 
 All notable Space Fighters changes are tracked here.
 
+## 0.2.0 — 2026-10-31
+
+### Changed
+
+- Reworked the campaign difficulty curve using the researched Space Fighters Game Design Guide.
+- Rebuilt Mission 01 as an authored onboarding mission with deliberate waves, breathers, and guaranteed power-ups.
+- Added per-mission caps for active enemies, simultaneous firing enemies, enemy bullets, and total threat.
+- Flattened recovery-branch difficulty so R1/R2/R3 remain near the corresponding main-mission tier instead of becoming automatic difficulty spikes.
+- Reduced early enemy projectile speeds and scale projectile speed progressively by campaign tier.
+- Reduced early mission kill targets and enemy saturation.
+- Added threat-aware wave spawning so later waves wait when the current encounter is still at its cap.
+- Reduced the player's damaging collision radius relative to the visible fighter silhouette.
+- Improved respawn recovery by clearing nearby bullets and offering limited recovery assistance after repeated deaths.
+- Increased recovery-mission power-up assistance.
+- Replaced desktop left/right velocity steering with direct mouse-X destination control.
+- Updated desktop control copy and kept keyboard movement fallbacks.
+- Migrated earlier 0.1.x browser save data to a stable save key where possible.
+
+### Removed
+
+- Removed the separate `desktop-controls.js` compatibility layer; desktop input is now handled directly by the main game code.
+
 ## 0.1.1 — 2026-10-31
 
 ### Added
 
-- Desktop mouse-controlled lateral steering: move the pointer left or right of the combat area's centre to steer in that direction.
-- Right-click missile launch on desktop.
-- Dedicated `desktop-controls.js` input layer so desktop mouse controls do not interfere with mobile touch controls.
-
-### Changed
-
-- Desktop forward/back movement is now documented around W/S while A/D and arrow movement remain available as fallbacks.
-- Browser context menu is suppressed over the combat canvas so right-click can be used for missiles.
+- Initial desktop mouse steering experiment.
+- Right-click missile input.
 
 ## 0.1.0 — 2026-10-31
 
