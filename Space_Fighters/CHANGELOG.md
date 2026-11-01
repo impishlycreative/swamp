@@ -2,6 +2,15 @@
 
 All notable Space Fighters changes are tracked here.
 
+## 0.2.2 — 2026-11-01
+
+### Fixed
+
+- Prevented iPhone Safari from treating gameplay finger movement as page pan or zoom gestures.
+- Added explicit suppression for Safari pinch gesture events, rapid double-tap zoom, and touch-move scrolling on the combat canvas and touch-control surface.
+- Added tighter viewport scaling constraints and touch-action/callout protections for gameplay controls.
+- Kept menu panels scrollable by limiting the gesture lock to gameplay surfaces instead of the whole application.
+
 ## 0.2.1 — 2026-11-01
 
 ### Fixed
