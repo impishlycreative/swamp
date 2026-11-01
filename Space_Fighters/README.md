@@ -1,6 +1,6 @@
 # Space Fighters
 
-**Version:** 0.2.0
+**Version:** 0.2.1
 
 Space Fighters is a single-player 2D arcade combat game built for desktop and mobile. The design combines the immediate feel and power growth of classic vertical shooters such as *1942* with a modern sci-fi campaign structure inspired by mission-based space combat games.
 
@@ -17,6 +17,7 @@ No build step, framework, external assets, or package install is required.
 - Free movement within the combat viewport: forward, backward, left, right, diagonal, and curved movement are all possible.
 - Hold the primary fire control for automatic fire; tapping produces short bursts.
 - Mobile-first virtual joystick plus large FIRE and MISSILE controls.
+- iPhone Safari browser mode lifts touch controls above the visible bottom browser chrome instead of allowing the toolbar to cover them.
 - Desktop mouse-X positioning with W/S forward/back movement; A/D and arrow-key fallback remain available.
 - Right-click fires a missile on desktop.
 - Shields, hull integrity, and lives.
@@ -30,9 +31,9 @@ No build step, framework, external assets, or package install is required.
 - Branching campaign recovery missions when a main-line mission is failed.
 - Typical mission targets are designed around roughly 3–5 minutes.
 
-## 0.2.0 balance model
+## 0.2.x balance model
 
-Version 0.2.0 implements the first pass of the researched Space Fighters Game Design Guide:
+Version 0.2.0 introduced the first pass of the researched Space Fighters Game Design Guide, and 0.2.1 adds the first iPhone Safari layout correction:
 
 - Mission 01 is now an authored encounter sequence instead of a generic random-wave mission.
 - Mission-specific caps limit active enemies, simultaneous firing enemies, active enemy bullets, and total encounter threat.
@@ -43,6 +44,7 @@ Version 0.2.0 implements the first pass of the researched Space Fighters Game De
 - Random later missions use threat-aware spawning so a new wave is delayed when the existing screen is still too dangerous.
 - Recovery missions provide somewhat stronger access to recovery drops.
 - Respawns clear nearby enemy bullets and can provide extra recovery help after repeated deaths.
+- iPhone Safari browser mode reserves extra bottom clearance for touch controls so Safari's bottom toolbar does not cover the joystick or action buttons.
 
 ## Controls
 
@@ -71,7 +73,7 @@ Current missions: Patrol Intercept; Emergency Screen (failure branch); Convoy Sh
 
 ## Persistence
 
-Credits, campaign position, high score, and permanent upgrades are stored locally in the browser using `localStorage`. Version 0.2.0 migrates the earlier 0.1.x save key when possible. The Hangar includes a reset option for testing.
+Credits, campaign position, high score, and permanent upgrades are stored locally in the browser using `localStorage`. Version 0.2.x migrates the earlier 0.1.x save key when possible. The Hangar includes a reset option for testing.
 
 ## Design direction
 
@@ -91,4 +93,4 @@ The complete researched design standard is stored in the ChatGPT Library `Space_
 
 ## Next development targets
 
-Playtest and tune the new Mission 01 pacing; add audio and stronger shield/hull damage feedback; add more authored mission-specific formations; introduce additional secondary weapons while keeping mobile controls simple; expand bosses and capital ships; add more persistent fighter/loadout choices; add campaign-map and ace-ranking presentation; collect local playtest telemetry for deaths, enemy/bullet density, power-up use, and mission outcomes.
+Playtest and tune the new Mission 01 pacing; verify touch-control clearance across iPhone Safari toolbar states and screen sizes; add audio and stronger shield/hull damage feedback; add more authored mission-specific formations; introduce additional secondary weapons while keeping mobile controls simple; expand bosses and capital ships; add more persistent fighter/loadout choices; add campaign-map and ace-ranking presentation; collect local playtest telemetry for deaths, enemy/bullet density, power-up use, and mission outcomes.
