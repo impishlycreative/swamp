@@ -1,6 +1,6 @@
 # Space Fighters
 
-**Version:** 0.2.1
+**Version:** 0.2.2
 
 Space Fighters is a single-player 2D arcade combat game built for desktop and mobile. The design combines the immediate feel and power growth of classic vertical shooters such as *1942* with a modern sci-fi campaign structure inspired by mission-based space combat games.
 
@@ -18,6 +18,7 @@ No build step, framework, external assets, or package install is required.
 - Hold the primary fire control for automatic fire; tapping produces short bursts.
 - Mobile-first virtual joystick plus large FIRE and MISSILE controls.
 - iPhone Safari browser mode lifts touch controls above the visible bottom browser chrome instead of allowing the toolbar to cover them.
+- Gameplay touch surfaces explicitly suppress Safari pan, pinch, rapid-tap zoom, and gesture zoom so finger movement stays assigned to the game.
 - Desktop mouse-X positioning with W/S forward/back movement; A/D and arrow-key fallback remain available.
 - Right-click fires a missile on desktop.
 - Shields, hull integrity, and lives.
@@ -33,7 +34,7 @@ No build step, framework, external assets, or package install is required.
 
 ## 0.2.x balance model
 
-Version 0.2.0 introduced the first pass of the researched Space Fighters Game Design Guide, and 0.2.1 adds the first iPhone Safari layout correction:
+Version 0.2.0 introduced the first pass of the researched Space Fighters Game Design Guide. Versions 0.2.1 and 0.2.2 add iPhone Safari layout and gesture protections:
 
 - Mission 01 is now an authored encounter sequence instead of a generic random-wave mission.
 - Mission-specific caps limit active enemies, simultaneous firing enemies, active enemy bullets, and total encounter threat.
@@ -45,6 +46,7 @@ Version 0.2.0 introduced the first pass of the researched Space Fighters Game De
 - Recovery missions provide somewhat stronger access to recovery drops.
 - Respawns clear nearby enemy bullets and can provide extra recovery help after repeated deaths.
 - iPhone Safari browser mode reserves extra bottom clearance for touch controls so Safari's bottom toolbar does not cover the joystick or action buttons.
+- Gameplay canvas and touch controls block Safari gesture zoom and page movement while active.
 
 ## Controls
 
@@ -85,12 +87,13 @@ The complete researched design standard is stored in the ChatGPT Library `Space_
 
 ## Project files
 
-- `index.html` — game shell, HUD, menus, briefing, hangar, result and touch controls.
+- `index.html` — game shell, HUD, menus, briefing, hangar, result, touch controls, Safari viewport/layout safeguards.
 - `styles.css` — responsive/mobile-first presentation.
 - `game.js` — game loop, controls, combat, enemy behavior, authored/capped encounters, missions, campaign branching, upgrades and persistence.
+- `mobile-guards.js` — iOS/Safari gameplay gesture suppression for pan, pinch and rapid-tap zoom.
 - `VERSION` — current version.
 - `CHANGELOG.md` — release history.
 
 ## Next development targets
 
-Playtest and tune the new Mission 01 pacing; verify touch-control clearance across iPhone Safari toolbar states and screen sizes; add audio and stronger shield/hull damage feedback; add more authored mission-specific formations; introduce additional secondary weapons while keeping mobile controls simple; expand bosses and capital ships; add more persistent fighter/loadout choices; add campaign-map and ace-ranking presentation; collect local playtest telemetry for deaths, enemy/bullet density, power-up use, and mission outcomes.
+Playtest and tune the new Mission 01 pacing; verify touch-control clearance and no-zoom behavior across iPhone Safari toolbar states and screen sizes; add audio and stronger shield/hull damage feedback; add more authored mission-specific formations; introduce additional secondary weapons while keeping mobile controls simple; expand bosses and capital ships; add more persistent fighter/loadout choices; add campaign-map and ace-ranking presentation; collect local playtest telemetry for deaths, enemy/bullet density, power-up use, and mission outcomes.
