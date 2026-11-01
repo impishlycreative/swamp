@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#050816">
   <meta name="description" content="Space Fighters — a mobile-first retro arcade space combat game with modern sci-fi progression.">
-  <title>Space Fighters v0.2.1</title>
+  <title>Space Fighters v0.2.2</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     /* iPhone Safari keeps its bottom browser chrome over the page. Lift touch controls above it while the browser UI is visible. */
@@ -15,6 +15,12 @@
           bottom: calc(max(12px, env(safe-area-inset-bottom)) + 116px);
         }
       }
+    }
+    #gameCanvas,.touch-controls,.joystick,.action-button {
+      touch-action:none;
+      -webkit-user-select:none;
+      user-select:none;
+      -webkit-touch-callout:none;
     }
   </style>
 </head>
@@ -43,7 +49,7 @@
 
     <section id="startScreen" class="panel-screen">
       <div class="panel hero-panel">
-        <p class="eyebrow">RETRO ARCADE · MODERN SCI-FI</p><h1>SPACE FIGHTERS</h1><p class="version">v0.2.1</p>
+        <p class="eyebrow">RETRO ARCADE · MODERN SCI-FI</p><h1>SPACE FIGHTERS</h1><p class="version">v0.2.2</p>
         <p class="lede">Fly straight into a scrolling war zone. Learn readable enemy patterns, build your fighter, survive escalating missions, and fight through a campaign that can branch when you lose.</p>
         <div class="button-row"><button id="startButton" class="primary-button" type="button">START CAMPAIGN</button><button id="hangarButton" class="secondary-button" type="button">HANGAR</button></div>
         <p class="control-copy"><strong>Desktop:</strong> move mouse left/right to position fighter · W/S forward/back · hold Space to fire · right-click for missile · P to pause</p>
@@ -60,7 +66,8 @@
     <section id="pauseScreen" class="panel-screen hidden"><div class="panel compact-panel"><p class="eyebrow">GAME PAUSED</p><h2>Paused</h2><button id="resumeButton" class="primary-button" type="button">RESUME</button></div></section>
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
   </main>
-  <script src="game.js?v=0.2.1"></script>
-  <script>document.title='Space Fighters v0.2.1';</script>
+  <script src="game.js?v=0.2.2"></script>
+  <script src="mobile-guards.js?v=0.2.2"></script>
+  <script>document.title='Space Fighters v0.2.2';</script>
 </body>
 </html>
