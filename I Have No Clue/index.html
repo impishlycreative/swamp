@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>I Have No Clue — Colossus</title><style>*{box-sizing:border-box}body{margin:0;background:#101819;color:#eee;font:14px system-ui;overflow:hidden}canvas{display:block;touch-action:none}header{position:absolute;top:24px;left:24px;pointer-events:none}h1{font-size:28px;letter-spacing:.15em;margin:0}small{color:#bbc9bc}nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;max-width:96vw;flex-wrap:wrap;justify-content:center}button{background:#1b2724df;border:1px solid #718477;color:white;padding:13px;border-radius:8px;cursor:pointer}#status{margin-top:10px;color:#d4b77f}#error{position:absolute;top:45%;padding:24px}a{color:inherit}</style><header><small>I HAVE NO CLUE / COLOSSUS / SILVERBACK</small><h1>COLOSSUS</h1><div id="status">A forest beneath his fists.</div><p>Drag to orbit · Scroll or pinch to zoom</p></header><nav><button id="auto">Auto rampage: ON</button><button data-act="trees">Uproot grove</button><button data-act="rock">Hurl boulder</button><button data-act="smash">Ground smash</button><button data-act="chest">Beat chest</button><button id="pause">Pause</button><button id="reset">Restore forest</button></nav><div id="error" role="alert"></div><script type="module">
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>I Have No Clue — Colossus</title><style>*{box-sizing:border-box}body{margin:0;background:#101819;color:#eee;font:14px system-ui;overflow:hidden}canvas{display:block;touch-action:none}header{position:absolute;top:24px;left:24px;pointer-events:none}h1{font-size:28px;letter-spacing:.15em;margin:0}small{color:#bbc9bc}nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;max-width:96vw;flex-wrap:wrap;justify-content:center}button{background:#1b2724df;border:1px solid #718477;color:white;padding:13px;border-radius:8px;cursor:pointer}#status{margin-top:10px;color:#d4b77f}#error{position:absolute;top:45%;padding:24px}a{color:inherit}</style><header><small>I HAVE NO CLUE / COLOSSUS / SILVERBACK · STANCE REVISION</small><h1>COLOSSUS</h1><div id="status">A forest beneath his fists.</div><p>Drag to orbit · Scroll or pinch to zoom</p></header><nav><button id="auto">Auto rampage: ON</button><button data-act="trees">Uproot grove</button><button data-act="rock">Hurl boulder</button><button data-act="smash">Ground smash</button><button data-act="chest">Beat chest</button><button id="pause">Pause</button><button id="reset">Restore forest</button></nav><div id="error" role="alert"></div><script type="module">
 import * as T from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
 const $=s=>document.querySelector(s);
 let renderer;
@@ -19,7 +19,7 @@ const bones=[],limited=[];
 function bone(name,parent,x,y,z,limits=null){const b=new T.Bone();b.name=name;b.position.set(x,y,z);parent.add(b);bones.push(b);if(limits)limited.push({b,limits});return b}
 function restrict(b,x,y,z,limits){b.rotation.set(T.MathUtils.clamp(x,...limits[0]),T.MathUtils.clamp(y,...limits[1]),T.MathUtils.clamp(z,...limits[2]))}
 const hipLimits=[[-.8,1.25],[-.45,.45],[-.45,.45]],kneeLimits=[[.08,2.35],[0,0],[0,0]],ankleLimits=[[-.65,.65],[-.2,.2],[-.2,.2]];
-const pelvis=bone('pelvis',g,0,17,-2);
+const pelvis=bone('pelvis',g,0,15,-2);
 const lumbar=bone('lumbar',pelvis,0,5,0,[[-.4,.45],[-.3,.3],[-.2,.2]]);
 const chest=bone('thorax',lumbar,0,10,1,[[-.3,.3],[-.3,.3],[-.15,.15]]);
 const neck=bone('neck',chest,0,8,1,[[-.4,.5],[-.7,.7],[-.25,.25]]);
@@ -40,17 +40,20 @@ legs.push({s,hip,knee,ankle})}
 const gait={last:new T.Vector3(),distance:0,feet:[],initialized:false};
 function stepLegs(dt){
 g.updateMatrixWorld(true);
+// Preserve support contacts by limiting root travel to the planted leg's reach.
+if(gait.initialized){for(let pass=0;pass<2;pass++){g.updateMatrixWorld(true);legs.forEach((r,i)=>{const f=gait.feet[i];if(f.swing)return;const hp=r.hip.getWorldPosition(new T.Vector3()),dy=hp.y-f.anchor.y,maxHorizontal=Math.sqrt(Math.max(.1,15.8*15.8-dy*dy)),dx=hp.x-f.anchor.x,dz=hp.z-f.anchor.z,dist=Math.hypot(dx,dz);if(dist>maxHorizontal){const correction=(dist-maxHorizontal)/dist;g.position.x-=dx*correction;g.position.z-=dz*correction}})}}
+g.updateMatrixWorld(true);
 const moved=Math.hypot(g.position.x-gait.last.x,g.position.z-gait.last.z);
 const direction=g.position.clone().sub(gait.last);direction.y=0;if(direction.lengthSq()>.00001)direction.normalize();else direction.set(0,0,1);
 gait.distance+=moved;gait.last.copy(g.position);
-if(!gait.initialized){legs.forEach(r=>gait.feet.push({anchor:g.localToWorld(new T.Vector3(r.s*5,1,1)),from:null,to:null,swing:false}));gait.initialized=true}
+if(!gait.initialized){legs.forEach(r=>gait.feet.push({anchor:g.localToWorld(new T.Vector3(r.s*5,2.3,-2)),from:null,to:null,swing:false}));gait.initialized=true}
 legs.forEach((r,i)=>{const f=gait.feet[i],hipWorld=r.hip.getWorldPosition(new T.Vector3());
-const center=g.localToWorld(new T.Vector3(r.s*5,1,1));
+const center=g.localToWorld(new T.Vector3(r.s*5,2.3,-2));
 const other=gait.feet[1-i];
-if(!f.swing&&moved>.001&&!other.swing&&f.anchor.distanceTo(center)>3.5){f.swing=true;f.phase=0;f.from=f.anchor.clone();f.to=center.clone().addScaledVector(direction,4);f.to.y=1}
+if(!f.swing&&moved>.001&&!other.swing&&f.anchor.distanceTo(center)>3.5){f.swing=true;f.phase=0;f.from=f.anchor.clone();f.to=center.clone().addScaledVector(direction,4);f.to.y=2.3}
 let target=f.anchor.clone();
 if(f.swing){f.phase=Math.min(1,f.phase+dt*3.8);const u=f.phase*f.phase*(3-2*f.phase);target.lerpVectors(f.from,f.to,u);target.y+=Math.sin(f.phase*Math.PI)*2.5;if(f.phase===1){f.anchor.copy(f.to);f.swing=false}}
-const delta=target.clone().sub(hipWorld),d=T.MathUtils.clamp(delta.length(),4,15.8),dir=delta.normalize(),L1=8.5,L2=7.5,along=(L1*L1-L2*L2+d*d)/(2*d);
+const delta=target.clone().sub(hipWorld),d=T.MathUtils.clamp(delta.length(),4,15.98),dir=delta.normalize(),L1=8.5,L2=7.5,along=(L1*L1-L2*L2+d*d)/(2*d);
 const bend=new T.Vector3(0,0,1).addScaledVector(dir,-dir.z).normalize();
 const knee=hipWorld.clone().addScaledVector(dir,along).addScaledVector(bend,Math.sqrt(Math.max(0,L1*L1-along*along)));
 const tip=hipWorld.clone().addScaledVector(dir,d);
@@ -119,7 +122,7 @@ g.rotation.y=0;g.position.y=0;head.rotation.x=.06;head.rotation.y=Math.sin(time*
 const targets=rigs.map(r=>new T.Vector3(r.s*15,7,5));let grip=false;
 if(action){action.t+=dt;const t=action.target?Math.max(0,action.t-action.walkDuration+2):action.t,k=action.kind,ease=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*(3-2*x)};
 jaw.rotation.x=.6*Math.sin(Math.min(t,1)*Math.PI/2);
-if(action.target){const goal=action.origin.clone().add(new T.Vector3(12,0,-15));g.position.lerpVectors(action.start,goal,ease(action.t/action.walkDuration));g.updateMatrixWorld(true);
+if(action.target){const goal=action.origin.clone().add(new T.Vector3(12,0,-15));g.position.lerpVectors(action.start,goal,Math.min(1,action.t/action.walkDuration));g.updateMatrixWorld(true);
 const local=g.worldToLocal(action.origin.clone().add(new T.Vector3(0,5,0)));
 const rest=new T.Vector3(-15,7,5);
 if(t<3.2)targets[0].lerpVectors(rest,local,ease((t-2)/1.2));
