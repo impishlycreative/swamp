@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>I Have No Clue — Colossus</title><style>*{box-sizing:border-box}body{margin:0;background:#101819;color:#eee;font:14px system-ui;overflow:hidden}canvas{display:block;touch-action:none}header{position:absolute;top:24px;left:24px;pointer-events:none}h1{font-size:28px;letter-spacing:.15em;margin:0}small{color:#bbc9bc}nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;max-width:96vw;flex-wrap:wrap;justify-content:center}button{background:#1b2724df;border:1px solid #718477;color:white;padding:13px;border-radius:8px;cursor:pointer}#status{margin-top:10px;color:#d4b77f}#error{position:absolute;top:45%;padding:24px}a{color:inherit}</style><header><small>I HAVE NO CLUE / PROCEDURAL WEBGL PROTOTYPE</small><h1>COLOSSUS</h1><div id="status">A forest beneath his fists.</div><p>Drag to orbit · Scroll or pinch to zoom</p></header><nav><button id="auto">Auto rampage: ON</button><button data-act="trees">Uproot grove</button><button data-act="rock">Hurl boulder</button><button data-act="smash">Ground smash</button><button data-act="chest">Beat chest</button><button id="pause">Pause</button><button id="reset">Restore forest</button></nav><div id="error" role="alert"></div><script type="module">
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>I Have No Clue — Colossus</title><style>*{box-sizing:border-box}body{margin:0;background:#101819;color:#eee;font:14px system-ui;overflow:hidden}canvas{display:block;touch-action:none}header{position:absolute;top:24px;left:24px;pointer-events:none}h1{font-size:28px;letter-spacing:.15em;margin:0}small{color:#bbc9bc}nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;max-width:96vw;flex-wrap:wrap;justify-content:center}button{background:#1b2724df;border:1px solid #718477;color:white;padding:13px;border-radius:8px;cursor:pointer}#status{margin-top:10px;color:#d4b77f}#error{position:absolute;top:45%;padding:24px}a{color:inherit}</style><header><small>I HAVE NO CLUE / ARTICULATED SILVERBACK / RIG PROTOTYPE</small><h1>COLOSSUS</h1><div id="status">A forest beneath his fists.</div><p>Drag to orbit · Scroll or pinch to zoom</p></header><nav><button id="auto">Auto rampage: ON</button><button data-act="trees">Uproot grove</button><button data-act="rock">Hurl boulder</button><button data-act="smash">Ground smash</button><button data-act="chest">Beat chest</button><button id="pause">Pause</button><button id="reset">Restore forest</button></nav><div id="error" role="alert"></div><script type="module">
 import * as T from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
 const $=s=>document.querySelector(s);
 let renderer;
@@ -13,24 +13,65 @@ const fur=mat(0x24241f), dark=mat(0x343934),skin=mat(0x151a18,.83),mouthmat=mat(
 const ground=new T.Mesh(new T.PlaneGeometry(1400,1400,40,40),mat(0x3a4730));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
 function ell(parent,m,x,y,z,sx,sy,sz){const o=new T.Mesh(new T.SphereGeometry(1,24,16),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=o.receiveShadow=true;parent.add(o);return o}
 const g=new T.Group();scene.add(g);
-ell(g,fur,0,24,0,12,16,7);ell(g,dark,0,26,5,9,10,3);
-ell(g,fur,0,14,-1,8,7,6);
-for(const side of [-1,1]){ell(g,fur,side*6,7,0,4,8,4);ell(g,skin,side*6,1.5,3,4,2,6)}
+// Whole-body hierarchical bone rig. Limits below are animation approximations,
+// not measured veterinary passive ranges of motion.
+const bones=[],limited=[];
+function bone(name,parent,x,y,z,limits=null){const b=new T.Bone();b.name=name;b.position.set(x,y,z);parent.add(b);bones.push(b);if(limits)limited.push({b,limits});return b}
+function restrict(b,x,y,z,limits){b.rotation.set(T.MathUtils.clamp(x,...limits[0]),T.MathUtils.clamp(y,...limits[1]),T.MathUtils.clamp(z,...limits[2]))}
+const hipLimits=[[-.8,1.25],[-.45,.45],[-.45,.45]],kneeLimits=[[.08,2.35],[0,0],[0,0]],ankleLimits=[[-.65,.65],[-.2,.2],[-.2,.2]];
+const pelvis=bone('pelvis',g,0,17,-2);
+const lumbar=bone('lumbar',pelvis,0,5,0,[[-.4,.45],[-.3,.3],[-.2,.2]]);
+const chest=bone('thorax',lumbar,0,10,1,[[-.3,.3],[-.3,.3],[-.15,.15]]);
+const neck=bone('neck',chest,0,8,1,[[-.4,.5],[-.7,.7],[-.25,.25]]);
+ell(pelvis,fur,0,0,0,8,6,6);
+ell(lumbar,fur,0,2,0,10,10,7);
+ell(chest,fur,0,-1,0,13,10,7.5);
+ell(chest,dark,0,-1,6,10,8,2.5);
+ell(chest,mat(0x777a70),0,-3,-5.8,10,9,2.5);
+const legs=[];
+for(const s of [-1,1]){const hip=bone('hip_'+s,pelvis,s*5,0,0,hipLimits),knee=bone('knee_'+s,hip,0,-8.5,0,kneeLimits),ankle=bone('ankle_'+s,knee,0,-7.5,0,ankleLimits);
+ell(hip,fur,0,-4,0,4.2,5,4.1);ell(knee,fur,0,-3.5,0,3.2,4.5,3);ell(ankle,skin,0,-.5,2,3.2,1.8,4.7);
+for(let i=0;i<5;i++){const toe=bone('toe_'+s+'_'+i,ankle,(i-2)*1.05,-1,4);ell(toe,skin,0,0,.8,.6,.65,1.5)}
+legs.push({s,hip,knee,ankle})}
 const arms=[],rigs=[];
-for(const s of [-1,1]){const upper=ell(g,fur,0,0,0,5,7,4.5),lower=ell(g,fur,0,0,0,3.6,7,3.6),hand=new T.Group();g.add(hand);ell(hand,skin,0,0,0,3.7,3,3);const fingers=[];for(let i=0;i<4;i++)fingers.push(ell(hand,skin,(i-1.5)*1.5,-2,1.5,.9,2,1));arms.push(hand);rigs.push({s,upper,lower,hand,fingers,target:new T.Vector3(s*15,7,5)})}
-function limb(mesh,a,b,width,depth){mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.scale.set(width,a.distanceTo(b)/2,depth);mesh.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),b.clone().sub(a).normalize())}
-function solve(r,target,grip=false){const a=new T.Vector3(r.s*11,33,0),v=target.clone().sub(a),d=T.MathUtils.clamp(v.length(),1,28.8),dir=v.normalize(),mid=a.clone().addScaledVector(dir,d/2);const bend=new T.Vector3(r.s,0,-.45).addScaledVector(dir,-new T.Vector3(r.s,0,-.45).dot(dir)).normalize();mid.addScaledVector(bend,Math.sqrt(Math.max(0,14.5*14.5-d*d/4)));const tip=a.clone().addScaledVector(dir,d);limb(r.upper,a,mid,5,4.5);limb(r.lower,mid,tip,3.7,3.7);r.hand.position.copy(tip);r.fingers.forEach(f=>{f.rotation.x=grip?-1.1:0});return tip}
-const head=new T.Group();head.position.set(0,40,1);g.add(head);
+for(const s of [-1,1]){const clavicle=bone('clavicle_'+s,chest,s*9,1,0,[[-.2,.3],[-.35,.35],[-.3,.3]]);
+const shoulder=bone('shoulder_'+s,clavicle,s*3,0,0);
+const elbow=bone('elbow_'+s,shoulder,0,-17.5,0);
+const wrist=bone('wrist_'+s,elbow,0,-14.5,0,[[-.7,.7],[-.6,.6],[-.4,.4]]);
+ell(shoulder,fur,0,-7,0,5.2,10,4.8);ell(elbow,fur,0,-6.5,0,3.7,8.5,3.7);ell(wrist,skin,0,-1,0,3.5,3,2.7);
+const fingers=[];
+for(let i=0;i<5;i++){const digit=bone('finger_'+s+'_'+i,wrist,(i-2)*1.3,-2,i===0?-1:1);const middle=bone('finger_middle_'+s+'_'+i,digit,0,-1.8,0),tip=bone('finger_tip_'+s+'_'+i,middle,0,-1.5,0);
+ell(digit,skin,0,-.9,0,.75,1.3,.8);ell(middle,skin,0,-.7,0,.65,1.1,.7);ell(tip,skin,0,-.6,0,.55,.9,.6);fingers.push([digit,middle,tip])}
+arms.push(wrist);rigs.push({s,shoulder,elbow,hand:wrist,fingers})}
+function aim(b,end){g.updateMatrixWorld(true);const origin=b.getWorldPosition(new T.Vector3()),q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,-1,0),end.clone().sub(origin).normalize());const pq=b.parent.getWorldQuaternion(new T.Quaternion()).invert();b.quaternion.copy(pq.multiply(q));g.updateMatrixWorld(true)}
+function solve(r,target,grip=false){g.updateMatrixWorld(true);const a=r.shoulder.getWorldPosition(new T.Vector3()),goal=g.localToWorld(target.clone()),delta=goal.sub(a);
+// Constrain shoulder elevation and outward abduction; elbow never hyperextends.
+const az=T.MathUtils.clamp(Math.atan2(delta.x*r.s,Math.hypot(delta.y,delta.z)),-.65,1.45);
+const pitch=T.MathUtils.clamp(Math.atan2(delta.z,-delta.y),-.65,2.65);
+const direction=new T.Vector3(r.s*Math.sin(az),-Math.cos(pitch)*Math.cos(az),Math.sin(pitch)*Math.cos(az));
+const L1=17.5,L2=14.5,min=Math.sqrt(L1*L1+L2*L2+2*L1*L2*Math.cos(2.5)),max=Math.sqrt(L1*L1+L2*L2+2*L1*L2*Math.cos(.12)),d=T.MathUtils.clamp(delta.length(),min,max),tip=a.clone().addScaledVector(direction,d);
+const along=(L1*L1-L2*L2+d*d)/(2*d),bend=new T.Vector3(r.s,0,-.5).addScaledVector(direction,-new T.Vector3(r.s,0,-.5).dot(direction)).normalize(),mid=a.clone().addScaledVector(direction,along).addScaledVector(bend,Math.sqrt(Math.max(0,L1*L1-along*along)));
+aim(r.shoulder,mid);aim(r.elbow,tip);restrict(r.hand,grip?-.3:0,0,0,[[-.7,.7],[-.6,.6],[-.4,.4]]);
+r.fingers.forEach(chain=>chain.forEach((b,i)=>b.rotation.x=grip?-[1.1,1.3,.9][i]:-.15));
+return g.worldToLocal(r.hand.getWorldPosition(new T.Vector3()))}
+const head=bone('skull',neck,0,1,2);head.scale.set(.9,.8,.92);
 ell(head,fur,0,2,0,7,9,6);ell(head,skin,0,0,4,5.7,6,3);
 ell(head,skin,0,1,7,3.8,2,1.8);for(const s of [-1,1]){ell(head,skin,s*2.8,3,6,3,1.6,2);ell(head,mat(0x9f7629,.3),s*2.3,2.6,7.6,.6,.45,.3);ell(head,skin,s*2.3,2.6,7.85,.24,.3,.1);ell(head,skin,s*.9,.6,8.6,.55,.35,.25)}
-const jaw=new T.Group();jaw.position.set(0,-2,6.5);head.add(jaw);ell(jaw,mouthmat,0,-1,0,3.3,2.8,1.1);ell(jaw,skin,0,-3,.1,3.8,1.4,1.5);
+const jaw=bone('jaw',head,0,-2,6.5,[[-.05,.65],[0,0],[0,0]]);ell(jaw,mouthmat,0,-1,0,3.3,2.8,1.1);ell(jaw,skin,0,-3,.1,3.8,1.4,1.5);
 for(const s of [-1,1]){const fang=new T.Mesh(new T.ConeGeometry(.55,2.3,12),tooth);fang.rotation.z=Math.PI;fang.position.set(s*2,-.3,1);jaw.add(fang)}
 // Fine strands follow the volume of the torso and head.
 const positions=[];for(let i=0;i<11000;i++){const a=Math.random()*Math.PI*2,u=Math.random()*2-1,v=Math.sqrt(1-u*u),x=12*v*Math.cos(a),y=24+16*u,z=7*v*Math.sin(a);positions.push(x,y,z,x+x*.022,y-1-Math.random(),z+z*.025)}
-const hairGeo=new T.BufferGeometry();hairGeo.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.add(new T.LineSegments(hairGeo,new T.LineBasicMaterial({color:0x45463c,transparent:true,opacity:.48})));
+const hairGeo=new T.BufferGeometry();hairGeo.setAttribute('position',new T.Float32BufferAttribute(positions,3));const strands=new T.LineSegments(hairGeo,new T.LineBasicMaterial({color:0x45463c,transparent:true,opacity:.48}));g.add(strands);g.updateMatrixWorld(true);chest.attach(strands);
+const skeleton=new T.Skeleton(bones);const skeletonView=new T.SkeletonHelper(g);skeletonView.visible=false;scene.add(skeletonView);const rigButton=document.createElement('button');rigButton.textContent='Show skeleton';document.querySelector('nav').append(rigButton);rigButton.onclick=()=>{skeletonView.visible=!skeletonView.visible;rigButton.textContent=skeletonView.visible?'Hide skeleton':'Show skeleton'};
 let trees=[],rocks=[],flying=[],dust=[],auto=true,paused=false,time=0,action=null,shake=0,orbit=.45,elev=.24,distance=145;
 function tree(x,z,h=16){const group=new T.Group();group.position.set(x,0,z);const trunk=new T.Mesh(new T.CylinderGeometry(.4,.85,h,7),bark);trunk.position.y=h/2;trunk.castShadow=true;group.add(trunk);for(let i=0;i<3;i++){const crown=new T.Mesh(new T.ConeGeometry(h*(.23-i*.035),h*.5,9),leaf);crown.position.y=h*(.55+i*.16);crown.castShadow=true;group.add(crown)}scene.add(group);trees.push(group);return group}
-function populate(){for(let i=0;i<180;i++){const a=Math.random()*6.28,r=25+Math.random()*190;tree(Math.cos(a)*r,Math.sin(a)*r,13+Math.random()*3.3)}for(let i=0;i<24;i++){const r=new T.Mesh(new T.DodecahedronGeometry(1,1),stone);r.scale.set(2+Math.random()*3,2+Math.random()*2,2+Math.random()*3);r.position.set((Math.random()-.5)*140,2,(Math.random()-.5)*140);r.castShadow=true;scene.add(r);rocks.push(r)}}
+// Scene units preserve anatomy; physical scale maps the neutral standing crown to 200 feet.
+rigs.forEach(r=>solve(r,new T.Vector3(r.s*15,7,5)));g.updateMatrixWorld(true);
+const standingHeight=new T.Box3().setFromObject(g).max.y;
+const physicalScale={heightFeet:200,heightMetres:60.96,metresPerUnit:60.96/standingHeight};
+g.userData.physicalScale=physicalScale;
+const scaleLabel=document.createElement('p');scaleLabel.textContent='200-foot silverback · trees approximately 67 feet · approximate anatomical rig';document.querySelector('header').append(scaleLabel);
+function populate(){for(let i=0;i<180;i++){const a=Math.random()*6.28,r=25+Math.random()*190;tree(Math.cos(a)*r,Math.sin(a)*r,(standingHeight/3/1.12)*(.85+Math.random()*.15))}for(let i=0;i<24;i++){const r=new T.Mesh(new T.DodecahedronGeometry(1,1),stone);r.scale.set(2+Math.random()*3,2+Math.random()*2,2+Math.random()*3);r.position.set((Math.random()-.5)*140,2,(Math.random()-.5)*140);r.castShadow=true;scene.add(r);rocks.push(r)}}
 populate();
 function burst(x,z,n=40){for(let i=0;i<n;i++){const o=new T.Mesh(new T.IcosahedronGeometry(.3+Math.random()*.9),Math.random()>.5?stone:bark);o.position.set(x,1,z);scene.add(o);dust.push({o,v:new T.Vector3((Math.random()-.5)*22,4+Math.random()*16,(Math.random()-.5)*22),life:2+Math.random()*2})}shake=1}
 const scars=[],fallen=[];
@@ -44,10 +85,16 @@ function release(){for(const o of action.items){scene.attach(o);flying.push({o,v
 let next=1;
 const clock=new T.Clock();
 function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.035);if(!paused){time+=dt;if(auto&&!action&&time>next)choose(['trees','rock','smash','chest'][Math.floor(Math.random()*4)]);
-g.rotation.y=0;g.position.y=0;head.rotation.x=.06;head.rotation.y=Math.sin(time*.6)*.1;jaw.scale.y=1;
+const walking=action?.target&&action.t<2;
+const cycle=time*5;
+legs.forEach((r,i)=>{const phase=cycle+i*Math.PI;restrict(r.hip,walking?Math.sin(phase)*.4:.1,0,r.s*.08,hipLimits);restrict(r.knee,walking?.22+Math.max(0,-Math.sin(phase))*.65:.18,0,0,kneeLimits);restrict(r.ankle,walking?-Math.sin(phase)*.18:0,0,0,ankleLimits)});
+restrict(lumbar,walking?.25:.1,Math.sin(time*.7)*.035,0,[[-.4,.45],[-.3,.3],[-.2,.2]]);
+restrict(chest,action?.gripped?-.12:.05,0,walking?Math.sin(cycle)*.035:0,[[-.3,.3],[-.3,.3],[-.15,.15]]);
+restrict(neck,-.05,Math.sin(time*.6)*.1,0,[[-.4,.5],[-.7,.7],[-.25,.25]]);
+g.rotation.y=0;g.position.y=0;head.rotation.x=.06;head.rotation.y=Math.sin(time*.6)*.1;jaw.rotation.x=0;
 const targets=rigs.map(r=>new T.Vector3(r.s*15,7,5));let grip=false;
 if(action){action.t+=dt;const t=action.t,k=action.kind,ease=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*(3-2*x)};
-jaw.scale.y=1+.6*Math.sin(Math.min(t,1)*Math.PI/2);
+jaw.rotation.x=.6*Math.sin(Math.min(t,1)*Math.PI/2);
 if(action.target){const goal=action.origin.clone().add(new T.Vector3(12,0,-15));g.position.lerpVectors(action.start,goal,ease(t/2));g.updateMatrixWorld(true);
 const local=g.worldToLocal(action.origin.clone().add(new T.Vector3(0,5,0)));
 const rest=new T.Vector3(-15,7,5);
