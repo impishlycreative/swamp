@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>I Have No Clue — Colossus</title><style>*{box-sizing:border-box}body{margin:0;background:#101819;color:#eee;font:14px system-ui;overflow:hidden}canvas{display:block;touch-action:none}header{position:absolute;top:24px;left:24px;pointer-events:none}h1{font-size:28px;letter-spacing:.15em;margin:0}small{color:#bbc9bc}nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;max-width:96vw;flex-wrap:wrap;justify-content:center}button{background:#1b2724df;border:1px solid #718477;color:white;padding:13px;border-radius:8px;cursor:pointer}#status{margin-top:10px;color:#d4b77f}#error{position:absolute;top:45%;padding:24px}a{color:inherit}</style><header><small>I HAVE NO CLUE / ARTICULATED SILVERBACK / RIG PROTOTYPE</small><h1>COLOSSUS</h1><div id="status">A forest beneath his fists.</div><p>Drag to orbit · Scroll or pinch to zoom</p></header><nav><button id="auto">Auto rampage: ON</button><button data-act="trees">Uproot grove</button><button data-act="rock">Hurl boulder</button><button data-act="smash">Ground smash</button><button data-act="chest">Beat chest</button><button id="pause">Pause</button><button id="reset">Restore forest</button></nav><div id="error" role="alert"></div><script type="module">
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>I Have No Clue — Colossus</title><style>*{box-sizing:border-box}body{margin:0;background:#101819;color:#eee;font:14px system-ui;overflow:hidden}canvas{display:block;touch-action:none}header{position:absolute;top:24px;left:24px;pointer-events:none}h1{font-size:28px;letter-spacing:.15em;margin:0}small{color:#bbc9bc}nav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;max-width:96vw;flex-wrap:wrap;justify-content:center}button{background:#1b2724df;border:1px solid #718477;color:white;padding:13px;border-radius:8px;cursor:pointer}#status{margin-top:10px;color:#d4b77f}#error{position:absolute;top:45%;padding:24px}a{color:inherit}</style><header><small>I HAVE NO CLUE / COLOSSUS / SILVERBACK</small><h1>COLOSSUS</h1><div id="status">A forest beneath his fists.</div><p>Drag to orbit · Scroll or pinch to zoom</p></header><nav><button id="auto">Auto rampage: ON</button><button data-act="trees">Uproot grove</button><button data-act="rock">Hurl boulder</button><button data-act="smash">Ground smash</button><button data-act="chest">Beat chest</button><button id="pause">Pause</button><button id="reset">Restore forest</button></nav><div id="error" role="alert"></div><script type="module">
 import * as T from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
 const $=s=>document.querySelector(s);
 let renderer;
@@ -23,16 +23,41 @@ const pelvis=bone('pelvis',g,0,17,-2);
 const lumbar=bone('lumbar',pelvis,0,5,0,[[-.4,.45],[-.3,.3],[-.2,.2]]);
 const chest=bone('thorax',lumbar,0,10,1,[[-.3,.3],[-.3,.3],[-.15,.15]]);
 const neck=bone('neck',chest,0,8,1,[[-.4,.5],[-.7,.7],[-.25,.25]]);
-ell(pelvis,fur,0,0,0,8,6,6);
-ell(lumbar,fur,0,2,0,10,10,7);
-ell(chest,fur,0,-1,0,13,10,7.5);
-ell(chest,dark,0,-1,6,10,8,2.5);
-ell(chest,mat(0x777a70),0,-3,-5.8,10,9,2.5);
+function organic(parent,material,rings){const vertices=[],indices=[],segments=48;
+for(let j=0;j<rings.length;j++){const [y,rx,rz,z]=rings[j];for(let i=0;i<=segments;i++){const a=i/segments*Math.PI*2;const muscle=1+.025*Math.cos(a*6)*Math.sin(j/rings.length*Math.PI);vertices.push(Math.cos(a)*rx*muscle,y,z+Math.sin(a)*rz*muscle)}}
+for(let j=0;j<rings.length-1;j++)for(let i=0;i<segments;i++){const n=j*(segments+1)+i;indices.push(n,n+1,n+segments+1,n+1,n+segments+2,n+segments+1)}
+const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geo.setIndex(indices);geo.computeVertexNormals();const mesh=new T.Mesh(geo,material);mesh.castShadow=mesh.receiveShadow=true;parent.add(mesh);return mesh}
+organic(pelvis,fur,[[-5,.1,.1,0],[-4,5,4.5,0],[0,8,6,0],[4,8.5,6.2,0],[7,8,6,0]]);
+organic(chest,fur,[[-16,7.7,5.8,-1],[-12,9,6.5,0],[-8,10,7,0],[-3,12.6,7.8,0],[2,13,7.5,0],[6,10.5,6,0],[9,6,4,1],[10,.1,.1,1]]);
+ell(chest,dark,-5,-2,6.1,5.6,5.7,2.4);ell(chest,dark,5,-2,6.1,5.6,5.7,2.4);
+organic(chest,mat(0x777a70),[[-12,.1,.1,-5.9],[-10,6,1.8,-5.9],[-5,9,2,-6.1],[0,10,1.8,-6],[5,7,1.5,-5.2],[7,.1,.1,-4]]);
 const legs=[];
 for(const s of [-1,1]){const hip=bone('hip_'+s,pelvis,s*5,0,0,hipLimits),knee=bone('knee_'+s,hip,0,-8.5,0,kneeLimits),ankle=bone('ankle_'+s,knee,0,-7.5,0,ankleLimits);
 ell(hip,fur,0,-4,0,4.2,5,4.1);ell(knee,fur,0,-3.5,0,3.2,4.5,3);ell(ankle,skin,0,-.5,2,3.2,1.8,4.7);
 for(let i=0;i<5;i++){const toe=bone('toe_'+s+'_'+i,ankle,(i-2)*1.05,-1,4);ell(toe,skin,0,0,.8,.6,.65,1.5)}
 legs.push({s,hip,knee,ankle})}
+// Distance-driven foot contacts: stance anchors remain fixed in world space.
+const gait={last:new T.Vector3(),distance:0,feet:[],initialized:false};
+function stepLegs(dt){
+g.updateMatrixWorld(true);
+const moved=Math.hypot(g.position.x-gait.last.x,g.position.z-gait.last.z);
+const direction=g.position.clone().sub(gait.last);direction.y=0;if(direction.lengthSq()>.00001)direction.normalize();else direction.set(0,0,1);
+gait.distance+=moved;gait.last.copy(g.position);
+if(!gait.initialized){legs.forEach(r=>gait.feet.push({anchor:g.localToWorld(new T.Vector3(r.s*5,1,1)),from:null,to:null,swing:false}));gait.initialized=true}
+legs.forEach((r,i)=>{const f=gait.feet[i],hipWorld=r.hip.getWorldPosition(new T.Vector3());
+const center=g.localToWorld(new T.Vector3(r.s*5,1,1));
+const other=gait.feet[1-i];
+if(!f.swing&&moved>.001&&!other.swing&&f.anchor.distanceTo(center)>3.5){f.swing=true;f.phase=0;f.from=f.anchor.clone();f.to=center.clone().addScaledVector(direction,4);f.to.y=1}
+let target=f.anchor.clone();
+if(f.swing){f.phase=Math.min(1,f.phase+dt*3.8);const u=f.phase*f.phase*(3-2*f.phase);target.lerpVectors(f.from,f.to,u);target.y+=Math.sin(f.phase*Math.PI)*2.5;if(f.phase===1){f.anchor.copy(f.to);f.swing=false}}
+const delta=target.clone().sub(hipWorld),d=T.MathUtils.clamp(delta.length(),4,15.8),dir=delta.normalize(),L1=8.5,L2=7.5,along=(L1*L1-L2*L2+d*d)/(2*d);
+const bend=new T.Vector3(0,0,1).addScaledVector(dir,-dir.z).normalize();
+const knee=hipWorld.clone().addScaledVector(dir,along).addScaledVector(bend,Math.sqrt(Math.max(0,L1*L1-along*along)));
+const tip=hipWorld.clone().addScaledVector(dir,d);
+aim(r.hip,knee);aim(r.knee,tip);
+const worldQ=r.ankle.parent.getWorldQuaternion(new T.Quaternion()).invert();r.ankle.quaternion.copy(worldQ);
+});
+}
 const arms=[],rigs=[];
 for(const s of [-1,1]){const clavicle=bone('clavicle_'+s,chest,s*9,1,0,[[-.2,.3],[-.35,.35],[-.3,.3]]);
 const shoulder=bone('shoulder_'+s,clavicle,s*3,0,0);
@@ -79,23 +104,22 @@ function scar(x,z,r=5){const m=new T.Mesh(new T.CircleGeometry(r,20),mat(0x211c1
 function damage(x,z,r){scar(x,z,r);burst(x,z,28);for(const o of trees.slice()){if(Math.hypot(o.position.x-x,o.position.z-z)<r){trees.splice(trees.indexOf(o),1);o.rotation.z=(Math.random()>.5?1:-1)*1.45;fallen.push(o)}}}
 function choose(kind){if(action)return;const pool=kind==='trees'?trees:rocks;const target=(kind==='trees'||kind==='rock')?pool.slice().sort((a,b)=>a.position.distanceToSquared(g.position)-b.position.distanceToSquared(g.position))[0]:null;
 if((kind==='trees'||kind==='rock')&&!target){$('#status').textContent='No targets remain. Restore forest to start again.';next=time+2;return}
-action={kind,t:0,items:target?[target]:[],target,gripped:false,released:false,origin:target?.position.clone(),start:g.position.clone(),hit:false};
+action={kind,t:0,items:target?[target]:[],target,gripped:false,released:false,origin:target?.position.clone(),start:g.position.clone(),walkDuration:target?Math.max(2,g.position.distanceTo(target.position.clone().add(new T.Vector3(12,0,-15)))/9):0,hit:false};
 $('#status').textContent=target?'Approaching an existing target.':kind==='chest'?'Chest-beating display.':'Preparing ground strike.'}
 function release(){for(const o of action.items){scene.attach(o);flying.push({o,v:new T.Vector3(10,30,65),spin:new T.Vector3(2,.3,1),life:12})}action.released=true}
 let next=1;
 const clock=new T.Clock();
 function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.035);if(!paused){time+=dt;if(auto&&!action&&time>next)choose(['trees','rock','smash','chest'][Math.floor(Math.random()*4)]);
-const walking=action?.target&&action.t<2;
-const cycle=time*5;
-legs.forEach((r,i)=>{const phase=cycle+i*Math.PI;restrict(r.hip,walking?Math.sin(phase)*.4:.1,0,r.s*.08,hipLimits);restrict(r.knee,walking?.22+Math.max(0,-Math.sin(phase))*.65:.18,0,0,kneeLimits);restrict(r.ankle,walking?-Math.sin(phase)*.18:0,0,0,ankleLimits)});
+const walking=action?.target&&action.t<action.walkDuration;
+const cycle=gait.distance*.45;
 restrict(lumbar,walking?.25:.1,Math.sin(time*.7)*.035,0,[[-.4,.45],[-.3,.3],[-.2,.2]]);
 restrict(chest,action?.gripped?-.12:.05,0,walking?Math.sin(cycle)*.035:0,[[-.3,.3],[-.3,.3],[-.15,.15]]);
 restrict(neck,-.05,Math.sin(time*.6)*.1,0,[[-.4,.5],[-.7,.7],[-.25,.25]]);
 g.rotation.y=0;g.position.y=0;head.rotation.x=.06;head.rotation.y=Math.sin(time*.6)*.1;jaw.rotation.x=0;
 const targets=rigs.map(r=>new T.Vector3(r.s*15,7,5));let grip=false;
-if(action){action.t+=dt;const t=action.t,k=action.kind,ease=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*(3-2*x)};
+if(action){action.t+=dt;const t=action.target?Math.max(0,action.t-action.walkDuration+2):action.t,k=action.kind,ease=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*(3-2*x)};
 jaw.rotation.x=.6*Math.sin(Math.min(t,1)*Math.PI/2);
-if(action.target){const goal=action.origin.clone().add(new T.Vector3(12,0,-15));g.position.lerpVectors(action.start,goal,ease(t/2));g.updateMatrixWorld(true);
+if(action.target){const goal=action.origin.clone().add(new T.Vector3(12,0,-15));g.position.lerpVectors(action.start,goal,ease(action.t/action.walkDuration));g.updateMatrixWorld(true);
 const local=g.worldToLocal(action.origin.clone().add(new T.Vector3(0,5,0)));
 const rest=new T.Vector3(-15,7,5);
 if(t<3.2)targets[0].lerpVectors(rest,local,ease((t-2)/1.2));
@@ -109,7 +133,7 @@ if(t>=6.05&&!action.released)release();
 }else if(k==='chest'){targets.forEach((v,i)=>v.set(i===0?-5:5,27,9+Math.max(0,Math.sin(t*12+i*Math.PI))*7));if(Math.sin(t*12)>.96)shake=.25}
 else{const lift=ease(t/1.3),drop=ease((t-1.5)/.35);targets.forEach((v,i)=>v.set(i===0?-12:12,7+lift*40-drop*43,16));if(t>1.85&&!action.hit){damage(g.position.x,g.position.z+16,22);action.hit=true}}
 if(t>(action.target?6.6:3.5)){action=null;next=time+1}}
-rigs.forEach((r,i)=>solve(r,targets[i],grip&&i===0));
+rigs.forEach((r,i)=>solve(r,targets[i],grip&&i===0));stepLegs(dt);
 for(let i=flying.length-1;i>=0;i--){const p=flying[i];p.v.y-=20*dt;p.o.position.addScaledVector(p.v,dt);p.o.rotation.x+=p.spin.x*dt;p.o.rotation.z+=p.spin.z*dt;p.life-=dt;if(p.o.position.y<2||p.life<0){p.o.position.y=1;p.o.rotation.z=Math.PI/2;damage(p.o.position.x,p.o.position.z,14);fallen.push(p.o);flying.splice(i,1)}}
 for(let i=dust.length-1;i>=0;i--){const p=dust[i];p.life-=dt;p.v.y-=22*dt;p.o.position.addScaledVector(p.v,dt);p.o.rotation.x+=dt*4;if(p.life<0||p.o.position.y<0){scene.remove(p.o);p.o.geometry.dispose();dust.splice(i,1)}}
 shake*=.9}
@@ -118,7 +142,7 @@ frame();
 document.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>choose(b.dataset.act));
 $('#auto').onclick=()=>{$('#auto').textContent='Auto rampage: '+((auto=!auto)?'ON':'OFF')};
 $('#pause').onclick=()=>{$('#pause').textContent=(paused=!paused)?'Resume':'Pause'};
-$('#reset').onclick=()=>{for(const o of [...trees,...rocks,...flying.map(p=>p.o),...(action?.items||[]),...scars,...fallen])o.removeFromParent();trees=[];rocks=[];flying=[];scars.length=0;fallen.length=0;action=null;g.position.set(0,0,0);populate()};
+$('#reset').onclick=()=>{for(const o of [...trees,...rocks,...flying.map(p=>p.o),...(action?.items||[]),...scars,...fallen])o.removeFromParent();trees=[];rocks=[];flying=[];scars.length=0;fallen.length=0;action=null;g.position.set(0,0,0);gait.initialized=false;gait.feet=[];gait.last.set(0,0,0);gait.distance=0;populate()};
 const pointers=new Map();let pinch=0;renderer.domElement.onpointerdown=e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});renderer.domElement.setPointerCapture(e.pointerId)};
 renderer.domElement.onpointermove=e=>{const p=pointers.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===1){orbit-=dx*.006;elev=T.MathUtils.clamp(elev+dy*.004,-.08,.9)}else{const [a,b]=[...pointers.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch)distance=T.MathUtils.clamp(distance+pinch-d,65,320);pinch=d}};
 for(const event of ['pointerup','pointercancel'])renderer.domElement.addEventListener(event,e=>{pointers.delete(e.pointerId);pinch=0});
