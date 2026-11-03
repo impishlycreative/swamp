@@ -19,7 +19,7 @@ export function installGlitterBomb({T,renderer,scene,camera,g,physicalScale}) {
  @media(max-width:600px){#missionLabel{max-width:48vw;font-size:10px}#cinemaControls button{padding:8px;font-size:11px}}
  `;document.head.append(style);
  const hud=document.createElement('div');hud.id='cinemaHUD';hud.innerHTML='<div id="missionLabel">ORBITAL GLITTER DIVISION</div><div id="missionTitle"></div><div id="targetHUD"><span>TARGET: COLOSSUS · LIVE FEED</span><div id="deployed">DEPLOYED</div></div><div id="cinemaControls"><button id="cinemaSound">Sound: ON</button><button id="cinemaSkip">Skip sequence</button></div><div id="cinemaFlash"></div>';document.body.append(hud);
- const button=document.createElement('button');button.id='glitter';button.textContent='Glitter Bomb';document.querySelector('nav').prepend(button);
+ const button=document.querySelector('#glitter')||document.createElement('button');button.id='glitter';button.textContent='Glitter Bomb';if(!button.isConnected)document.querySelector('nav').prepend(button);
  const track=new Audio(new URL('./glitter-strut.mp3',import.meta.url));track.preload='auto';track.volume=.8;
  const title=hud.querySelector('#missionTitle'),label=hud.querySelector('#missionLabel'),targetHUD=hud.querySelector('#targetHUD'),deployed=hud.querySelector('#deployed'),flash=hud.querySelector('#cinemaFlash'),sound=hud.querySelector('#cinemaSound');
  let active=false,t=0,started=false,muted=false,caption='',oldHeader='',oldNav='',resources=null;
