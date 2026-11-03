@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090b10">
+  <title>How Dead Are You?</title>
+  <meta name="description" content="A cinematic two-person sick check-in app with a How Dead Are You slider and self-escalation controls.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Sick Bay Status Network</p>
+      <h1>HOW DEAD ARE YOU?</h1>
+      <p class="tagline">Two sick people. One scientifically questionable scale.</p>
+    </div>
+    <button id="editNames" class="ghost-btn" type="button">Edit names</button>
+  </header>
+
+  <main>
+    <section class="intro-panel">
+      <div><strong>Drag right to recover.</strong> Tombstone → bed → crawling → walking → dancing.</div>
+      <div class="legend" aria-hidden="true"><span>🪦</span><span>🛏️</span><span>🧎</span><span>🚶</span><span>💃</span></div>
+    </section>
+
+    <section id="peopleGrid" class="people-grid" aria-label="Sick person check-ins"></section>
+
+    <section class="history-panel">
+      <div class="section-title-row">
+        <div>
+          <p class="eyebrow">Incident log</p>
+          <h2>Recent check-ins</h2>
+        </div>
+        <button id="clearHistory" class="ghost-btn small" type="button">Clear log</button>
+      </div>
+      <div id="history" class="history-list" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <dialog id="nameDialog">
+    <form method="dialog" id="nameForm">
+      <h2>Name the patients</h2>
+      <label>Person 1 <input id="nameA" maxlength="24" autocomplete="off"></label>
+      <label>Person 2 <input id="nameB" maxlength="24" autocomplete="off"></label>
+      <div class="dialog-actions">
+        <button value="cancel" class="ghost-btn">Cancel</button>
+        <button value="default" id="saveNames" class="primary-btn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <footer>
+    <p>This is a humorous wellness check-in, not a medical assessment. If someone may need urgent medical help, use real-world emergency services rather than the app.</p>
+    <p class="credits">Photography: Pexels contributors. Images are loaded remotely and credited in the project README.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
