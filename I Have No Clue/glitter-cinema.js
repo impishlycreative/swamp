@@ -53,8 +53,16 @@ export function installGlitterBomb({T,renderer,scene,camera,g,physicalScale}) {
  function updateFire(strength,seconds){fire.quaternion.copy(parcel.quaternion).invert();fire.scale.setScalar(1);hotCap.scale.set(1+Math.sin(seconds*39)*.08,.38,1+Math.cos(seconds*43)*.08);hotMat.opacity=.65+Math.sin(seconds*47)*.15;flameMaterial.uniforms.strength.value=strength;for(let i=0;i<flameCount;i++){const age=(seconds*(.8+(i%7)*.065)+i*.618034)%1,angle=i*2.39996+seconds*.9,radius=2.1+age*(3+(i%5)*.6);flamePositions[i*3]=Math.cos(angle)*radius+Math.sin(seconds*16+i)*age*1.5;flamePositions[i*3+1]=-1+age*34;flamePositions[i*3+2]=Math.sin(angle)*radius;flameLife[i]=age;flameSize[i]=(2.7+(i%4)*.7)*(1-age*.5)}flameGeo.attributes.position.needsUpdate=true;flameGeo.attributes.life.needsUpdate=true;flameGeo.attributes.size.needsUpdate=true;for(let i=0;i<110;i++){const age=(seconds*1.7+i*.382)%1,angle=i*2.4,r=3+age*14,j=i*6;sparkPoints.array[j]=Math.cos(angle)*r;sparkPoints.array[j+1]=age*42;sparkPoints.array[j+2]=Math.sin(angle)*r;sparkPoints.array[j+3]=Math.cos(angle)*(r+.8);sparkPoints.array[j+4]=age*42+2.2;sparkPoints.array[j+5]=Math.sin(angle)*(r+.8)}sparkPoints.needsUpdate=true;}
  
  const cameraSpace=new T.PerspectiveCamera(48,innerWidth/innerHeight,.1,5000),cameraTarget=new T.PerspectiveCamera(40,1,.2,2000),cameraGround=new T.PerspectiveCamera(50,innerWidth/innerHeight,.2,10000);
- const stage=new T.Scene();stage.background=new T.Color(0x07091c);stage.fog=new T.Fog(0x07091c,300,850);stage.add(new T.HemisphereLight(0xe1eaff,0x141025,2));const key=new T.DirectionalLight(0xffe5ba,4);key.position.set(0,160,130);stage.add(key);for(const s of [-1,1]){const l=new T.PointLight(s<0?0xff47c6:0x23daff,18000,500,2);l.position.set(s*110,70,40);stage.add(l)}
- const floor=mesh(stage,new T.CylinderGeometry(220,230,3,96),new T.MeshStandardMaterial({color:0x15152c,metalness:.5,roughness:.32}),0,-2,0);
+ // Broad, distance-independent stage lighting keeps the full lineup readable,
+// including the wider camera framing on portrait screens.
+ const stage=new T.Scene();stage.background=new T.Color(0x202b46);
+ stage.add(new T.HemisphereLight(0xeaf3ff,0x68718a,3));
+ const key=new T.DirectionalLight(0xffeedb,5);key.position.set(0,100,180);stage.add(key);
+ for(const side of [-1,1]){
+  const fill=new T.DirectionalLight(0xe6f1ff,2.5);fill.position.set(side*180,65,150);stage.add(fill);
+ }
+ const rim=new T.DirectionalLight(0x9bdcff,3);rim.position.set(0,100,-140);stage.add(rim);for(const s of [-1,1]){const l=new T.PointLight(s<0?0xff47c6:0x23daff,18000,500,2);l.position.set(s*110,70,40);stage.add(l)}
+ const floor=mesh(stage,new T.CylinderGeometry(220,230,3,96),new T.MeshStandardMaterial({color:0x36415b,metalness:.3,roughness:.45}),0,-2,0);
  for(let i=0;i<5;i++){const ring=mesh(stage,new T.TorusGeometry(25+i*40,.22,6,100),new T.MeshBasicMaterial({color:i%2?0xff6de5:0x45dfff}),0,0,0);ring.rotation.x=Math.PI/2}
  const stageCam=new T.PerspectiveCamera(45,innerWidth/innerHeight,.2,1600);
  function cloneRig(src){const copy=src.clone(true),a=[],b=[];src.traverse(o=>a.push(o));copy.traverse(o=>b.push(o));const map=new Map(a.map((o,i)=>[o,b[i]]));for(let i=0;i<a.length;i++)if(a[i].isSkinnedMesh){b[i].skeleton=new T.Skeleton(a[i].skeleton.bones.map(bone=>map.get(bone)),a[i].skeleton.boneInverses.map(m=>m.clone()));b[i].bindMatrix.copy(a[i].bindMatrix);b[i].bindMatrixInverse.copy(a[i].bindMatrixInverse)}return copy}
