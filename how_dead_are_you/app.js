@@ -1,14 +1,12 @@
 const STORAGE_KEY = 'howDeadAreYou.v1';
 
 const SCENES = [
-  { key:'grave', min:86, title:'Tombstone', flavour:'Officially dead, according to this deeply unscientific app.', image:'https://images.pexels.com/photos/5953236/pexels-photo-5953236.jpeg?auto=compress&cs=tinysrgb&w=1600' },
-  { key:'bed', min:66, title:'Lying in bed', flavour:'Barely among the living.', image:'https://images.pexels.com/photos/8036757/pexels-photo-8036757.jpeg?auto=compress&cs=tinysrgb&w=1600' },
-  { key:'crawl', min:41, title:'Crawling', flavour:'Mobility achieved. Dignity pending.', image:'https://images.pexels.com/photos/11890374/pexels-photo-11890374.jpeg?auto=compress&cs=tinysrgb&w=1600' },
-  { key:'walk', min:16, title:'Walking', flavour:'Suspiciously functional.', image:'https://images.pexels.com/photos/19989394/pexels-photo-19989394.jpeg?auto=compress&cs=tinysrgb&w=1600' },
-  { key:'dance', min:0, title:'Dancing', flavour:'Returned from the brink.', image:'https://images.pexels.com/photos/6599729/pexels-photo-6599729.jpeg?auto=compress&cs=tinysrgb&w=1600' }
+  { key:'grave', min:86, title:'Tombstone', flavour:'Officially dead, according to this deeply unscientific app.', images:{woman:'https://images.pexels.com/photos/5953236/pexels-photo-5953236.jpeg?auto=compress&cs=tinysrgb&w=1600',man:'https://images.pexels.com/photos/5953236/pexels-photo-5953236.jpeg?auto=compress&cs=tinysrgb&w=1600'} },
+  { key:'bed', min:66, title:'Lying in bed', flavour:'Barely among the living.', images:{woman:'https://images.pexels.com/photos/8036757/pexels-photo-8036757.jpeg?auto=compress&cs=tinysrgb&w=1600',man:'https://images.pexels.com/photos/4114023/pexels-photo-4114023.jpeg?auto=compress&cs=tinysrgb&w=1600'} },
+  { key:'crawl', min:41, title:'Crawling', flavour:'Mobility achieved. Dignity pending.', images:{woman:'https://images.pexels.com/photos/11890374/pexels-photo-11890374.jpeg?auto=compress&cs=tinysrgb&w=1600',man:'https://images.pexels.com/photos/18681152/pexels-photo-18681152.jpeg?auto=compress&cs=tinysrgb&w=1600'} },
+  { key:'walk', min:16, title:'Walking', flavour:'Suspiciously functional.', images:{woman:'https://images.pexels.com/photos/19989394/pexels-photo-19989394.jpeg?auto=compress&cs=tinysrgb&w=1600',man:'https://images.pexels.com/photos/13743142/pexels-photo-13743142.jpeg?auto=compress&cs=tinysrgb&w=1600'} },
+  { key:'dance', min:0, title:'Dancing', flavour:'Returned from the brink.', images:{woman:'https://images.pexels.com/photos/6599729/pexels-photo-6599729.jpeg?auto=compress&cs=tinysrgb&w=1600',man:'https://images.pexels.com/photos/10331639/pexels-photo-10331639.jpeg?auto=compress&cs=tinysrgb&w=1600'} }
 ];
-
-const defaults = { people: [], history: [] };
 
 let state = loadState();
 const grid = document.querySelector('#peopleGrid');
@@ -19,7 +17,7 @@ const addDialog = document.querySelector('#addPersonDialog');
 const addForm = document.querySelector('#addPersonForm');
 let toastTimer;
 
-SCENES.forEach(scene => { const img = new Image(); img.src = scene.image; });
+SCENES.forEach(scene => Object.values(scene.images).forEach(src => { const img = new Image(); img.src = src; }));
 
 function makeId(){ return crypto.randomUUID?.() || `person-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
 function cloneDefaults(){ return {people:[], history:[]}; }
@@ -45,6 +43,7 @@ function loadState(){
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function deadPercent(person){ return 100 - Number(person.slider); }
 function sceneFor(dead){ return SCENES.find(scene => dead >= scene.min) || SCENES.at(-1); }
+function sceneImage(scene,person){ return scene.images[person.gender] || scene.images.woman; }
 function genderLabel(person){ return person.gender === 'man' ? 'Man' : 'Woman'; }
 function fmtTime(value){
   if(!value) return 'No check-in yet';
@@ -77,10 +76,10 @@ function render(){
 }
 
 function cardMarkup(person){
-  const dead = deadPercent(person); const scene = sceneFor(dead);
+  const dead = deadPercent(person); const scene = sceneFor(dead); const image = sceneImage(scene,person);
   const isGrave = scene.key === 'grave';
   return `<article class="person-card" data-person="${person.id}" data-scene="${scene.key}">
-    <div class="scene-photo" style="background-image:url('${scene.image}')"></div><div class="scene-vignette"></div><div class="scene-grade"></div>
+    <div class="scene-photo" style="background-image:url('${image}')"></div><div class="scene-vignette"></div><div class="scene-grade"></div>
     <div class="grave-marker" aria-hidden="${isGrave ? 'false' : 'true'}"><div class="tombstone"><span class="rip">RIP</span><span class="tombstone-name">${escapeHtml(person.name)}</span></div><div class="tombstone-base"></div></div>
     <div class="person-content">
       <div class="card-top">
@@ -122,7 +121,7 @@ function updateCard(card,person){
   card.querySelector('.dead-value').textContent = dead;
   card.querySelector('.stage-title').textContent = scene.title;
   card.querySelector('.flavour').textContent = scene.flavour;
-  card.querySelector('.scene-photo').style.backgroundImage = `url('${scene.image}')`;
+  card.querySelector('.scene-photo').style.backgroundImage = `url('${sceneImage(scene,person)}')`;
   card.querySelector('.death-slider').setAttribute('aria-valuetext',`${dead} percent dead, ${scene.title}`);
   const grave = card.querySelector('.grave-marker');
   grave.setAttribute('aria-hidden',scene.key === 'grave' ? 'false' : 'true');
