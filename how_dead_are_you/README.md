@@ -18,6 +18,7 @@ The percentage moves continuously, while the cinematic background switches at th
 
 - Dynamic sick-person roster: zero or more people
 - Add each person as a **Woman** or **Man**
+- Gender-matched photographic scene sets
 - Remove individual people at any time
 - Large live `% DEAD` display
 - Photographic cinematic scene changes
@@ -34,15 +35,25 @@ This is a static client-side prototype suitable for GitHub Pages. State is store
 
 ## Photography
 
-The prototype loads free stock photography remotely from Pexels:
+The prototype loads free stock photography remotely from Pexels. The scene sets include separate man/woman photography for bed, crawling, walking, and dancing, with a shared cemetery photograph for the tombstone state.
 
-- Tombstone / graveyard: https://www.pexels.com/photo/a-tombstone-on-a-cemetery-5953236/
+Woman scene references:
+
 - Bed: https://www.pexels.com/photo/woman-in-loungewear-lying-on-the-bed-8036757/
 - Crawling / crouching: https://www.pexels.com/photo/woman-crouching-on-the-floor-11890374/
 - Walking: https://www.pexels.com/photo/woman-walking-on-a-street-in-sunlight-19989394/
 - Dancing: https://www.pexels.com/photo/a-woman-dancing-in-the-living-room-6599729/
 
-The current prototype stores Man/Woman as roster metadata; the next visual pass should give each option its own gender-matched photographic scene set.
+Man scene references:
+
+- Bed: https://www.pexels.com/photo/man-in-white-shirt-lying-on-bed-4114023/
+- Crawling / crouching: https://www.pexels.com/photo/man-in-baggy-jeans-crouching-on-the-floor-18681152/
+- Walking: https://www.pexels.com/photo/man-in-shirt-walking-on-street-in-sunlight-13743142/
+- Dancing: https://www.pexels.com/photo/man-dancing-in-living-room-10331639/
+
+Shared tombstone / graveyard:
+
+- https://www.pexels.com/photo/a-tombstone-on-a-cemetery-5953236/
 
 ## Safety note
 
