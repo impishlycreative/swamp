@@ -20,6 +20,23 @@ Enter an address and watch a cinematic approach from space, zooming onto the loc
 - Keep imagery credits visible. Do not assume a publicly viewable map grants permission to reuse its imagery.
 - Imagery provider and licensing remain undecided.
 
+## Consolidated aerial imagery sources
+Initial area: Newcastle, Ontario. Compare these three sources before selecting imagery:
+- Clarington municipal maps: address search and aerial photography; a service labelled 2025 was found. https://www.clarington.net/planning-and-development/maps/
+- Durham Region YourDurham: regional aerial imagery layer. https://geoapps.durham.ca/Geocortex/Essentials/REST/sites/YourDurham/map
+- Geospatial Ontario imagery catalogue: publicly available orthophotography collections, including open data where Ontario owns the rights. https://data.ontario.ca/dataset/open-ontario-imagery
+For each source, verify exact property coverage, capture date, pixel resolution, download/API availability, licence, attribution, and suitability for animated overlays. Viewing access alone is not reuse permission.
+
+## Terrain and topography
+- Add terrain elevation research for Newcastle, alongside aerial imagery.
+- Ontario Digital Terrain Model (Lidar-Derived) represents bare-earth elevations. Verify local tile coverage and resolution: https://data.ontario.ca/dataset/ontario-digital-terrain-model-lidar-derived
+- Durham YourDurham exposes contour layers; inspect Newcastle coverage and available contour intervals.
+- Ontario Provincial Digital Elevation Model is a broader fallback: https://geohub.lio.gov.on.ca/maps/mnrf%3A%3Aprovincial-digital-elevation-model-pdem/about
+- Proposed implementation: drape appropriately licensed aerial imagery over an elevation mesh to show actual hills and slopes during the approach.
+- Bare-earth terrain does not provide detailed 3D houses or trees. Investigate surface models or classified lidar separately if building heights are needed.
+- Verify download formats, coordinate systems, vertical datum, licence and attribution before combining datasets.
+- Newcastle photorealistic Google 3D building coverage remains unverified: the coverage viewer's vector map failed in the research browser.
+
 ## Work stages
 1. Locate and inspect the existing I Have No Clue cinematic code and reusable assets.
 2. Verify imagery coverage, integration options, and licensing for the initial location.
