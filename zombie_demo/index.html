@@ -5,8 +5,8 @@
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script></head>
 <body><main><section aria-label="Zombie controls" class="top-controls"><div class="controls"><button id="left" disabled>↶ Spin left</button><button id="right" disabled>Spin right ↷</button><button id="reset" disabled>Reset view</button><label>Skin <select id="skin" disabled><option value="0">Zombie A</option><option value="1">Zombie C</option></select></label></div>
-<div class="controls" id="animations"><button data-animation="idle" disabled>Idle</button><button data-animation="run" disabled>Run</button><button data-motion="walk" disabled>Walk</button><button data-motion="shamble" disabled>Shamble</button><button data-motion="chicken" disabled>Chicken Dance</button><button data-motion="robot" disabled>Robot Dance</button><button data-animation="jump" disabled>Jump</button><button id="skeleton" disabled aria-pressed="false">Show skeleton</button></div></section><a href="../index.html">← Swamp</a><h1>Zombie Demo</h1><p>Kenney’s animated survivors · Zombie A &amp; Zombie C</p><div id="stage" aria-label="Interactive 3D zombie viewer"><div id="status" role="status">Loading viewer…</div></div>
-<small>Drag to orbit; pinch or scroll to zoom. Arrow keys spin the model. All movement stays in place. Model and textures: Kenney, CC0.</small></main>
+<div class="controls" id="animations"><button data-animation="idle" disabled>Idle</button><button data-animation="run" disabled>Run</button><button data-motion="walk" disabled>Walk</button><button data-motion="shamble" disabled>Shamble</button><button data-motion="chicken" disabled>Chicken Dance</button><button data-motion="robot" disabled>Robot Dance</button><button data-animation="jump" disabled>Jump</button><button id="dismember" disabled>Dismember</button><button id="reassemble" disabled>Reassemble</button><button id="skeleton" disabled aria-pressed="false">Show skeleton</button></div></section><a href="../index.html">← Swamp</a><h1>Zombie Demo</h1><p>Kenney’s animated survivors · Zombie A &amp; Zombie C</p><div id="stage" aria-label="Interactive 3D zombie viewer"><div id="status" role="status">Loading viewer…</div></div>
+<small>Drag to orbit; pinch or scroll to zoom. Arrow keys spin the model. Movement stays in place. Dismember drops a random limb; the zombie stops to stare, then falls if it lost a leg. Reassemble restores it. Model and textures: Kenney, CC0.</small></main>
 <script type="module">
 const status=document.querySelector('#status');
 try {
@@ -27,20 +27,24 @@ try {
  const box=new THREE.Box3().setFromObject(model);const center=box.getCenter(new THREE.Vector3());model.position.set(-center.x,-box.min.y,-center.z);
  const pivot=new THREE.Group();pivot.add(model);scene.add(pivot);const skeleton=new THREE.SkeletonHelper(model);skeleton.visible=false;scene.add(skeleton);
  const {ZombieMotion}=await import('./motion.js');const motion=new ZombieMotion(model,pivot);
+ const {Dismemberment,LossReaction}=await import('./dismember.js');const parts=new Dismemberment(model,pivot,scene);let reaction;
  const mixer=new THREE.AnimationMixer(model);const actions={};let active;let mode='idle';
- function selectMode(name){mixer.stopAllAction();active=undefined;mode=name;motion.setMode(name);document.querySelectorAll('[data-motion],[data-animation]').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.motion||b.dataset.animation)===name)));}
+ function selectMode(name){if(reaction?.busy&&name!=='idle')return;mixer.stopAllAction();active=undefined;mode=name;motion.setMode(name);document.querySelectorAll('[data-motion],[data-animation]').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.motion||b.dataset.animation)===name)));}
  document.querySelectorAll('[data-motion]').forEach(b=>{b.disabled=false;b.onclick=()=>selectMode(b.dataset.motion);});
  for(const name of ['idle','run']){const b=document.querySelector(`[data-animation="${name}"]`);b.disabled=false;b.onclick=()=>selectMode(name);}selectMode('idle');
  function play(name){if(name!=='jump'){selectMode(name);return;}const next=actions.jump;if(!next)return;selectMode('jump');active=next;next.reset().play();}
  mixer.addEventListener('finished',()=>selectMode('idle'));
+ reaction=new LossReaction(motion,parts,selectMode,message=>{status.textContent=message;});
+ document.querySelector('#dismember').onclick=()=>{if(reaction.busy)return;const previous=mode;const piece=parts.random();if(piece)reaction.start(piece,previous);else status.textContent='No limbs left to detach. Press Reassemble.';};
+ document.querySelector('#reassemble').onclick=()=>reaction.reset();
  document.querySelector('#skin').onchange=e=>{material.map=textures[Number(e.target.value)];material.needsUpdate=true;};
  const spin=d=>{pivot.rotation.y+=d*Math.PI/8;};document.querySelector('#left').onclick=()=>spin(-1);document.querySelector('#right').onclick=()=>spin(1);
  document.querySelector('#reset').onclick=()=>{pivot.rotation.y=0;camera.position.set(0,1.3,4.4);controls.target.set(0,.95,0);controls.update();};
  document.querySelector('#skeleton').onclick=e=>{skeleton.visible=!skeleton.visible;e.target.setAttribute('aria-pressed',String(skeleton.visible));e.target.textContent=skeleton.visible?'Hide skeleton':'Show skeleton';};
  window.addEventListener('keydown',e=>{if(e.target.matches('select,input,textarea'))return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();spin(e.key==='ArrowLeft'?-1:1);}});
- for(const id of ['left','right','reset','skin','skeleton'])document.getElementById(id).disabled=false;
+ for(const id of ['left','right','reset','skin','skeleton','dismember','reassemble'])document.getElementById(id).disabled=false;
  function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(stage);resize();
- const clock=new THREE.Clock();renderer.setAnimationLoop(()=>{const dt=Math.min(clock.getDelta(),.1);if(mode==='jump'){mixer.update(dt);const hips=motion.hips,rest=motion.rest.get(hips).p;hips.position.x=rest.x;hips.position.z=rest.z;}else motion.update(dt);controls.update();renderer.render(scene,camera);});status.textContent='';
+ const clock=new THREE.Clock();renderer.setAnimationLoop(()=>{const dt=Math.min(clock.getDelta(),.1);parts.update(dt);if(reaction.busy){reaction.update(dt);}else if(mode==='jump'){mixer.update(dt);const hips=motion.hips,rest=motion.rest.get(hips).p;hips.position.x=rest.x;hips.position.z=rest.z;}else motion.update(dt);document.querySelector('#dismember').disabled=reaction.busy||parts.available().length===0;document.querySelectorAll('[data-motion],[data-animation]').forEach(b=>{b.disabled=reaction.busy||((b.dataset.animation==='jump')&&!actions.jump);});controls.update();renderer.render(scene,camera);});status.textContent='';
  const results=await Promise.allSettled(['jump'].map(async name=>{const source=await loader.loadAsync(`assets/${name}.fbx`);const clip=source.animations[0];if(!clip)throw new Error(`No ${name} animation`);clip.name=name;const action=mixer.clipAction(clip);if(name==='jump'){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}actions[name]=action;const button=document.querySelector(`[data-animation="${name}"]`);button.disabled=false;button.onclick=()=>play(name);}));
  if(results.some(r=>r.status==='rejected'))status.textContent='Model ready. Jump could not load; the other motion modes are ready.';
 } catch(error){console.error(error);status.textContent='The viewer could not load. Check your connection and WebGL support, then reload. '+error.message;}
