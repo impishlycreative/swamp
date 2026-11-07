@@ -2,7 +2,7 @@
 
 **Created:** 2026-11-07  
 **Updated:** 2026-11-07  
-**Status:** Design requirements agreed; initial V3 offline-guided preview implemented in the Swamp GitHub repository (full local AI integration pending)  
+**Status:** PWA-first design requirements agreed; deterministic V3 guided preview implemented (installable PWA packaging and browser-native AI pending)  
 **Project:** Swamp / MindMap V3 (evolution of MindMap V2)
 
 ## 1. Problem Statement
@@ -17,7 +17,7 @@ When the user does not have a topic, V3 should guide them toward something they 
 
 ### R2 — Apply Established Story-Writing Rules to Strict Brainstorming
 
-Anything designated **Strict Brainstorming** must follow the user's established story-writing rules. Those rules should be treated as an authoritative input for the guidance process, not recreated from guesses. Exact rule text, precedence, and how the rules apply outside story writing need validation before implementation.
+Anything designated **Strict Brainstorming** must follow the user's established story-writing rules. The source has been located in the ChatGPT Library as `story rules.md` and copied into the canonical application as `MindMap/story-rules.md` for local/offline reference. Do not recreate those rules from guesses. How the story-specific rules apply to non-story brainstorming, conflict precedence, and full behavioural enforcement still require validation.
 
 ### R3 — Strict Brainstorming Is Default, but Can Be Toggled
 
@@ -92,7 +92,7 @@ A local interpretation component would identify changes in meaning and recommend
 
 **Key architectural separation:** Deterministic rules/state/persistence should work independently of any cloud API. Semantically rich interpretation and question generation need an adequate local model or a separately designed offline fallback.
 
-## 6. Recommended Offline AI Approach (Recommendation — Not Yet Approved)
+## 6. Offline AI Architecture (PWA Direction Approved; Model and Runtime Pending)
 
 **Recommendation:** Design MindMap V3 to use an **interchangeable local language-model backend**. Begin the evaluation with **Qwen 3.5 2B** (lightweight baseline) and **Qwen 3.5 4B** (stronger-quality candidate), preferably with approximately 4-bit quantization. Model availability, exact variant names, compatibility, distribution terms and third-party quantization licences must be verified before adoption.
 
@@ -151,11 +151,11 @@ Run **30–50 representative MindMap V3 scenarios**, including multi-turn and re
 
 ## 8. Open Design Details
 
-- Confirm the exact source and wording of the established story-writing rules and how strict mode interprets them for non-story topics.
+- Validate the bundled `MindMap/story-rules.md` against the authoritative Library `story rules.md`; decide how strict mode applies those story-specific rules to non-story brainstorming and resolves conflicts. The rules source is known, but complete enforcement is not yet tested.
 - Define an unambiguous set of review-flag types, presentation, severity, and resolution behavior.
 - Decide how the assistant categorizes, revises or links nodes without changing the meaning of the user's answer.
 - Decide whether the one-question-at-a-time conversation lives next to the canvas, in a panel, or in another arrangement.
-- Decide what is saved per map and whether the strict-mode toggle is per map, per session or global.
+- Review the preview's **per-map** strict-mode toggle and saved guidance state; confirm that this scope is the desired final behaviour and define how a mode switch affects later answers without rewriting previous work.
 - Review V2 behavior to preserve it unless superseded by an explicit V3 decision.
 - Evaluate the recommended Qwen 3.5 2B/4B candidates against 30–50 offline brainstorming scenarios; decide the local model and runtime only after measuring quality, speed and memory use.
 - Define browser model delivery/download, persistent storage, minimum hardware/browser requirements, WebGPU/CPU fallback, offline-readiness checks, and graceful behaviour when inference is unsupported or too slow.
@@ -163,8 +163,8 @@ Run **30–50 representative MindMap V3 scenarios**, including multi-turn and re
 
 ## 9. Scope and Change Control
 
-- Items in Section 2 (R1–R7) are approved **design requirements**. Some have partial preview implementations; none should be considered fully accepted until end-to-end validation.
-- The detailed interaction flow, AI model/runtime selections and optional companion integration remain provisional; the PWA-first direction is confirmed.
+- Items in Section 2 (R1–R8) are approved **design requirements**. Some have partial preview implementations; none should be considered fully accepted until end-to-end validation.
+- The detailed interaction flow, AI model/runtime selections and optional companion integration remain provisional; **the PWA-first deliverable, browser-native-AI-first evaluation and no-required-native-launcher constraint are approved**.
 - Repository implementation began 2026-11-07 in `impishlycreative/swamp` on `master`; see the implementation checkpoint below. Browser deployment and offline acceptance have not been confirmed.
 
 
@@ -172,7 +172,7 @@ Run **30–50 representative MindMap V3 scenarios**, including multi-turn and re
 
 **Repository:** `impishlycreative/swamp`  
 **Canonical app:** `MindMap/` (`MindMap/index.html`)  
-**Current preview commit:** `3ab88ae58b970cee5bedb582d7bfaafd26be2fba`  
+**V3 preview implementation baseline commit:** `3ab88ae58b970cee5bedb582d7bfaafd26be2fba` (subsequent documentation-only commits do not change this code baseline)  
 **Runtime version:** `3.4.0-alpha.1`, defined in one place: `MindMap/core-stability.js`. Other runtime modules consume the exported value.  
 **Rollback:** Original app recoverable from Git history; `mindmap v2/` remains intact as the baseline/reference.
 
@@ -189,3 +189,16 @@ Implemented in the V3 preview:
 - Added V3 smoke checks and preserved V2 regression tests. JavaScript syntax and regression/smoke checks passed in a JavaScript harness, but a browser/device acceptance pass remains outstanding.
 
 **Not yet implemented:** Browser-native on-device Qwen or other model; an installable PWA manifest/icons and complete offline model delivery; semantic contradiction and relationship detection; model-driven adaptive questions; guarantee of durable offline storage where the browser may evict assets; and full offline model-performance tests. The guided implementation is intentionally deterministic and must not be represented as having those capabilities. Supplemental V2 writer modules exist in the V2 file set but were not wired into the original V2 HTML loader; enabling them remains a separate integration test, particularly under Strict Brainstorming.
+
+
+## 11. Architecture Decision Record — 2026-11-07
+
+**Approved:** MindMap V3 is a browser-installable, cross-platform PWA, with an offline-first experience after first-time application and model setup. The ordinary user must not need Ollama, `llama.cpp`, `llama-server`, a Windows launcher or another native executable. The PWA's rules, map data, author-established facts and decision state are local, authoritative application data.
+
+**Priority for evaluation:** Implement an interchangeable inference interface and benchmark browser-native WebGPU inference first, testing WebAssembly/CPU support where feasible. Qwen 3.5 2B and 4B are candidate models pending browser compatibility, hardware, quality and licence checks; neither has been selected as the shipping model.
+
+**Optional, not required:** Allow an advanced user to connect to a separately installed and running local `llama.cpp`/Ollama-compatible API if practical and secure. A PWA cannot spawn this native backend itself. No proposed desktop launcher should be added to the required/default deployment without an explicit change to this decision.
+
+**Implementation gap:** The present service-worker shell is **not** a fully installable PWA. Manifest/icons, robust offline cache and model persistence, browser inference, storage recovery and device-level offline acceptance testing remain outstanding. The deterministic guide does not yet provide the semantic understanding promised by full V3.
+
+**Documentation consistency:** This section supersedes any earlier wording in this plan that implies `llama.cpp` is the preferred *required* runtime or that the default product is a Windows executable.
