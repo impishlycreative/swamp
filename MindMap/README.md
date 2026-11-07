@@ -1,192 +1,40 @@
-# MindMap 2.7.1
+# MindMap V3 preview
 
-A local-first brainstorming and mind-mapping workspace for Swamp.
+This directory is the **canonical Swamp MindMap application**. On 2026-11-07, the complete original `mindmap v2/` tree was promoted to `MindMap/` and a first V3 guided-brainstorming layer was added. `mindmap v2/` is preserved unchanged for comparison; the original `MindMap/` content is recoverable from Git history.
 
-## Projects, maps, and ideas
+## Single source of truth for the application version
 
-MindMap uses three distinct levels:
+Only `MindMap/core-stability.js` defines the runtime semantic version (`const VERSION`). The module exposes `window.SWAMP_MINDMAP_VERSION`; `app.js` and `v2-experience.js` consume that value. HTML contains no separate semantic version. The product name "V3 preview" is a release-stage label, not an additional version number. Asset query build keys are cache invalidation identifiers, not application versions.
 
-- **Project** — the container for a related collection of maps.
-- **Map** — one mind map inside the current project. The top map selector switches between maps in that project.
-- **Root / central idea** — the central bubble inside a map. It is an idea inside the map, not the project itself.
+## What works now
 
-The mobile **More** panel contains project controls for switching projects, creating a **New project**, and renaming the current project. Existing browser data is automatically registered as the first project. Each project is stored separately in browser storage, while the active project is loaded into the existing MindMap workspace key for compatibility with the rest of the application.
+- Complete V2 functionality: editing, templates, Writer's Navigator, Story Walk, focus, layout, relationships, story health, JSON/Word/PDF export, mobile UI.
+- Local guided brainstorming panel, opened from **Guide**, with **Strict brainstorming ON by default for each map**, switchable without discarding content.
+- One **neutral procedural question** at a time, with user-authored answers recorded verbatim in a persistent per-map question/answer history.
+- Automatic creation of nodes under the chosen focus branch; an empty untitled root uses the first answer as its topic. The user can change focus to the selected idea or back to the root.
+- User-entered review flags, explicit-uncertainty flags, visible node markers, and resolve actions. Flags appear in V2 Story Health via `writer.flags`.
+- Local-first map persistence and offline service-worker precaching after first successful online visit; no server-side account/API requirement for guided capture.
 
-Creating a **New map** adds another map to the current project. It does not delete or replace the other maps. New Map now asks for confirmation before creating the map.
+## Important limitations
 
-## Core interaction
+- **No language model is bundled.** The first guided experience is deterministic and cannot reliably infer semantic gaps, contradictions, or sophisticated organization. It does not invent content or pose leading questions. Full situational AI is a future phase.
+- **Offline availability requires a successful initial asset precache** from an HTTPS origin. Browser cache eviction may remove the assets; backup your maps using JSON export. No offline installer is packaged yet.
+- The app currently uses browser localStorage. V3's stronger persistent storage, sync/backup, and offline model integration are not complete.
+- Strict Brainstorming uses the author's `story-rules.md`, captured locally in this directory. It conservatively collects and organizes user-authored text only.
 
-- Start from a central concept.
-- Select an idea and use **Add Idea**, its on-canvas `+`, double-click, or double-tap to create a child idea.
-- Click a node to select it. Dragging and clicking are handled separately so a stationary click selects while a real pointer movement remains a drag.
-- Click directly on an idea's existing text to edit it inline without opening the properties panel.
-- Pressing **Enter** while using the inline text editor commits the edit and does **not** create another idea.
-- Click a connection line or its existing label to add, edit, remove, or relabel the connection text inline.
-- Drag a non-root idea onto another idea to re-parent the entire branch; all descendants move with it.
-- Undo is available from the toolbar and with `Ctrl/Cmd+Z`.
-- Deleting an idea asks for confirmation before removing the idea and its descendants.
+## Remaining V3 implementation
 
-## Mobile editing
+1. Add interchangeable on-device inference; benchmark Qwen 3.5 2B and 4B on target laptops after licence and runtime validation.
+2. Use the local inference layer to interpret answers, propose labels and relationships as unconfirmed, and detect possible contradictions/gaps without hijacking the current direction.
+3. Build a validated Situation Model with established facts, user-approved decisions, inferred hypotheses, and explicit review flags; prevent unconfirmed inferences from becoming canon.
+4. Add rigorous offline/restart/storage migration tests and durable offline packaging.
+5. Run the 30–50-case model acceptance suite described in `V3_PLAN.md`.
 
-Mobile remains canvas-first and uses a compact bottom sheet for editing.
+## Testing
 
-The Edit Idea flow is transactional:
+```bash
+node MindMap/tests/regression-tests.js
+node MindMap/tests/v3-smoke-tests.js
+```
 
-- **Done** keeps the text and description changes.
-- **Cancel** restores the values that were present when the edit sheet opened.
-- The close `X` behaves like Cancel while the edit sheet is open.
-- The edit sheet does not depend on the swipe handle as its only way out.
-
-The bottom node-context bar remains the primary place for node actions: **Idea**, **Rapid**, **Edit**, **Focus**, and **More**. Duplicate **Add Idea** and **Center here** actions are hidden from the node More sheet on mobile.
-
-## Mobile top toolbar
-
-Common workspace actions are directly accessible:
-
-- Undo
-- Search
-- Center selected idea
-- New map
-- Save / Share / Export
-- Open / Import
-- Lock
-- More
-
-The redundant top Add Idea control is hidden on mobile because Add Idea already exists in the selected-node context bar. The toolbar uses compact controls on narrow screens.
-
-The mobile **More** panel closes when the user taps outside it. The Save button also releases its pressed/focus state after use instead of remaining visually highlighted.
-
-## Rapidfire brainstorming
-
-Rapidfire is designed for entering many sibling ideas without repeatedly reselecting the same parent.
-
-1. Select the node that should receive the ideas.
-2. Start **Rapidfire** with the lightning control.
-3. Enter an **Idea** and optional **Description**.
-4. Press **Enter** in the Idea field or click the checkmark to accept it.
-5. The new idea is added as a child of the original parent, the fields clear, the session count increases, and focus returns to the Idea field.
-6. Continue until you press **Esc** or choose **Exit**.
-
-Rapidfire behavior:
-
-- The original node remains the parent for the entire session.
-- Each accepted idea becomes a sibling under that parent.
-- **Enter** accepts an idea.
-- **Shift+Enter** inserts a newline in the Idea field.
-- The counter tracks ideas added during the current Rapidfire session.
-- Idea and Description fields clear after each accepted entry.
-- Rapidfire can also be armed first and then assigned to the next node selected.
-
-## Idea text and descriptions
-
-Each idea has two separate content fields:
-
-- **Idea text** is the concise text shown inside the bubble.
-- **Description** is longer supporting information, notes, context, or detail shown in the idea properties panel rather than inside the bubble.
-
-Descriptions are autosaved, undoable, included in JSON export/import, and searchable. A bubble with a non-empty description shows a notes indicator.
-
-## Layout and organization
-
-- First-level ideas distribute automatically around the central idea.
-- Secondary and deeper ideas prefer the outward-facing hemisphere from their parent.
-- Child fan and distance increase as sibling count grows.
-- A lightweight collision pass pushes conflicting children outward while preserving sibling order.
-- Re-parenting a branch preserves all descendants.
-- Branches can be collapsed or isolated with Focus mode.
-- Search, center, fit, pan, and zoom are built in.
-
-## Story templates
-
-Story templates can generate an overview map plus dedicated maps for individual beats. Linked beat nodes open their corresponding brainstorming maps. Current built-in templates include Three-Act Structure, Save the Cat, and Hero's Journey.
-
-## Search
-
-- Search matches idea text and descriptions.
-- Clicking away from the search panel dismisses it on desktop and touch devices.
-- Selecting a search result selects and centers the matching node.
-
-## Save, share, and export
-
-The Save / Share / Export control offers:
-
-- **Current map (`.mindmap.json`)** — one map with hierarchy, descriptions, linked-map references, manual positions, and view state.
-- **Complete project (`.mindmap-project.json`)** — every map in the current project, including template maps, links, positions, and viewport state.
-- **Word outline (`.docx`)** — the current map as hierarchical text with descriptions.
-- **Visual map (PDF)** — the current bubble map through the browser print/PDF workflow.
-
-### Google Drive and OneDrive
-
-MindMap does not pretend that a static browser page can force a specific cloud provider. Instead:
-
-- On supported desktop browsers, the native **Save As** picker can target a local folder or a synced Google Drive / OneDrive folder.
-- On supported mobile browsers, the native system share sheet is used for exported files. If Google Drive or OneDrive is installed and available as a provider, it can be selected there.
-- If neither mechanism is supported, MindMap falls back to a normal browser download.
-
-The export dialog explains this flow so users know whether they are saving, sharing to cloud storage, or downloading.
-
-## Open / import
-
-Import accepts either:
-
-- a single map, which is added to the current project; or
-- a complete project file, which replaces the active project after confirmation.
-
-Open / Import is directly accessible from the mobile top toolbar.
-
-## Persistence
-
-MindMap is local-first and autosaves to browser `localStorage`.
-
-Project management adds a small project registry plus a separate storage entry for each project. The currently selected project is mirrored into the established MindMap project key so existing map, template, export, and session code continues to work.
-
-JSON export remains the portable backup/transfer mechanism. Browser storage should not be treated as the only long-term backup.
-
-## Workspace lock
-
-The static build includes a browser-local workspace lock using Web Crypto PBKDF2. This is a local privacy gate, not server-backed multi-user authentication.
-
-A refresh in the same browser session stays unlocked. Deliberately pressing **Lock** clears the session unlock so the passphrase is required again.
-
-## Interaction-budget rule
-
-- Common actions: 1 interaction whenever the context is already selected.
-- Routine/secondary actions: no more than 2 interactions.
-- Anything else: 3 interactions maximum.
-- The same budget applies on desktop and mobile.
-
-## Current version notes
-
-### 2.7.1
-
-- Added local **multi-project** management: create, rename, switch, and persist separate projects.
-- Clarified the hierarchy as **Project → Map → root/central idea**.
-- Added confirmation before creating a new map.
-- Added transactional mobile Edit Idea controls: **Cancel** and **Done**.
-- Put **Open**, **Lock**, and **Center** directly on the mobile top toolbar alongside Save and New Map.
-- Removed redundant mobile Add Idea and Center actions from More.
-- Made the top More panel dismiss when tapping outside it.
-- Fixed the mobile Save control remaining visually highlighted after use.
-- Clarified Google Drive / OneDrive saving through the native Save As picker or mobile share sheet.
-- Tightened mobile toolbar spacing for narrow screens.
-
-### 2.6.x
-
-- Added session-only refresh unlock while preserving explicit Lock behavior.
-- Added story-template beat help and focused beat navigation.
-- Tightened map layout and reduced excessive whitespace.
-- Improved concise brainstorming examples and Rapidfire exit wording.
-
-### 1.8.5
-
-- Restored multi-format Save/Export: structural JSON, hierarchical Word `.docx`, and visual PDF.
-- Word export preserves root-to-branch hierarchy and includes node descriptions.
-- Added a Save/Export format chooser on desktop and mobile.
-
-## Design principle
-
-The map should dominate the screen. Important actions should be immediate and discoverable rather than buried in menus.
-
-## Maintenance rule
-
-Update `MindMap/README.md` whenever a user-visible MindMap feature, interaction, layout rule, persistence behavior, mobile behavior, export behavior, or version changes.
+These tests are available in the repository; they must be run in a Node environment before release. No browser-based acceptance test has been performed in this initial promotion.

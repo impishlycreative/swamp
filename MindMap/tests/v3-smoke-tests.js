@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const base=path.resolve(__dirname,'..');
+const read=name=>fs.readFileSync(path.join(base,name),'utf8');
+const core=require('../core-stability.js');
+assert(/^3\.4\.0-alpha\.1$/.test(core.VERSION),'unexpected app version');
+assert(read('app.js').includes('const VERSION=window.SWAMP_MINDMAP_VERSION;'),'base app must consume version source');
+assert(read('v2-experience.js').includes('const VERSION=window.SWAMP_MINDMAP_VERSION;'),'V2 features must consume version source');
+assert(!/const VERSION='\d/.test(read('v2-experience.js')),'V2 feature module cannot carry another hard-coded version');
+assert(read('index.html').indexOf('core-stability.js')<read('index.html').indexOf('app.js'),'core must initialize first');
+assert(read('index.html').includes('v3-guided.js'),'V3 guide must load');
+for(const item of ['Strict brainstorming','v3Guidance','s.turns.push','addReviewFlag','neutralQuestion','local','serviceWorker'])
+  assert(read('v3-guided.js').includes(item)||read('v3-guided.js').includes(item.toLowerCase()),'missing V3 element: '+item);
+assert(read('story-rules.md').includes('No leading questions.'),'strict rules file missing');
+assert(read('service-worker.js').includes("cache.addAll(ASSETS)"),'offline shell must precache assets');
+console.log('MindMap V3 preview smoke tests passed');

@@ -14,6 +14,25 @@ window.addEventListener('DOMContentLoaded',()=>{
   const safeName=value=>String(value||'mindmap').replace(/[<>:"/\\|?*\x00-\x1F]/g,'_').trim().slice(0,80)||'mindmap';
   const mapName=map=>map?.nodes?.[map.rootId]?.text||map?.title||'mindmap';
   const childrenOf=(map,id)=>Object.values(map?.nodes||{}).filter(n=>n.parentId===id);
+  const DETAIL_LABELS={
+    traits:'Traits',abilities:'Abilities',goals:'Goals',backstory:'Backstory',relationships:'Relationships',secrets:'Secrets',other:'Other',
+    events:'Events',conflict:'Conflict',characters:'Characters',setting:'Setting',outcome:'Outcome',purpose:'Purpose',questions:'Questions',
+    details:'Details',history:'History',dangers:'Dangers',uses:'Story use',discovery:'Discovery',meaning:'Meaning',misdirection:'Misdirection',
+    payoff:'Payoff',truth:'Truth',who_knows:'Who knows',consequences:'Consequences',plant:'What is planted',promise:'Promise',
+    result:'Result',reveal:'Reveal',connections:'Connections',problems:'Problems',facts:'Facts',sources:'Sources',ideas:'Ideas',setup:'Setup'
+  };
+  const detailLabel=key=>DETAIL_LABELS[key]||String(key||'Details').replace(/_/g,' ').replace(/^./,c=>c.toUpperCase());
+  const detailsOf=node=>{
+    const details=node?.writer?.details;
+    if(!details||typeof details!=='object'||Array.isArray(details))return[];
+    return Object.entries(details).map(([key,items])=>({
+      label:detailLabel(key),
+      items:(Array.isArray(items)?items:[]).map(item=>({
+        text:String(item?.text||'').trim(),
+        description:String(item?.description||'').trim()
+      })).filter(item=>item.text||item.description)
+    })).filter(group=>group.items.length);
+  };
 
   function hierarchyRows(map,project){
     const rows=[];
@@ -27,7 +46,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
       const nextPath=new Set(path);
       nextPath.add(key);
-      rows.push({text:node.text||'Untitled',description:node.description||'',depth});
+      rows.push({text:node.text||'Untitled',description:node.description||'',details:detailsOf(node),depth});
 
       childrenOf(currentMap,id).forEach(child=>walk(currentMap,child.id,depth+1,nextPath));
 
@@ -51,6 +70,25 @@ window.addEventListener('DOMContentLoaded',()=>{
     return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   }
 
+  function appendDetails(paras,row){
+    if(!row.details?.length)return;
+    const baseLeft=Math.min(6840,(row.depth+1)*360);
+    paras.push(`<w:p><w:pPr><w:ind w:left="${baseLeft}"/><w:spacing w:before="80" w:after="40"/></w:pPr><w:r><w:rPr><w:b/></w:rPr><w:t>Details</w:t></w:r></w:p>`);
+    row.details.forEach(group=>{
+      const groupLeft=Math.min(7200,(row.depth+2)*360);
+      paras.push(`<w:p><w:pPr><w:ind w:left="${groupLeft}"/><w:spacing w:before="50" w:after="20"/></w:pPr><w:r><w:rPr><w:b/></w:rPr><w:t xml:space="preserve">${xmlEsc(group.label)}</w:t></w:r></w:p>`);
+      group.items.forEach(item=>{
+        const itemLeft=Math.min(7560,(row.depth+3)*360);
+        const text=item.text||item.description;
+        paras.push(`<w:p><w:pPr><w:ind w:left="${itemLeft}"/><w:spacing w:after="20"/></w:pPr><w:r><w:t xml:space="preserve">• ${xmlEsc(text)}</w:t></w:r></w:p>`);
+        if(item.text&&item.description){
+          const noteLeft=Math.min(7920,(row.depth+4)*360);
+          paras.push(`<w:p><w:pPr><w:ind w:left="${noteLeft}"/><w:spacing w:after="40"/></w:pPr><w:r><w:rPr><w:i/></w:rPr><w:t xml:space="preserve">${xmlEsc(item.description)}</w:t></w:r></w:p>`);
+        }
+      });
+    });
+  }
+
   function wordDocumentXml(map,project){
     const paras=[];
     hierarchyRows(map,project).forEach(row=>{
@@ -61,6 +99,7 @@ window.addEventListener('DOMContentLoaded',()=>{
         const descLeft=Math.min(6840,(row.depth+1)*360);
         paras.push(`<w:p><w:pPr><w:ind w:left="${descLeft}"/><w:spacing w:after="100"/></w:pPr><w:r><w:t xml:space="preserve">${xmlEsc(row.description)}</w:t></w:r></w:p>`);
       }
+      appendDetails(paras,row);
     });
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${paras.join('')}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080"/></w:sectPr></w:body></w:document>`;
   }

@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MindMap 2.9.2 — Swamp</title>
-<meta name="description" content="A local-first brainstorming and mind-mapping workspace with multiple projects and maps, templates, rapid capture, saved layouts, and project export.">
+<title>MindMap — Swamp</title>
+<meta name="description" content="Swamp MindMap V3 preview: local-first mind mapping with V2 writer tools and guided brainstorming.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<link rel="stylesheet" href="style.css?v=2.8.1">
-<link rel="stylesheet" href="toolbar-system.css?v=1.0.0">
+<link rel="stylesheet" href="style.css?build=20261107v3">
+<link rel="stylesheet" href="toolbar-system.css?build=20261107v3">
+<link id="v2ExperienceStyle" rel="stylesheet" href="v2-experience.css?build=20261107v3">
 <style>
 #rapidfireBtn.rapid-active{background:#6f5518;border-color:#6f5518;color:#fff}
 .context-btn.rapid-active{background:#f0e5c5;color:#6f5518}
@@ -41,13 +42,14 @@
 .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:46px;min-height:28px;padding:2px 8px;border:1px solid var(--line);border-bottom-width:2px;border-radius:8px;background:#fff;font-size:.76rem;font-weight:850;color:var(--muted)}
 .project-note{font-size:.78rem;color:var(--muted);margin-top:10px}
 </style>
+<link rel="stylesheet" href="v3-guided.css?build=20261107v3">
 </head>
 <body>
 <div id="auth" class="auth"><div class="card"><div class="mark"></div><h2 id="authTitle">Private workspace</h2><p id="authCopy">Create a local workspace lock. Your project stays in this browser unless you export it.</p><form id="authForm"><div class="field"><label>Name</label><input id="displayName" class="input" maxlength="80" autocomplete="username"></div><div class="field"><label>Passphrase</label><input id="passphrase" class="input" type="password" minlength="6" autocomplete="current-password" required></div><button id="authSubmit" class="btn primary" type="submit">Create workspace</button></form><div class="auth-foot">Browser-local lock only; no credentials or map data are sent to a server.</div></div></div>
 
 <div id="app" class="app hidden">
 <header id="desktopToolbar" aria-label="MindMap toolbar">
-  <div class="tb-brand"><div class="tb-brand-mark" aria-hidden="true"></div><div class="tb-brand-copy"><strong>MindMap</strong><small data-toolbar-version>Swamp</small></div></div>
+  <div class="tb-brand"><div class="tb-brand-mark" aria-hidden="true"></div><div class="tb-brand-copy"><strong>MindMap</strong><small data-toolbar-version>Loading version</small></div></div>
   <div class="tb-row">
     <select id="desktopMapSelect" class="tb-select" aria-label="Current mind map"></select>
     <button class="tb-button tb-primary" type="button" data-toolbar-target="addBtn" title="Add idea">＋ Add Idea</button>
@@ -66,7 +68,6 @@
     <button class="tb-button tb-icon" type="button" data-toolbar-target="lockBtn" title="Lock" aria-label="Lock">⌾</button>
   </div>
 </header>
-
 <header id="mobileToolbar" aria-label="MindMap mobile toolbar">
   <select id="mobileMapSelect" class="tb-select" aria-label="Current mind map"></select>
   <button class="tb-button" type="button" data-toolbar-target="undoBtn" title="Undo" aria-label="Undo">↶</button>
@@ -125,20 +126,31 @@
 <div id="rapidfireDialog" class="modal rapidfire-modal hidden" role="dialog" aria-modal="true" aria-labelledby="rapidfireTitle"><div class="card rapidfire-card"><div class="rapidfire-head"><div><h2 id="rapidfireTitle">Rapidfire</h2><p id="rapidfireParent">Adding ideas</p></div><div id="rapidfireCount" class="rapidfire-count" title="Ideas added this session">0</div></div><form id="rapidfireForm"><div class="field"><label for="rapidfireIdea">Idea</label><textarea id="rapidfireIdea" maxlength="500" required autocomplete="off" placeholder="One short idea"></textarea></div><div class="field"><label for="rapidfireDescription">Description <span style="text-transform:none;letter-spacing:0;font-weight:650">(optional)</span></label><textarea id="rapidfireDescription" maxlength="5000" placeholder="Optional short note"></textarea></div><div class="rapidfire-actions"><button id="rapidfireCancel" class="btn" type="button">Exit</button><button id="rapidfireAccept" class="btn primary rapidfire-check" type="submit" aria-label="Accept idea">✓</button></div></form><div class="rapidfire-help">Enter in Idea accepts · Shift+Enter adds a line · Esc exits Rapidfire</div></div></div>
 <div id="templateDialog" class="modal template-modal hidden" role="dialog" aria-modal="true" aria-labelledby="templateTitle"><div class="card template-card"><h2 id="templateTitle">Story structure templates</h2><p>Create a story-arc overview with each beat placed on the rising and falling line, plus a dedicated brainstorming map for every beat.</p><div id="templateOptions" class="template-options"></div><button id="templateCancel" class="btn template-cancel" type="button">Cancel</button></div></div>
 <div id="shortcutsDialog" class="modal shortcuts-modal hidden" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle"><div class="card shortcuts-card"><h2 id="shortcutsTitle">Keyboard shortcuts</h2><p>Common actions stay one keystroke or one chord away.</p><div class="shortcuts-grid"><span class="kbd">Enter</span><span>Add child idea</span><span class="kbd">Ctrl/⌘ K</span><span>Search</span><span class="kbd">Ctrl/⌘ Z</span><span>Undo</span><span class="kbd">Ctrl/⌘ S</span><span>Save current map</span><span class="kbd">Ctrl/⌘ ⇧ S</span><span>Save complete project</span><span class="kbd">Ctrl/⌘ E</span><span>Export Word outline</span><span class="kbd">Ctrl/⌘ P</span><span>Export visual PDF</span><span class="kbd">F</span><span>Focus / unfocus branch</span><span class="kbd">C</span><span>Collapse / expand branch</span><span class="kbd">Home</span><span>Fit map</span><span class="kbd">Delete</span><span>Delete selected idea</span><span class="kbd">Esc</span><span>Close panel / exit focus</span><span class="kbd">?</span><span>Show shortcuts</span></div><button id="shortcutsClose" class="btn shortcuts-close">Close</button></div></div>
-<div id="exportDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="exportTitle"><div class="card export-card"><h2 id="exportTitle">Save / Export</h2><p>Save the current map or the complete multi-map project.</p><div class="export-options"><button id="exportJson" class="btn export-option" type="button"><span class="export-icon">{ }</span><span><strong>Current map (.mindmap.json)</strong><small>One map, including hierarchy, descriptions, linked-map references, and manual positions.</small></span></button><button id="exportProject" class="btn export-option" type="button"><span class="export-icon">▦</span><span><strong>Complete project (.mindmap-project.json)</strong><small>Every map, story-template beat, link, saved position, and viewport.</small></span></button><button id="exportWord" class="btn export-option" type="button"><span class="export-icon">W</span><span><strong>Word outline (.docx)</strong><small>Current map as hierarchical text with descriptions.</small></span></button><button id="exportPdf" class="btn export-option" type="button"><span class="export-icon">▧</span><span><strong>Visual map (PDF)</strong><small>Fits the current bubble map and opens the browser print dialog for PDF output.</small></span></button></div><div class="project-note">Import accepts either a single map or a complete project. Single maps are added to the current project.</div><button id="exportCancel" class="btn export-cancel" type="button">Cancel</button></div></div>
+<div id="exportDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="exportTitle"><div class="card export-card"><h2 id="exportTitle">Save / Export</h2><p>Save the current map or the complete multi-map project.</p><div class="export-options"><button id="exportJson" class="btn export-option" type="button"><span class="export-icon">{ }</span><span><strong>Current map (.mindmap.json)</strong><small>One map, including hierarchy, descriptions, linked-map references, relationships, and manual positions.</small></span></button><button id="exportProject" class="btn export-option" type="button"><span class="export-icon">▦</span><span><strong>Complete project (.mindmap-project.json)</strong><small>Every map, story-template beat, relationship, link, saved position, and viewport.</small></span></button><button id="exportWord" class="btn export-option" type="button"><span class="export-icon">W</span><span><strong>Word outline (.docx)</strong><small>Current map as hierarchical text with descriptions and consolidated details.</small></span></button><button id="exportPdf" class="btn export-option" type="button"><span class="export-icon">▧</span><span><strong>Visual map (PDF)</strong><small>Fits the current bubble map and opens the browser print dialog for PDF output.</small></span></button></div><div class="project-note">Import accepts either a single map or a complete project. Single maps are added to the current project.</div><button id="exportCancel" class="btn export-cancel" type="button">Cancel</button></div></div>
 
-<script src="toolbar-system.js?v=1.0.6-projectsheader1" defer></script>
-<script src="drag-hysteresis.js?v=2.6.2" defer></script>
-<script src="app.js?v=2.9.0-coreversion1" defer></script>
-<script src="minimap.js?v=1.0.0" defer></script>
-<script src="session-auth.js?v=2.8.0" defer></script>
-<script src="story-arc.js?v=2.8.2-titlefix1" defer></script>
-<script src="template-help.js?v=2.8.2-titlefix1" defer></script>
-<script src="rapidfire.js?v=2.8.2-parentchooser1" defer></script>
-<script src="ux-projects.js?v=2.9.0-version1" defer></script>
-<script src="mobile-viewport.js?v=9" defer></script>
-<script src="multi-select.js?v=2.9.2-undofix1" defer></script>
-<script src="export-tools.js?v=2.7.2" defer></script>
-<script src="word-export-linked.js?v=1.0.0" defer></script>
+<script src="core-stability.js?build=20261107v3" defer></script>
+<script src="toolbar-system.js?build=20261107v3" defer></script>
+<script src="drag-hysteresis.js?build=20261107v3" defer></script>
+<script src="app.js?build=20261107v3" defer></script>
+<script src="minimap.js?build=20261107v3" defer></script>
+<script src="session-auth.js?build=20261107v3" defer></script>
+<script src="story-arc.js?build=20261107v3" defer></script>
+<script src="template-initial-view.js?build=20261107v3" defer></script>
+<script src="template-help.js?build=20261107v3" defer></script>
+<script src="rapidfire.js?build=20261107v3" defer></script>
+<script src="ux-projects.js?build=20261107v3" defer></script>
+<script src="mobile-viewport.js?build=20261107v3" defer></script>
+<script src="multi-select.js?build=20261107v3" defer></script>
+<script src="group-layout.js?build=20261107v3" defer></script>
+<script src="mobile-shell.js?build=20261107v3" defer></script>
+<script src="export-tools.js?build=20261107v3" defer></script>
+<script src="word-export-linked.js?build=20261107v3" defer></script>
+<script src="v2-experience.js?build=20261107v3" defer></script>
+<script src="guide-help.js?build=20261107v3" defer></script>
+<script src="consolidation.js?build=20261107v3" defer></script>
+<script src="consolidation-selection-fix.js?build=20261107v3" defer></script>
+<script src="relationship-routing.js?build=20261107v3" defer></script>
+<script src="lens-clear-fix.js?build=20261107v3" defer></script>
+<script src="v3-guided.js?build=20261107v3" defer></script>
 </body>
 </html>
