@@ -224,7 +224,7 @@ function createPanel(){
       <div class="v3-flag-entry"><input id="v3FlagInput" maxlength="400" placeholder="What needs review?"><button type="button" id="v3FlagAdd">Flag</button></div>
       <ul id="v3FlagList"></ul>
     </section>
-    <p class="v3-guide-note">This preview uses local, rule-based guidance. It does not yet include an on-device AI model or automatic semantic contradiction detection. <a href="story-rules.md" target="_blank" rel="noopener">Strict rules</a></p>`;
+    <p class="v3-guide-note">This guide works without AI. When you enable the experimental local model, it can suggest questions, possible gaps and links for your review. Results are not established story facts. <a href="story-rules.md" target="_blank" rel="noopener">Strict rules</a></p>`;
   document.body.appendChild(panel);
   $('#v3GuideClose').addEventListener('click',()=>toggleOpen(false));
   $('#v3GuideSubmit').addEventListener('click',submitAnswer);
