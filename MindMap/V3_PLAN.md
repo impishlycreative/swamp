@@ -2,7 +2,7 @@
 
 **Created:** 2026-11-07  
 **Updated:** 2026-11-07  
-**Status:** Five discovery questions answered; offline operation confirmed; local AI model recommendation recorded for evaluation  
+**Status:** Design requirements agreed; initial V3 offline-guided preview implemented in the Swamp GitHub repository (full local AI integration pending)  
 **Project:** Swamp / MindMap V3 (evolution of MindMap V2)
 
 ## 1. Problem Statement
@@ -52,6 +52,17 @@ As answers are given, V3 should create nodes and organize their branches and rel
 - Local-first persistence, failure recovery, and migration between versions must not require cloud access.
 - The chosen offline AI capabilities must be verified on target hardware and browsers. The implementation must not promise sophisticated semantic guidance on devices that cannot run a suitable local model; capability fallback is an open design problem.
 
+### R8 — PWA Is the Primary Application (Confirmed 2026-11-07)
+
+- MindMap V3 remains a **Progressive Web App (PWA)**: installable from the browser, cross-platform, and usable offline after required application/model assets are installed.
+- **No mandatory native Windows launcher, `llama.cpp` installation, Ollama installation, or separate local process** is acceptable as a prerequisite for the default PWA experience.
+- Evaluate **browser-native on-device AI first** using WebGPU, and WebAssembly/CPU fallback where performance permits. The selected model and browser runtime must be validated before claiming full intelligent offline operation.
+- `llama.cpp`/`llama-server` can be an **optional advanced companion backend** for users who choose to install and run it; Ollama is also optional, not a requirement.
+- The PWA may communicate with an already-running local AI server, but browser JavaScript **cannot spawn native executables directly**. A native launcher is not part of the required architecture.
+- The application must work without any cloud AI service. Capability limitations must be explicit until a browser-local model has passed acceptance tests.
+
+**Implementation status:** PWA-first architecture is confirmed, but the current V3 preview has only a service-worker offline shell. An installable manifest, icons, robust model caching/storage, and true browser-AI inference are still to be built and tested.
+
 ## 3. Proposed Interaction Flow (Not Yet Approved in Detail)
 
 1. User starts a new map or opens an existing one.
@@ -77,7 +88,7 @@ V3 may maintain a persistent **Situation Model** with current purpose, active br
 
 A local interpretation component would identify changes in meaning and recommend state updates; a separate local state/rules component would validate them, preserve facts vs. guesses, and decide what to organize or flag. The guiding assistant would stay on the chosen direction and ask only one question at a time.
 
-**Offline-first candidate implementation:** JavaScript state management and rules engine; local IndexedDB/OPFS persistence; service-worker/PWA asset caching; on-device language model via WebGPU or WebAssembly where supported. These technologies are options, **not approved implementation selections**. Models and associated assets must be installed and available locally before disconnected use. A browser, hardware, and performance feasibility study is needed.
+**PWA-first candidate implementation:** JavaScript state management and rules engine; local IndexedDB/OPFS persistence; a versioned service worker, manifest and installable offline assets; and a browser-native on-device language model via WebGPU with WebAssembly/CPU fallback where practical. Browser runtime and model choices remain subject to verification. Models and associated assets must be downloaded, verified and retained locally before disconnected use. An optional `llama.cpp` backend must not become a default dependency.
 
 **Key architectural separation:** Deterministic rules/state/persistence should work independently of any cloud API. Semantically rich interpretation and question generation need an adequate local model or a separately designed offline fallback.
 
@@ -85,15 +96,27 @@ A local interpretation component would identify changes in meaning and recommend
 
 **Recommendation:** Design MindMap V3 to use an **interchangeable local language-model backend**. Begin the evaluation with **Qwen 3.5 2B** (lightweight baseline) and **Qwen 3.5 4B** (stronger-quality candidate), preferably with approximately 4-bit quantization. Model availability, exact variant names, compatibility, distribution terms and third-party quantization licences must be verified before adoption.
 
-### Preferred architecture
+### Confirmed PWA-first deployment direction
 
-- Retain the browser-based JavaScript mind-map UI.
-- Prefer a **local inference runtime** (for example, `llama.cpp` with an appropriate compatible build), potentially delivered as a companion local service or packaged desktop app, for predictable offline operation.
-- Evaluate an all-in-browser alternative (such as WebGPU/WebAssembly with WebLLM or another compatible runtime) if it can meet offline reliability, model support and deployment requirements.
-- Keep the authoritative **Situation Model, strict-brainstorming rules, node graph, flags and persistence** in local application code and storage—not in the language model's conversational memory.
-- Use the local AI to interpret responses, suggest node relationships, identify review flags, and produce **one relevant question at a time**. Validate its proposed state changes through application rules before applying them.
-- Make local models replaceable without rewriting the map engine or losing saved maps.
-- Treat cloud inference as an **optional enhancement**, never a dependency for core offline brainstorming.
+- **Primary deliverable:** Installable, cross-platform MindMap V3 PWA (browser UI and local-first data). No mandatory desktop wrapper, Windows `.exe`, background launcher, Ollama or `llama-server`.
+- **Default AI evaluation path:** Run the language model **in the browser**, initially testing WebGPU-capable runtimes (for example, WebLLM or suitable alternatives), with WebAssembly/CPU support assessed where feasible. No browser/model combination is approved until measured.
+- **Model evaluation:** Keep Qwen 3.5 2B and 4B as initial commercial-licence candidates, **not preselected browser-compatible implementations**. Verify model architecture support, quantization and tokenizer formats, licences, initial download size, working memory, latency, and quality in target browsers.
+- **Interchangeable inference adapter:** Expose one internal interface for structured responses and tool validation, so a future browser runtime can be swapped without changing the map graph, rules engine or saved projects.
+- **Optional native acceleration only:** `llama.cpp` via `llama-server` may be supported as a user-installed and user-started localhost backend. Ollama may be another optional backend. A PWA cannot itself launch these executables. Both are nonessential to the required default experience.
+- **Authoritative local state:** Keep Situation Model, strict rules, confirmed user facts, node graph, flags, and persistence in application-controlled storage—not in language-model chat history.
+- **Rule enforcement:** The local AI proposes interpretations, relationships, flags and **one neutral question**. Local deterministic application code validates changes, protects established facts from unsupported inferences, and enforces Strict Brainstorming.
+- **Offline setup:** After the initial installation and model download, the complete required app/model assets must be available offline. Define a cache/storage strategy that survives a full browser restart, detects missing/evicted models, and handles updates/version migrations. A standalone first-time installer remains an optional separate distribution question, not a mandatory launcher.
+- **Cloud inference:** May be offered only as an optional enhancement, never required for the default offline experience.
+
+### PWA implementation and acceptance checklist
+
+1. Add a web app manifest, production icons, browser installability testing, and a safe update path.
+2. Harden the service-worker strategy for static assets; avoid breaking existing sessions on updates.
+3. Use durable browser storage (such as IndexedDB and/or OPFS) for projects and downloaded model artifacts; check storage quotas, persistence requests, eviction handling and recovery.
+4. Download and validate compatible model weights/tokenizer once, with visible progress and an explicit offline-readiness indicator.
+5. Test WebGPU on supported desktop browsers, fallback paths on unsupported devices, and end-to-end airplane-mode/restart use.
+6. Confirm model-licence conditions, notice/attribution requirements, privacy and local-inference behaviour.
+7. Verify native-local-server support, if offered, is optional and securely restricted to loopback with appropriate origin controls.
 
 ### Initial hardware targets to test
 
@@ -117,7 +140,7 @@ Run **30–50 representative MindMap V3 scenarios**, including multi-turn and re
 
 **Licence gate:** Prefer model weights and runtimes with commercially usable permissive licensing (for example, Apache 2.0 or MIT where applicable). Before shipping, review the *exact* model revision, quantized files, runtime and dependencies, plus their required attribution/notices and any other use or redistribution conditions.
 
-**Decision status:** This is the current technical recommendation, **not a commitment** to a specific model, runtime, packaging method, or hardware requirement. Select only after results from the acceptance tests.
+**Decision status:** **PWA-first and browser-AI-first evaluation are confirmed architectural decisions.** Choice of browser runtime, specific model, quantization, supported hardware, and optional `llama.cpp` compatibility remains provisional until tested.
 
 ## 7. Additional V3 Workstreams (Proposals)
 
@@ -135,20 +158,34 @@ Run **30–50 representative MindMap V3 scenarios**, including multi-turn and re
 - Decide what is saved per map and whether the strict-mode toggle is per map, per session or global.
 - Review V2 behavior to preserve it unless superseded by an explicit V3 decision.
 - Evaluate the recommended Qwen 3.5 2B/4B candidates against 30–50 offline brainstorming scenarios; decide the local model and runtime only after measuring quality, speed and memory use.
-- Define the local model delivery/installation model, minimum hardware requirements, supported browsers, and what graceful fallback means when local inference is too slow or unsupported.
-- Decide whether first-time installation may require internet access, versus requiring completely standalone setup, including model assets.
+- Define browser model delivery/download, persistent storage, minimum hardware/browser requirements, WebGPU/CPU fallback, offline-readiness checks, and graceful behaviour when inference is unsupported or too slow.
+- Decide whether first-time PWA/model installation may require internet access, or whether a separate fully offline initial-install distribution is also needed (without changing the PWA-first default).
 
 ## 9. Scope and Change Control
 
-- Items in Section 2 (R1–R7) are approved **design requirements**, not implemented functionality.
-- The detailed interaction flow, workstreams and Section 6 technical recommendations remain provisional.
-- No changes to the Swamp GitHub repository or deployment are part of this planning update.
-
-## Implementation checkpoint — 2026-11-07
-
-The canonical `MindMap/` folder now contains the V2 application baseline and a V3 preview layer. Implemented now: default-on strict toggle, one neutral question, user-authored node capture, per-map Q/A log and active branch, explicit/author-created review flags, basic local persistence, and a service-worker offline shell. Full AI semantic inference, local LLM distribution, reliable browser-cache persistence and full R1–R7 model-level acceptance testing **remain open**. The original V2 folder is preserved.
+- Items in Section 2 (R1–R7) are approved **design requirements**. Some have partial preview implementations; none should be considered fully accepted until end-to-end validation.
+- The detailed interaction flow, AI model/runtime selections and optional companion integration remain provisional; the PWA-first direction is confirmed.
+- Repository implementation began 2026-11-07 in `impishlycreative/swamp` on `master`; see the implementation checkpoint below. Browser deployment and offline acceptance have not been confirmed.
 
 
-### Preview checkpoint refinement
+## 10. Implementation Checkpoint — 2026-11-07
 
-The guide now opens automatically for a new, untitled map once the local workspace is unlocked, and remembers if the user dismisses it. Review-marker cleanup handles multiple flags on the same node. Supplemental V2 writer scripts that are present but absent from the original V2 HTML loader remain deferred pending integration and strict-mode compatibility tests.
+**Repository:** `impishlycreative/swamp`  
+**Canonical app:** `MindMap/` (`MindMap/index.html`)  
+**Current preview commit:** `3ab88ae58b970cee5bedb582d7bfaafd26be2fba`  
+**Runtime version:** `3.4.0-alpha.1`, defined in one place: `MindMap/core-stability.js`. Other runtime modules consume the exported value.  
+**Rollback:** Original app recoverable from Git history; `mindmap v2/` remains intact as the baseline/reference.
+
+Implemented in the V3 preview:
+
+- Promoted all tracked files from `mindmap v2/` into `MindMap/`, replacing the earlier canonical application contents, and reduced the Swamp landing page to one canonical MindMap entry.
+- Added guided brainstorming that opens for newly created untitled maps and can be reopened from the Guide button.
+- Strict Brainstorming starts on by default per map and can be toggled during a session.
+- Captures user answers verbatim, asks only a neutral procedural question at a time, and creates map nodes under the current focus branch.
+- Persists the branch focus and a local question-answer history on each map.
+- Adds non-interruptive manual review flags and flags for the user's explicit uncertainty; unresolved issues receive node markers and can be resolved later.
+- Added the actual `story rules.md` as `MindMap/story-rules.md` for offline reference.
+- Added service-worker precaching of the static application for offline reuse after a successful first online load.
+- Added V3 smoke checks and preserved V2 regression tests. JavaScript syntax and regression/smoke checks passed in a JavaScript harness, but a browser/device acceptance pass remains outstanding.
+
+**Not yet implemented:** Browser-native on-device Qwen or other model; an installable PWA manifest/icons and complete offline model delivery; semantic contradiction and relationship detection; model-driven adaptive questions; guarantee of durable offline storage where the browser may evict assets; and full offline model-performance tests. The guided implementation is intentionally deterministic and must not be represented as having those capabilities. Supplemental V2 writer modules exist in the V2 file set but were not wired into the original V2 HTML loader; enabling them remains a separate integration test, particularly under Strict Brainstorming.
