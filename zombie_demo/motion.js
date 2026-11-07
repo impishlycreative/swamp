@@ -41,8 +41,20 @@ export class ZombieMotion {
   for(const [b,r] of this.rest){b.quaternion.copy(r.q);b.position.copy(r.p);}this.model.updateMatrixWorld(true);
   const run=mode==='run',walk=mode==='walk',shamble=mode==='shamble',chicken=mode==='chicken',robot=mode==='robot';
   const rate=run?2.5:walk?1.2:shamble?.55:chicken?1.8:robot?.8:.4;const phase=t*rate*Math.PI*2;const s=Math.sin(phase),c=Math.cos(phase);
+  // Four flaps, then lower into a squat and wiggle before rising again.
+  const beat=t*1.8,cycle=beat%8;
+  const smooth=v=>{v=THREE.MathUtils.clamp(v,0,1);return v*v*(3-2*v);};
+  const crouch=chicken?smooth((cycle-4)/1.25)*(1-smooth((cycle-7)/1)):0;
+  const wiggle=Math.sin(phase*2)*crouch;
   const root=this.rest.get(this.hips).p;const parentScale=this.hips.parent.getWorldScale(new THREE.Vector3()).y;
-  this.hips.position.y=root.y+(run?.025*Math.abs(c):walk?.012*Math.abs(c):shamble?-.025+.008*c:chicken?.018*Math.abs(s):0)/parentScale;
+  this.hips.position.y=root.y+(run?.025*Math.abs(c):walk?.012*Math.abs(c):shamble?-.025+.008*c:chicken?-.30*this.height*crouch+.008*Math.abs(s)*(1-crouch):0)/parentScale;
+  if(chicken){
+   this.hips.position.x=root.x+.045*this.height*wiggle/parentScale;
+   this.hips.position.z=root.z-.07*this.height*crouch/parentScale;
+   this.tilt('Hips',0,.20*wiggle,.07*wiggle);
+   this.tilt('Chest',.18*crouch,-.12*wiggle,-.05*wiggle);
+   this.tilt('Head',-.10*crouch,0,0);
+  }
   if(shamble){this.tilt('Chest',.12,0,.04*s);this.tilt('Neck',.06,0,.12);this.tilt('Head',.04,0,.18);}
   else if(run)this.tilt('Chest',.10,0,.025*s);
   else if(robot)this.tilt('Chest',0,Math.round(s*2)/2*.16,0);
@@ -52,10 +64,10 @@ export class ZombieMotion {
    this.leg('Left',stride*s,(run?.12:walk?.055:.035)*Math.max(0,c));
    // Right foot trails with almost no clearance in the shamble.
    this.leg('Right',shamble?-.035+.045*dragPhase:-stride*s,shamble?.003*Math.max(0,Math.cos(phase+Math.PI+.55)):(run?.12:.055)*Math.max(0,-c));
-  }else{this.leg('Left',0,chicken?.025*Math.max(0,s):0);this.leg('Right',0,chicken?.025*Math.max(0,-s):0);}
+  }else{this.leg('Left',0,0);this.leg('Right',0,0);}
   for(const [side,sign] of [['Left',1],['Right',-1]]){
    if(shamble){this.aim(side+'Arm',side+'ForeArm',[sign*.18,-.16+.035*s,1]);this.aim(side+'ForeArm',side+'Hand',[sign*.07,.02,1]);this.tilt(side+'Hand',.18,0,0);}
-   else if(chicken){const flap=.25+.4*(.5+.5*s);this.aim(side+'Arm',side+'ForeArm',[sign,-flap,.05]);this.aim(side+'ForeArm',side+'Hand',[-sign*.8,.15,.2]);this.tilt('Head',.025*c,0,0);}
+   else if(chicken){const flap=.25+.4*(.5+.5*s)*(1-crouch);this.aim(side+'Arm',side+'ForeArm',[sign,-flap,.05]);this.aim(side+'ForeArm',side+'Hand',[-sign*.8,.15,.2]);this.tilt('Head',.025*c,0,0);}
    else if(robot){const step=Math.floor(t*4)%4;const a=[.1,.85,.85,.1][(step+(sign<0?2:0))%4];this.aim(side+'Arm',side+'ForeArm',[sign*.75,-a,.25]);this.aim(side+'ForeArm',side+'Hand',[0,step%2?1:-1,.04]);}
    else{const swing=(run?.65:walk?.32:.025)*s*sign;this.aim(side+'Arm',side+'ForeArm',[sign*.12,-1,swing]);this.aim(side+'ForeArm',side+'Hand',[0,run?-.12:-.8,run?.9:.35+swing]);}
   }
