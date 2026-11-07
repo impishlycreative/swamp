@@ -1,3 +1,11 @@
+## 3.5.0-alpha.1 — PWA-first local AI prototype (2026-11-07)
+
+- Installable PWA manifest and PNG icons; service-worker shell cache readiness and external runtime module caching.
+- Browser on-device inference adapter and worker with opt-in Qwen3 0.6B ONNX bootstrap, progress, WebGPU-first and attempted WASM fallback.
+- IndexedDB project snapshots and restore path; browser storage-persistence control.
+- Guided idea discovery, per-map Situation Model, strict-approved neutral questions, user-authored facts and unconfirmed AI review suggestions/links.
+- PWA smoke tests and 30+ deterministic domain/safety cases. Browser inference and offline restart remain unverified and must not be described as production-ready.
+
 # V3 Preview — 3.4.0-alpha.1 (2026-11-07)
 
 - Promoted the complete MindMap V2 application to the canonical `MindMap/` path; original available in Git history and V2 unchanged under `mindmap v2/`.

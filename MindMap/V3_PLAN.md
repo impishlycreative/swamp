@@ -202,3 +202,16 @@ Implemented in the V3 preview:
 **Implementation gap:** The present service-worker shell is **not** a fully installable PWA. Manifest/icons, robust offline cache and model persistence, browser inference, storage recovery and device-level offline acceptance testing remain outstanding. The deterministic guide does not yet provide the semantic understanding promised by full V3.
 
 **Documentation consistency:** This section supersedes any earlier wording in this plan that implies `llama.cpp` is the preferred *required* runtime or that the default product is a Windows executable.
+
+
+## 12. Implementation Checkpoint — PWA and Browser AI Prototype (2026-11-07)
+
+**Application version:** `3.5.0-alpha.1`, still sourced only from `MindMap/core-stability.js`.
+
+**Implemented for the new preview:** Web manifest and PWA icons, an improved offline shell with cache inspection, a separately cached third-party browser runtime, IndexedDB project recovery snapshots, and the ability to request persistent storage. Guided brainstorming now emits a user-answer event for an opt-in local inference worker. An adapter can load the `onnx-community/Qwen3-0.6B-ONNX` model through pinned Transformers.js 4.3.2 and request bounded situation-analysis JSON. The app validates responses, limits Strict Mode to approved neutral questions, and stores AI-detected gaps and relationships as **unconfirmed suggestions**. Author-provided answers are saved independently of AI availability. First-time installs and model acquisition need the network.
+
+**Compatibility model clarification:** Qwen3 0.6B is an *experimental integration baseline*, not a replacement for the proposed 2B/4B model evaluations or an approved final model. Compatibility and performance with target laptops are not yet proven.
+
+**Not yet accepted:** Real-browser installation, GPU or WASM inference startup, complete model/runtime offline cache retention, browser storage eviction/recovery, sustained contextual quality, and the 30–50-case evaluation on actual hardware. Do not represent the prototype as fully compliant with R1–R8 until these are validated. The fallback deterministic guide remains available without the model. No mandatory native executable or cloud AI has been introduced.
+
+**Source changes:** `MindMap/manifest.webmanifest`, `icons/`, `service-worker.js`, `v3-storage.js`, `v3-domain.js`, `v3-ai.js`, `v3-ai-worker.js`, `v3-awareness.js`, `v3-guided.js`, `index.html`, `app.js`, styles and tests.

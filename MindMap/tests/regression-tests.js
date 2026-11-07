@@ -101,12 +101,12 @@ function readIfExists(name){const file=path.resolve(__dirname,'..',name);return 
     assert(index.indexOf('core-stability.js')<index.indexOf('app.js'),'core stability must load before app.js');
     assert(index.includes('group-layout.js'),'group layout feature must be loaded');
     assert(index.includes('mobile-shell.js'),'mobile shell repair must be loaded');
-    assert(index.includes('mobile-shell.js?build=20261107v3'),'mobile shell repair must have a fresh asset key');
-    assert(index.includes('core-stability.js?build=20261107v3'),'3.3.1 core must have a fresh asset key');
+    assert(index.includes('mobile-shell.js?build=20261107v35'),'mobile shell repair must have a fresh asset key');
+    assert(index.includes('core-stability.js?build=20261107v35'),'3.3.1 core must have a fresh asset key');
     assert(index.indexOf('mobile-shell.js')>index.indexOf('group-layout.js'),'mobile shell must load after group layout so it can override desktop-only chrome on mobile');
     assert(index.includes('relationship-routing.js'),'routing-only relationship layer must be loaded');
     assert(index.includes('lens-clear-fix.js'),'Lens clear fix must be loaded');
-    assert(index.includes('lens-clear-fix.js?build=20261107v3'),'desktop Lens Clear fix must have a fresh asset key');
+    assert(index.includes('lens-clear-fix.js?build=20261107v35'),'desktop Lens Clear fix must have a fresh asset key');
     assert(!index.includes('relationship-integrity.js'),'old feature-specific relationship undo layer must not be loaded');
     assert.strictEqual(readIfExists('relationship-integrity.js'),null,'obsolete relationship-specific undo file must stay removed');
     assert(!/MindMap\s+\d+\.\d+\.\d+\s+V2/.test(index),'index title must not duplicate the semantic version source');

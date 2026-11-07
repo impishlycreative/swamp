@@ -19,12 +19,13 @@ function situation(map){
   if(!map.nodes[s.focusNodeId])s.focusNodeId=map.rootId;
   if(!Array.isArray(s.turns))s.turns=[];
   if(!Array.isArray(s.flags))s.flags=[];
+  if(!Array.isArray(s.proposals))s.proposals=[];
   if(typeof s.lastQuestion!=='string')s.lastQuestion=null;
   return s;
 }
 function currentQuestion(map,s){
   if(!map||!s)return 'Unlock the workspace to begin.';
-  if(blank(map.nodes[map.rootId]?.text)&&s.turns.length===0)return 'What would you like to brainstorm?';
+  if(blank(map.nodes[map.rootId]?.text)&&!s.discoveryStep)return 'What would you like to brainstorm?';
   if(!s.lastQuestion)return neutralQuestion;
   return s.lastQuestion;
 }
@@ -53,8 +54,17 @@ function submitAnswer(){
   if(!answer)return;
   const root=map.nodes[map.rootId];
   const question=currentQuestion(map,s);
+  // A request for help discovering a subject is not itself a story premise.
+  if(blank(map.nodes[map.rootId]?.text)&&/^(i (?:do not|don't) know|not sure|unsure|no idea|help me|nothing|i'm stuck|i am stuck)[.! ]*$/i.test(answer)){
+    s.discoveryStep=(s.discoveryStep||0)+1;
+    s.lastQuestion=s.discoveryStep%2
+      ?'Is there something you have been curious about recently?'
+      :'What is something you would like to understand or work through?';
+    s.turns.push({question,answer,nodeId:null,focusNodeId:map.rootId,created:now(),source:'user',discovery:true});
+    field.value='';app()?.save?.();syncUI();return;
+  }
   let node;
-  if(blank(root?.text)&&s.turns.length===0){
+  if(blank(root?.text)){
     node=root;
     root.text=answer.slice(0,500);
     root.description=answer.length>500?answer:'';
@@ -70,6 +80,13 @@ function submitAnswer(){
   }
   s.turns.push({question,answer,nodeId:node.id,focusNodeId:s.focusNodeId,created:now(),source:'user'});
   s.lastQuestion=neutralQuestion;
+  s.situationModel={
+    purpose:map.nodes[map.rootId]?.text||'',
+    activeNodeId:s.focusNodeId,
+    establishedTurnIds:s.turns.filter(t=>t.nodeId).map(t=>t.nodeId),
+    unresolvedFlagIds:s.flags.filter(f=>!f.resolved).map(f=>f.id),
+    strict:s.strict,updated:now()
+  };
   // Only the user's explicit uncertainty creates automatic review flags.
   // Detecting inferred contradictions or gaps requires the future local model.
   if(/\b(tbd|to be determined|not sure|unsure|undecided|to decide)\b/i.test(answer)){
@@ -77,6 +94,9 @@ function submitAnswer(){
   }
   field.value='';
   refreshMap(map);
+  window.dispatchEvent(new CustomEvent('mindmap:guided-answer',{detail:{
+    mapId:map.id,nodeId:node.id,answer,turnCreated:s.turns.at(-1)?.created
+  }}));
   field.focus();
 }
 function useSelected(){
@@ -129,7 +149,8 @@ function renderFlags(map,s){
   for(const f of flags){
     const row=document.createElement('li');
     const title=document.createElement('span');
-    title.textContent=(map.nodes[f.nodeId]?.text||'Idea').slice(0,55)+' — '+f.message;
+    title.textContent=(f.source==='ai-suggestion'?'AI suggestion · ':'')+
+      (map.nodes[f.nodeId]?.text||'Idea').slice(0,55)+' — '+f.message;
     const go=document.createElement('button');go.type='button';go.textContent='Focus';go.addEventListener('click',()=>focusFlagNode(f.nodeId));
     const done=document.createElement('button');done.type='button';done.textContent='Resolve';done.addEventListener('click',()=>resolveFlag(f.id));
     row.append(title,go,done);host.appendChild(row);

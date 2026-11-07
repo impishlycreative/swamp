@@ -80,6 +80,7 @@ function save(show=false){
   state.project.currentMapId=state.map.id;
   state.project.updated=now();
   localStorage.setItem(PROJECT_KEY,JSON.stringify(state.project));
+  window.MindMapV3Storage?.scheduleBackup?.();
   updateMapSelect();
   if(show)toast('Saved locally');
 }
@@ -411,5 +412,5 @@ window.MindMapApp={
   setCurrentMap,
   newMap
 };
-authUi();
+Promise.resolve(window.MindMapV3Storage?.ready).then(()=>authUi(),()=>authUi());
 })();

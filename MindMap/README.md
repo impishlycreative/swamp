@@ -1,40 +1,56 @@
-# MindMap V3 preview
+# MindMap V3 — PWA + on-device AI evaluation (3.5.0-alpha.1)
 
-This directory is the **canonical Swamp MindMap application**. On 2026-11-07, the complete original `mindmap v2/` tree was promoted to `MindMap/` and a first V3 guided-brainstorming layer was added. `mindmap v2/` is preserved unchanged for comparison; the original `MindMap/` content is recoverable from Git history.
+MindMap V3 is the canonical application at `MindMap/` in `impishlycreative/swamp`. The earlier V2 baseline remains available at `mindmap v2/`; Git history preserves the previous canonical app.
 
-## Single source of truth for the application version
+## Single application version source
 
-Only `MindMap/core-stability.js` defines the runtime semantic version (`const VERSION`). The module exposes `window.SWAMP_MINDMAP_VERSION`; `app.js` and `v2-experience.js` consume that value. HTML contains no separate semantic version. The product name "V3 preview" is a release-stage label, not an additional version number. Asset query build keys are cache invalidation identifiers, not application versions.
+`MindMap/core-stability.js` defines the **only runtime semantic version**. The UI, base app and V2 extensions read `window.SWAMP_MINDMAP_VERSION`. PWA cache identifiers and asset build query strings are not semantic versions.
 
-## What works now
+## What is implemented
 
-- The V2 application code, templates, data files and test suite, promoted without dropping existing assets. Basic editing, navigation, templates, export and guided capture are preserved; some supplemental V2 writer modules are present but not referenced by V2's original HTML loader and need separate integration testing.
-- Guided brainstorming panel, opened automatically for a new untitled map or manually from **Guide**, with **Strict brainstorming ON by default for each map**, switchable without discarding content.
-- One **neutral procedural question** at a time, with user-authored answers recorded verbatim in a persistent per-map question/answer history.
-- Automatic creation of nodes under the chosen focus branch; an empty untitled root uses the first answer as its topic. The user can change focus to the selected idea or back to the root.
-- User-entered review flags, explicit-uncertainty flags, visible node markers, and resolve actions. Flags also set compatible `writer.flags` metadata for future writer-health integration; the guided review list and flagged-node indicators work now.
-- Local-first map persistence and offline service-worker precaching after first successful online visit; no server-side account/API requirement for guided capture.
+- Installable PWA metadata (web manifest, 192px/512px PNG icons, standalone display) with an offline shell service worker.
+- Separate caching for app assets and browser inference library modules; browser-native model weights are cached by Transformers.js.
+- IndexedDB project snapshot mirror and recovery when browser localStorage is missing. The existing app remains localStorage-first for compatibility and Undo. A user-initiated browser storage-persistence request is available from Guide.
+- Guided discovery for a blank map; uncertainty such as “no idea” is treated as a request for procedural discovery rather than made into the story's title.
+- Per-map Strict Brainstorming toggle, one neutral question at a time, user-authored answer capture, branch focus, history and review flags.
+- An interchangeable internal browser inference adapter, a dedicated Web Worker, explicit model download/load UI and progress, with no mandatory local server, launcher or cloud AI.
+- **Experimental bootstrap model:** `onnx-community/Qwen3-0.6B-ONNX` using `@huggingface/transformers@4.3.2`, WebGPU q4f16 when available and attempted WASM/CPU q4 fallback. This is a compatibility prototype, **not** the approved final model.
+- Model output is validated by `v3-domain.js`. In Strict Mode the model can only choose a predefined neutral question; it cannot write story material into established nodes.
+- Model-proposed review flags are visibly labelled **AI suggestions**. Suggested cross-links are stored as **unconfirmed** until the author explicitly approves or dismisses them. Inferences never silently become user-established facts.
+- Existing V2 map editing, templates, exports, navigator, layout tools, and baseline regression suite remain in the canonical directory; supplemental writer scripts not loaded by the V2 HTML entry point remain an integration task.
 
-## Important limitations
+## Offline use
 
-- **No language model is bundled.** The first guided experience is deterministic and cannot reliably infer semantic gaps, contradictions, or sophisticated organization. It does not invent content or pose leading questions. Full situational AI is a future phase.
-- **Offline availability requires a successful initial asset precache** from an HTTPS origin. Browser cache eviction may remove the assets; backup your maps using JSON export. No offline installer is packaged yet.
-- The app currently uses browser localStorage. V3's stronger persistent storage, sync/backup, and offline model integration are not complete.
-- Strict Brainstorming uses the author's `story-rules.md`, captured locally in this directory. It conservatively collects and organizes user-authored text only.
+1. Open the hosted MindMap in a supported HTTPS browser.
+2. Use **Install PWA** or the browser's Install option (where available). The shell is precached by the service worker.
+3. Open **Guide** → **Download & enable local AI**. Allow the initial model/runtime download to finish.
+4. Optionally click **Protect local storage**. Export a JSON backup; browser storage can be evicted or cleared.
+5. Test closing/reopening with network disconnected. The status panel checks whether the app shell is cached; it does **not** claim the AI model is offline-ready until a real offline restart has succeeded.
 
-## Remaining V3 implementation
+If WebGPU is unavailable, a slower CPU path is attempted; it may fail due to browser/model limitations. In that case guided capture, user-controlled flags, and the map remain available without AI.
 
-1. Add interchangeable on-device inference; benchmark Qwen 3.5 2B and 4B on target laptops after licence and runtime validation.
-2. Use the local inference layer to interpret answers, propose labels and relationships as unconfirmed, and detect possible contradictions/gaps without hijacking the current direction.
-3. Build a validated Situation Model with established facts, user-approved decisions, inferred hypotheses, and explicit review flags; prevent unconfirmed inferences from becoming canon.
-4. Add rigorous offline/restart/storage migration tests and durable offline packaging.
-5. Run the 30–50-case model acceptance suite described in `V3_PLAN.md`.
+**The PWA itself does not start native processes.** Ollama and `llama.cpp` are not required. An optional local inference companion is an architecture possibility, not implemented here.
 
-## Testing
+## Security / authorship
+
+The user's authored text and decisions stay in application-controlled map data. The model receives a bounded local situation snapshot, analyzes it inside the browser and suggests unconfirmed metadata only. Strict Story Mode rules are stored in `story-rules.md`. Downloading third-party runtime/model assets initially requires internet access; no user-authored text is intentionally sent to a cloud inference endpoint.
+
+## Tests
 
 ```bash
 node MindMap/tests/regression-tests.js
 node MindMap/tests/v3-smoke-tests.js
+node MindMap/tests/v3-domain-tests.js
 ```
 
-These tests are available in the repository; they must be run in a Node environment before release. No browser-based acceptance test has been performed in this initial promotion.
+These are code-level tests. Browser installation, WebGPU/WASM model load, download/cache retention, IndexedDB restore, device memory/speed, and full disconnected restart must still be tested on real supported devices.
+
+## Remaining before a stable V3 release
+
+- Run the planned 30–50 real multi-turn evaluations with target browsers, and benchmark Qwen 3.5 2B/4B only after confirming browser runtimes support their exact formats.
+- Verify that all required browser inference package chunks, WASM files, tokenizers and weights survive offline restart without network activity.
+- Expand semantic situation tracking across manually edited nodes, map switching, imported projects and long sessions.
+- Validate Strict Brainstorming behaviour and false-positive contradiction reports under actual local inference.
+- Improve project storage/migration beyond compatibility-first localStorage and prove crash/offline recovery.
+- Finish integration testing of V2's additional writer modules and full mobile layout.
+- Verify model weight/converted ONNX redistribution licence and notices prior to commercial release.
