@@ -147,3 +147,8 @@ Run **30–50 representative MindMap V3 scenarios**, including multi-turn and re
 ## Implementation checkpoint — 2026-11-07
 
 The canonical `MindMap/` folder now contains the V2 application baseline and a V3 preview layer. Implemented now: default-on strict toggle, one neutral question, user-authored node capture, per-map Q/A log and active branch, explicit/author-created review flags, basic local persistence, and a service-worker offline shell. Full AI semantic inference, local LLM distribution, reliable browser-cache persistence and full R1–R7 model-level acceptance testing **remain open**. The original V2 folder is preserved.
+
+
+### Preview checkpoint refinement
+
+The guide now opens automatically for a new, untitled map once the local workspace is unlocked, and remembers if the user dismisses it. Review-marker cleanup handles multiple flags on the same node. Supplemental V2 writer scripts that are present but absent from the original V2 HTML loader remain deferred pending integration and strict-mode compatibility tests.

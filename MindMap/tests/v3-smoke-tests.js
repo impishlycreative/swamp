@@ -14,5 +14,7 @@ assert(read('index.html').includes('v3-guided.js'),'V3 guide must load');
 for(const item of ['Strict brainstorming','v3Guidance','s.turns.push','addReviewFlag','neutralQuestion','local','serviceWorker'])
   assert(read('v3-guided.js').includes(item)||read('v3-guided.js').includes(item.toLowerCase()),'missing V3 element: '+item);
 assert(read('story-rules.md').includes('No leading questions.'),'strict rules file missing');
+assert(read('v3-guided.js').includes('maybeOpenDiscovery()'),'blank map should offer guide automatically');
+assert(read('v3-guided.js').includes('item.addedWriterFlag'),'review flags should clear after the last resolution');
 assert(read('service-worker.js').includes("cache.addAll(ASSETS)"),'offline shell must precache assets');
 console.log('MindMap V3 preview smoke tests passed');

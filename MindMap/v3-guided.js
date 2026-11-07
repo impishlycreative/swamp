@@ -8,6 +8,7 @@ const now=()=>new Date().toISOString();
 const uid=()=>('g_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36));
 const blank=text=>!text||/^Untitled Mind Map$/i.test(text.trim());
 let isOpen=false;
+let autoOpenedMapId=null;
 let observedNodeContainer=null;
 const neutralQuestion='Which part of this would you like to explore next?';
 function situation(map){
@@ -103,7 +104,7 @@ function resolveFlag(id){
   const flag=s.flags.find(item=>item.id===id);if(!flag)return;
   flag.resolved=true;flag.resolvedAt=now();
   const node=map.nodes[flag.nodeId];
-  if(node&&flag.addedWriterFlag&&!s.flags.some(item=>item.nodeId===flag.nodeId&&!item.resolved)){
+  if(node&&s.flags.some(item=>item.nodeId===flag.nodeId&&item.addedWriterFlag)&&!s.flags.some(item=>item.nodeId===flag.nodeId&&!item.resolved)){
     if(Array.isArray(node.writer?.flags))node.writer.flags=node.writer.flags.filter(value=>value!=='needs-work');
   }
   refreshMap(map);
@@ -153,9 +154,17 @@ function syncUI(){
     : 'Strict disabled. Offline guided capture remains available; creative AI suggestions need a future local model.';
   renderFlags(map,s);decorateFlags();
 }
+function maybeOpenDiscovery(){
+  const map=mapNow(),s=situation(map);
+  if(!map||!s||$('#app')?.classList.contains('hidden'))return;
+  if(s.welcomeDismissed||autoOpenedMapId===map.id||s.turns.length||!blank(map.nodes[map.rootId]?.text))return;
+  autoOpenedMapId=map.id;
+  toggleOpen(true);
+}
 function toggleOpen(force){
   isOpen=typeof force==='boolean'?force:!isOpen;
   $('#v3GuidedPanel').hidden=!isOpen;
+  if(!isOpen){const map=mapNow(),s=situation(map);if(s&&s.turns.length===0){s.welcomeDismissed=true;app()?.save?.();}}
   if(isOpen){syncUI();$('#v3GuideAnswer')?.focus();}
 }
 function addButtons(){
@@ -213,8 +222,9 @@ function boot(){
   createPanel();addButtons();syncUI();
   const nodes=$('#nodes');
   if(nodes&&!observedNodeContainer){observedNodeContainer=nodes;new MutationObserver(decorateFlags).observe(nodes,{childList:true});}
-  setInterval(()=>{if(!isOpen)return;syncUI();},1800);
+  setInterval(()=>{maybeOpenDiscovery();if(isOpen)syncUI();},900);
   initOffline();
+  maybeOpenDiscovery();
 }
 window.MindMapV3Guidance={situation,currentQuestion,addReviewFlag};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

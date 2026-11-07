@@ -8,11 +8,11 @@ Only `MindMap/core-stability.js` defines the runtime semantic version (`const VE
 
 ## What works now
 
-- Complete V2 functionality: editing, templates, Writer's Navigator, Story Walk, focus, layout, relationships, story health, JSON/Word/PDF export, mobile UI.
-- Local guided brainstorming panel, opened from **Guide**, with **Strict brainstorming ON by default for each map**, switchable without discarding content.
+- The V2 application code, templates, data files and test suite, promoted without dropping existing assets. Basic editing, navigation, templates, export and guided capture are preserved; some supplemental V2 writer modules are present but not referenced by V2's original HTML loader and need separate integration testing.
+- Guided brainstorming panel, opened automatically for a new untitled map or manually from **Guide**, with **Strict brainstorming ON by default for each map**, switchable without discarding content.
 - One **neutral procedural question** at a time, with user-authored answers recorded verbatim in a persistent per-map question/answer history.
 - Automatic creation of nodes under the chosen focus branch; an empty untitled root uses the first answer as its topic. The user can change focus to the selected idea or back to the root.
-- User-entered review flags, explicit-uncertainty flags, visible node markers, and resolve actions. Flags appear in V2 Story Health via `writer.flags`.
+- User-entered review flags, explicit-uncertainty flags, visible node markers, and resolve actions. Flags also set compatible `writer.flags` metadata for future writer-health integration; the guided review list and flagged-node indicators work now.
 - Local-first map persistence and offline service-worker precaching after first successful online visit; no server-side account/API requirement for guided capture.
 
 ## Important limitations
