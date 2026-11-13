@@ -1,0 +1,91 @@
+/* MindMap toolbar system v1 — visible chrome is isolated from legacy controls. */
+#legacyToolbarEndpoints{display:none!important}
+#desktopToolbar,#mobileToolbar,#mobileBottomToolbar{box-sizing:border-box}
+
+#desktopToolbar{
+  grid-row:1;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  padding:10px 14px;
+  background:rgba(251,250,246,.96);
+  border-bottom:1px solid rgba(120,108,92,.16);
+  box-shadow:0 3px 14px rgba(49,42,34,.06);
+  z-index:60;
+}
+.tb-brand{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.tb-brand-mark{width:38px;height:38px;border-radius:13px;background:linear-gradient(145deg,#315f4d,#739985);box-shadow:inset 0 1px rgba(255,255,255,.55),0 7px 22px rgba(46,102,80,.2);position:relative}
+.tb-brand-mark:before,.tb-brand-mark:after{content:"";position:absolute;background:#eef7f2;border-radius:99px}
+.tb-brand-mark:before{width:15px;height:4px;left:11px;top:17px;transform:rotate(-28deg)}
+.tb-brand-mark:after{width:4px;height:15px;left:17px;top:11px;transform:rotate(-28deg)}
+.tb-brand-copy{line-height:1}.tb-brand-copy strong{display:block;font-size:1rem}.tb-brand-copy small{display:block;margin-top:4px;color:var(--muted);font-size:.72rem}
+.tb-row{display:flex;align-items:center;gap:6px;min-width:0;flex:1}.tb-spacer{flex:1 1 auto}
+.tb-select{height:42px;min-width:140px;max-width:220px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font:inherit;font-weight:750;padding:0 30px 0 10px}
+.tb-button,.tb-link{min-height:42px;border:1px solid var(--line);background:rgba(255,255,255,.88);color:var(--ink);border-radius:12px;padding:9px 12px;font:inherit;font-weight:760;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.tb-button.tb-icon,.tb-link.tb-icon{width:42px;min-width:42px;padding:0}
+.tb-button.tb-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.tb-button:disabled{opacity:.38;cursor:not-allowed}
+.tb-button.is-active{background:var(--soft);border-color:#b9cec2;color:var(--accent)}
+
+#mobileToolbar,#mobileBottomToolbar{display:none}
+
+@media(max-width:1050px){
+  #desktopToolbar .tb-brand-copy{display:none}
+  #desktopToolbar .tb-select{min-width:105px;max-width:160px}
+  #desktopToolbar .tb-button{padding-left:9px;padding-right:9px}
+}
+
+@media(max-width:850px),(hover:none) and (pointer:coarse){
+  html,body{height:100%;overflow:hidden!important;overscroll-behavior:none}
+  #app.app:not(.hidden){display:grid!important;grid-template-rows:auto minmax(0,1fr) auto!important;width:100%!important;height:100dvh!important;min-height:100dvh!important;overflow:hidden!important}
+  #desktopToolbar{display:none!important}
+  #mobileToolbar{
+    grid-row:1;
+    display:flex!important;
+    align-items:center;
+    gap:4px;
+    width:100%;
+    min-width:0;
+    padding:calc(5px + env(safe-area-inset-top)) 6px 5px;
+    background:rgba(252,251,247,.98);
+    border-bottom:1px solid rgba(126,112,94,.22);
+    box-shadow:0 4px 14px rgba(49,42,34,.08);
+    z-index:80;
+  }
+  #mobileToolbar .tb-select{flex:1 1 auto;min-width:70px;max-width:none;width:auto;height:40px;font-size:.78rem;padding-left:8px}
+  #mobileToolbar .tb-button{flex:0 0 40px;width:40px;min-width:40px;max-width:40px;height:40px;min-height:40px;padding:0;border-radius:12px;font-size:1.05rem}
+  #workspace.workspace{grid-row:2!important;position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;height:auto!important;min-height:0!important;overflow:hidden!important}
+  #mobileBottomToolbar{
+    grid-row:3;
+    display:flex!important;
+    align-items:stretch;
+    width:100%;
+    min-width:0;
+    margin:0;
+    padding:5px 8px calc(5px + env(safe-area-inset-bottom));
+    gap:3px;
+    background:rgba(252,251,247,.98);
+    border-top:1px solid rgba(126,112,94,.20);
+    box-shadow:0 -4px 14px rgba(49,42,34,.08);
+    z-index:80;
+  }
+  #mobileBottomToolbar .tb-bottom-action{flex:1 1 0;min-width:0;height:54px;border:0;border-radius:14px;background:transparent;color:var(--ink);font:inherit;font-weight:800;font-size:.76rem;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  #mobileBottomToolbar .tb-bottom-action .tb-glyph{display:block;font-size:1.18rem;line-height:1}
+  #mobileBottomToolbar .tb-bottom-action.tb-primary{background:var(--accent);color:#fff}
+  #mobileBottomToolbar .tb-bottom-action.is-active{background:var(--soft);color:var(--accent)}
+  #mobileBottomToolbar .tb-bottom-action:disabled{opacity:.36}
+  #workspace .utility-sheet{top:8px!important}
+}
+
+@media(max-width:370px){
+  #mobileToolbar{gap:3px;padding-left:4px;padding-right:4px}
+  #mobileToolbar .tb-button{flex-basis:36px;width:36px;min-width:36px;max-width:36px}
+  #mobileToolbar .tb-select{min-width:56px}
+  #mobileBottomToolbar{padding-left:4px;padding-right:4px}
+  #mobileBottomToolbar .tb-bottom-action{font-size:.7rem;padding-left:1px;padding-right:1px}
+}
+
+@media print{
+  #desktopToolbar,#mobileToolbar,#mobileBottomToolbar,#legacyToolbarEndpoints{display:none!important}
+}
