@@ -44,6 +44,23 @@
   <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Desktop: WASD, mouse look, Shift to hurry. Tap or click the ground to walk there; drag to look. Sound begins after interaction. This is a procedural WebGL prototype, not the final photorealistic target.</small></article></div>
   <div id="alert" role="status"></div>
   <div id="loading">BUILDING THE NIGHT…</div>
+  <script>
+    // A blocked CDN module or unsupported WebGL should never leave a permanent
+    // unexplained "BUILDING THE NIGHT" screen.
+    function showStartupProblem() {
+      const loading = document.getElementById('loading');
+      if (!loading) return; // The game removed it after a successful start.
+      loading.textContent = 'The 3D scene could not start. Check WebGL support and your internet connection, then reload the page.';
+      loading.setAttribute('role', 'alert');
+      loading.style.padding = '2rem';
+      loading.style.textAlign = 'center';
+      loading.style.lineHeight = '1.7';
+      loading.style.letterSpacing = '.02em';
+    }
+    window.addEventListener('error', showStartupProblem);
+    window.addEventListener('unhandledrejection', showStartupProblem);
+    window.setTimeout(showStartupProblem, 20000);
+  </script>
   <script type="module" src="./main.js"></script>
 </body>
 </html>
