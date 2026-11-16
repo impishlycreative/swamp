@@ -264,6 +264,65 @@ function updateFireflies(t){
   f.dot.material.opacity=alpha;
  }
 }
+
+ // Distant watcher: a crouched silhouette slowly rises behind the roadside grass.
+ // It never attacks and remains outside the player's immediate reach.
+const watcher=new THREE.Group();
+const shadowMat=new THREE.MeshBasicMaterial({color:0x050608,side:THREE.DoubleSide,fog:true});
+const eyeMat=new THREE.MeshBasicMaterial({color:0xffc447,toneMapped:false});
+function watcherPart(geometry,x,y,z){const mesh=new THREE.Mesh(geometry,shadowMat);mesh.position.set(x,y,z);watcher.add(mesh);return mesh;}
+watcherPart(new THREE.CapsuleGeometry(.46,1.65,4,8),0,2.05,0);
+watcherPart(new THREE.SphereGeometry(.36,8,6),0,3.38,0);
+for(const side of [-1,1]){
+ const ear=watcherPart(new THREE.ConeGeometry(.16,.55,5),side*.25,3.77,0);ear.rotation.z=-side*.24;
+ const arm=watcherPart(new THREE.CapsuleGeometry(.15,1.5,3,6),side*.61,2.13,0);arm.rotation.z=side*.17;
+ const leg=watcherPart(new THREE.CapsuleGeometry(.21,1.4,3,6),side*.25,.72,0);leg.rotation.z=side*.07;
+ const eye=new THREE.Mesh(new THREE.SphereGeometry(.082,8,6),eyeMat);
+ eye.position.set(side*.16,3.43,.345);watcher.add(eye);
+}
+const snout=watcherPart(new THREE.ConeGeometry(.25,.58,7),0,3.26,.39);snout.rotation.x=Math.PI/2;
+watcher.visible=false;scene.add(watcher);
+let watcherState='waiting',watcherTimer=55+Math.random()*65,watcherAge=0,watcherDuration=0,watcherFade=0;
+const watcherPos=new THREE.Vector3();
+function spawnWatcher(){
+ const side=Math.random()<.5?-1:1;
+ const distance=38+Math.random()*24;
+ const x=clamp(camera.position.x+side*(19+Math.random()*15),-56,56);
+ const z=clamp(camera.position.z-distance,-102,69);
+ watcherPos.set(x,0,z);
+ watcher.position.copy(watcherPos);
+ watcher.rotation.y=Math.atan2(camera.position.x-x,camera.position.z-z);
+ watcher.visible=true;watcherAge=0;watcherFade=0;watcherDuration=14+Math.random()*11;
+ watcherState=Math.random()<.5?'retreat':'watch';
+}
+function updateWatcher(dt){
+ if(!started)return;
+ if(watcherState==='waiting'){
+  watcherTimer-=dt;
+  if(watcherTimer<=0)spawnWatcher();
+  return;
+ }
+ watcherAge+=dt;
+ const distance=watcher.position.distanceTo(new THREE.Vector3(camera.position.x,0,camera.position.z));
+ const approach=watcherState==='retreat'&&distance<27;
+ const rising=THREE.MathUtils.smoothstep(watcherAge,1.5,8.5);
+ const crouch=1-rising;
+ watcher.scale.set(1-.24*crouch,.42+.58*rising,1);
+ watcher.position.y=-.1;
+ // Eyes appear first, then the silhouette slowly becomes discernible.
+ const silhouetteOpacity=THREE.MathUtils.smoothstep(watcherAge,3.5,9);
+ shadowMat.opacity=.68*silhouetteOpacity;
+ shadowMat.transparent=true;shadowMat.depthWrite=false;
+ const fadeIn=THREE.MathUtils.smoothstep(watcherAge,0,2);
+ const fadeOut=approach?Math.max(0,1-(watcherAge-7)/2):Math.max(0,(watcherDuration-watcherAge)/3);
+ eyeMat.opacity=fadeIn*fadeOut;
+ eyeMat.transparent=true;
+ shadowMat.opacity*=fadeOut;
+ if((approach&&watcherAge>9)||watcherAge>=watcherDuration){
+  watcher.visible=false;watcherState='waiting';watcherTimer=110+Math.random()*160;
+ }
+}
+
 // Web Audio: individually positioned synthetic cricket chirps + dirt/grass movement effects.
 let ctx=null, master=null, noiseBuffer=null, soundEnabled=false, cricketVoices=[], grassBrushGain=null,nextRustle=0,nextHowl=0;
 function noise(time){const len=Math.round(ctx.sampleRate*time),b=ctx.createBuffer(1,len,ctx.sampleRate),a=b.getChannelData(0);
@@ -331,7 +390,7 @@ document.getElementById('begin').addEventListener('click',()=>{started=true;intr
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}
 window.addEventListener('resize',resize);resize();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.06),t=clock.elapsedTime;sky.position.copy(camera.position);sky.position.y=0;
- grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);updateFireflies(t);
+ grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);updateFireflies(t);updateWatcher(dt);
  if(started){let mvx=0,mvz=0,speed=keys.has('ShiftLeft')||keys.has('ShiftRight')?5.1:2.5;
  const f=Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
  const s=Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft'));
