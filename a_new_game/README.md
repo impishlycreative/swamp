@@ -1,4 +1,4 @@
-# A New Game — The Road (prototype 0.1)
+# A New Game — The Road (prototype 0.2)
 
 A first-person browser prototype for the rural opening scene of **A New Game**. This is an actual rendered, navigable 3D environment, **not** the generated reference screenshot and **not yet photorealistic**.
 
@@ -17,15 +17,23 @@ If Swamp GitHub Pages serves the repository root, the scene's relative URL is `/
 ## Implemented in this first pass
 
 - First-person camera and movement: WASD, Shift to hurry, click scene to lock mouse and look, Escape to release; touch tap-to-move and drag-to-look without a virtual joystick.
-- Moonlit night sky, full moon, road, dirt texture, puddles, tall procedural grass, trees, fences and distant town with lit windows.
+- Moonlit night sky, full moon, road, dirt texture, puddles, tall procedural grass, trees, fences and distant town with lit windows. GPU grass tips sway in the wind and bend when the walker passes nearby.
 - A lantern equipped at spawn with a dynamic warm local light, shadows and small movement sway; lantern on/off button.
-- Synthetic movement-linked dirt footfalls and grass-footstep/rustling sounds.
-- Spatialized chirping from individual cricket sources: nearby sources quiet within ~7 metres and recover ~1.5 seconds after the player leaves their area; distant sources continue.
+- Synthetic movement-linked dirt footfalls, separate grass footsteps and a continuous grass-brushing layer while moving through long grass.
+- Spatialized chirping from 64 individual cricket sources, including 48 deliberately distributed along the roadside. Nearby sources quiet within 7.2 metres and recover 1.55 seconds after the player leaves their area; distant sources continue.
 - Sound toggle; generated audio requires explicit interaction and no external audio assets.
+- A visible troubleshooting message if the browser cannot start the WebGL scene.
+
+## Automated checks
+
+From the `a_new_game` directory, run `npm test` with Node.js 20+.
+The command checks JavaScript syntax and runs the `tests/prototype.test.mjs` regression suite. The rules for terrain classification and cricket recovery live in `gameplay.js`, which is also imported by the browser scene.
+
+These tests do not render WebGL, measure frame rate, listen to audio, or establish photorealism. A manual visual and audio check in desktop and mobile browsers is still required.
 
 ## Quality and limitations
 
-**Visual target:** The previously generated concept screenshot is a *gameplay-quality acceptance target*. This procedural proof-of-interaction is not remotely at the target level yet. The geometry, material maps and synthetic sounds are placeholders. There is no genuine photogrammetry, human model, complex vegetation wind animation, authored cinematics, physically accurate GI, voiced performance, story or multiplayer implementation. Browsers and mobile GPUs will vary in performance, and the scene still needs visual inspection on a target device.
+**Visual target:** The previously generated concept screenshot is a *gameplay-quality acceptance target*. This procedural proof-of-interaction is not remotely at the target level yet. The geometry, material maps and synthetic sounds are placeholders; the moving grass and reactive crickets are interactive proof-of-concept effects rather than field-recorded or photographically scanned assets. There is no genuine photogrammetry, human model, complex vegetation wind animation, authored cinematics, physically accurate GI, voiced performance, story or multiplayer implementation. Browsers and mobile GPUs will vary in performance, and the scene still needs visual inspection on a target device.
 
 **Next milestone:** Replace primitive assets with licensed/created high-detail meshes and PBR materials; improve moonlight/exposure/atmospherics, grass sway, lantern and occlusion, then use field recordings for realistic cricket and footstep sound. Establish a visual quality gate before expanding the open world. The choice of browser engine versus a game engine remains open if actual high-fidelity targets require it.
 
