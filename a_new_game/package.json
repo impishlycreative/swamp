@@ -1,0 +1,10 @@
+{
+  "name": "a-new-game-the-road",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "The Road: moonlit first-person horror atmosphere prototype",
+  "scripts": {
+    "test": "node --check main.js && node --check gameplay.js && node --test tests/*.test.mjs"
+  }
+}
