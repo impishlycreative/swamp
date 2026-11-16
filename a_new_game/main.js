@@ -260,14 +260,18 @@ function initAudio(){if(ctx){ctx.resume();return;}try{
  grassBrushGain=ctx.createGain();grassBrushGain.gain.value=0;
  grassBrush.connect(grassFilter).connect(grassBrushGain).connect(master);grassBrush.start();
  // Locations form a surrounding chorus. Small independent chirps/pulses; no one-size ambient loop.
- for(let i=0;i<24;i++){
-  const x=(i%2===0?-1:1)*between(4.5,27),z=between(-95,95);
+ for(let i=0;i<64;i++){
+  // A dense roadside chorus guarantees that passing the grass visibly/audibly
+  // disturbs nearby crickets, rather than depending on random source placement.
+  const roadside=i<48,side=i%2===0?-1:1;
+  const x=side*(roadside?between(4.1,5.8):between(8,56));
+  const z=roadside?-107+i*(188/47)+between(-.8,.8):between(-109,80);
   const osc=ctx.createOscillator();osc.type='sine';osc.frequency.value=between(4100,6200);
   const pulse=ctx.createGain();pulse.gain.value=0;
   const gain=ctx.createGain();gain.gain.value=0;
   const pan=ctx.createStereoPanner();
   osc.connect(pulse).connect(gain).connect(pan).connect(master);osc.start();
-  const v={x,z,osc,pulse,gain,pan,holdUntil:0,interval:between(.52,1.4),next:ctx.currentTime+between(.03,1),level:between(.15,.26)};cricketVoices.push(v);
+  const v={x,z,osc,pulse,gain,pan,holdUntil:0,interval:between(.52,1.4),next:ctx.currentTime+between(.03,1),level:between(.095,.17)};cricketVoices.push(v);
  }
  soundEnabled=true;soundButton.textContent='Sound: ON';soundButton.setAttribute('aria-pressed','true');
  }catch(error){console.error('Audio initialization:',error);popup('Audio unavailable in this browser. The scene remains playable.');}}
