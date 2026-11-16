@@ -115,7 +115,30 @@ function makeGrassBladeGeometry(){
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();return geo;
 }
 const bladeGeometry=makeGrassBladeGeometry();const grassCount=23000;
-const grassMat=new THREE.MeshLambertMaterial({color:0x71916d,side:THREE.DoubleSide,vertexColors:true,roughness:1});
+const grassMat=new THREE.MeshLambertMaterial({color:0x71916d,side:THREE.DoubleSide,vertexColors:true});
+ // Animate only the grass tips in the GPU, including a local disturbance around the player's legs.
+ // Instancing remains in place: this does not create thousands of per-frame CPU mesh updates.
+ const grassUniforms={uGrassTime:{value:0},uWalker:{value:camera.position.clone()}};
+ grassMat.onBeforeCompile=shader=>{
+   Object.assign(shader.uniforms,grassUniforms);
+   shader.vertexShader=shader.vertexShader.replace('void main() {',
+     'uniform float uGrassTime;\nuniform vec3 uWalker;\nvoid main() {');
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`
+     #include <begin_vertex>
+     #ifdef USE_INSTANCING
+       vec3 tuftOrigin=(modelMatrix*instanceMatrix*vec4(0.0,0.0,0.0,1.0)).xyz;
+       float tip=smoothstep(0.0,1.15,position.y);
+       float breeze=sin(tuftOrigin.x*0.47+tuftOrigin.z*0.16+uGrassTime*0.83)*0.075
+                   +sin(tuftOrigin.z*0.59-uGrassTime*1.18)*0.035;
+       vec2 away=tuftOrigin.xz-uWalker.xz;
+       float distanceToWalker=length(away);
+       float bend=(1.0-smoothstep(0.55,2.5,distanceToWalker))*0.31;
+       transformed.x+=tip*(breeze+away.x/(distanceToWalker+0.001)*bend);
+       transformed.z+=tip*(breeze*0.43+away.y/(distanceToWalker+0.001)*bend);
+     #endif
+   `);
+ };
+ grassMat.customProgramCacheKey=()=>'grass-wind-walker-v1';
 const grassInst=new THREE.InstancedMesh(bladeGeometry,grassMat,grassCount);grassInst.frustumCulled=false;
 const grassDummy=new THREE.Object3D();const grassColor=new THREE.Color();
 for(let i=0;i<grassCount;i++){
@@ -223,12 +246,18 @@ canvas.addEventListener('touchmove',e=>{if(!started||!mobileGesture||e.touches.l
 canvas.addEventListener('touchend',e=>{if(!started||!mobileGesture)return;e.preventDefault();if(!mobileGesture.moved)goToPixel(mobileGesture.x,mobileGesture.y);mobileGesture=null;}, {passive:false});
 
 // Web Audio: individually positioned synthetic cricket chirps + dirt/grass movement effects.
-let ctx=null, master=null, noiseBuffer=null, soundEnabled=false, cricketVoices=[];
+let ctx=null, master=null, noiseBuffer=null, soundEnabled=false, cricketVoices=[], grassBrushGain=null;
 function noise(time){const len=Math.round(ctx.sampleRate*time),b=ctx.createBuffer(1,len,ctx.sampleRate),a=b.getChannelData(0);
  for(let i=0;i<len;i++)a[i]=Math.random()*2-1;return b;}
 function initAudio(){if(ctx){ctx.resume();return;}try{
  ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=.75;master.connect(ctx.destination);noiseBuffer=noise(1.5);
  const wind=ctx.createBufferSource();wind.buffer=noiseBuffer;wind.loop=true;const low=ctx.createBiquadFilter();low.type='lowpass';low.frequency.value=390;const windGain=ctx.createGain();windGain.gain.value=.022;wind.connect(low).connect(windGain).connect(master);wind.start();
+ // Continuous grass contact is separate from individual steps, so movement through long
+ // grass sounds like brushing stems instead of isolated crunches.
+ const grassBrush=ctx.createBufferSource();grassBrush.buffer=noiseBuffer;grassBrush.loop=true;
+ const grassFilter=ctx.createBiquadFilter();grassFilter.type='bandpass';grassFilter.frequency.value=1650;grassFilter.Q.value=.48;
+ grassBrushGain=ctx.createGain();grassBrushGain.gain.value=0;
+ grassBrush.connect(grassFilter).connect(grassBrushGain).connect(master);grassBrush.start();
  // Locations form a surrounding chorus. Small independent chirps/pulses; no one-size ambient loop.
  for(let i=0;i<24;i++){
   const x=(i%2===0?-1:1)*between(4.5,27),z=between(-95,95);
@@ -274,6 +303,7 @@ document.getElementById('begin').addEventListener('click',()=>{started=true;intr
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}
 window.addEventListener('resize',resize);resize();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.06),t=clock.elapsedTime;sky.position.copy(camera.position);sky.position.y=0;
+ grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);
  if(started){let mvx=0,mvz=0,speed=keys.has('ShiftLeft')||keys.has('ShiftRight')?5.1:2.5;
  const f=Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
  const s=Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft'));
@@ -289,6 +319,9 @@ function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDel
  if(travel>=.75){travel%=.75;stepFoot++;footstep(Math.abs(camera.position.x)>3.1);}}
  }
  if(!moving){travel=0;bob*=Math.exp(-dt*4);}
+ if(ctx&&grassBrushGain){grassBrushGain.gain.setTargetAtTime(
+   moving&&Math.abs(camera.position.x)>3.1&&soundEnabled?.045:0,ctx.currentTime,.16
+ );}
  const walkBob=moving?Math.sin(bob)*.032:Math.sin(t*.82)*.009;
  camera.position.y=1.72+walkBob;
  lanternRig.position.y=-.52+(moving?Math.sin(bob-1)*.035:Math.sin(t*1.6)*.009);
