@@ -246,8 +246,26 @@ canvas.addEventListener('touchmove',e=>{if(!started||!mobileGesture||e.touches.l
 }, {passive:false});
 canvas.addEventListener('touchend',e=>{if(!started||!mobileGesture)return;e.preventDefault();if(!mobileGesture.moved)goToPixel(mobileGesture.x,mobileGesture.y);mobileGesture=null;}, {passive:false});
 
+// Sparse, independently pulsing fireflies in the roadside grass.
+const fireflyGeometry=new THREE.SphereGeometry(.075,6,5),fireflies=[];
+for(let i=0;i<18;i++){
+ const x=(i%2?-1:1)*between(5,22),z=between(-105,75);
+ const mat=new THREE.MeshBasicMaterial({color:0xc9ff77,transparent:true,opacity:0,depthWrite:false});
+ const dot=new THREE.Mesh(fireflyGeometry,mat);scene.add(dot);
+ fireflies.push({dot,x,z,y:between(.6,2.2),phase:between(0,Math.PI*2),period:between(5,12)});
+}
+function updateFireflies(t){
+ let visible=0;
+ for(const f of fireflies){
+  const wave=Math.sin(t*2*Math.PI/f.period+f.phase),near=Math.hypot(f.x-camera.position.x,f.z-camera.position.z)<55;
+  const alpha=near&&wave>.5&&visible<8?(wave-.5)*1.5:0;
+  if(alpha>.02)visible++;
+  f.dot.position.set(f.x+Math.sin(t*.35+f.phase)*.3,f.y+Math.sin(t*.7+f.phase)*.2,f.z+Math.cos(t*.27+f.phase)*.3);
+  f.dot.material.opacity=alpha;
+ }
+}
 // Web Audio: individually positioned synthetic cricket chirps + dirt/grass movement effects.
-let ctx=null, master=null, noiseBuffer=null, soundEnabled=false, cricketVoices=[], grassBrushGain=null;
+let ctx=null, master=null, noiseBuffer=null, soundEnabled=false, cricketVoices=[], grassBrushGain=null,nextRustle=0,nextHowl=0;
 function noise(time){const len=Math.round(ctx.sampleRate*time),b=ctx.createBuffer(1,len,ctx.sampleRate),a=b.getChannelData(0);
  for(let i=0;i<len;i++)a[i]=Math.random()*2-1;return b;}
 function initAudio(){if(ctx){ctx.resume();return;}try{
@@ -259,20 +277,13 @@ function initAudio(){if(ctx){ctx.resume();return;}try{
  const grassFilter=ctx.createBiquadFilter();grassFilter.type='bandpass';grassFilter.frequency.value=1650;grassFilter.Q.value=.48;
  grassBrushGain=ctx.createGain();grassBrushGain.gain.value=0;
  grassBrush.connect(grassFilter).connect(grassBrushGain).connect(master);grassBrush.start();
- // Locations form a surrounding chorus. Small independent chirps/pulses; no one-size ambient loop.
- for(let i=0;i<64;i++){
-  // A dense roadside chorus guarantees that passing the grass visibly/audibly
-  // disturbs nearby crickets, rather than depending on random source placement.
-  const roadside=i<48,side=i%2===0?-1:1;
-  const x=side*(roadside?between(4.1,5.8):between(8,56));
-  const z=roadside?-107+i*(188/47)+between(-.8,.8):between(-109,80);
-  const osc=ctx.createOscillator();osc.type='sine';osc.frequency.value=between(4100,6200);
-  const pulse=ctx.createGain();pulse.gain.value=0;
-  const gain=ctx.createGain();gain.gain.value=0;
-  const pan=ctx.createStereoPanner();
-  osc.connect(pulse).connect(gain).connect(pan).connect(master);osc.start();
-  const v={x,z,osc,pulse,gain,pan,holdUntil:0,interval:between(.52,1.4),next:ctx.currentTime+between(.03,1),level:between(.095,.17)};cricketVoices.push(v);
- }
+ // Single cricket, slow and relatively nearby.
+ const osc=ctx.createOscillator();osc.type='sine';osc.frequency.value=4800;
+ const pulse=ctx.createGain();pulse.gain.value=0;
+ const gain=ctx.createGain();gain.gain.value=.018;
+ const pan=ctx.createStereoPanner();osc.connect(pulse).connect(gain).connect(pan).connect(master);osc.start();
+ cricketVoices.push({x:8,z:camera.position.z-12,pulse,gain,pan,next:ctx.currentTime+5});
+ nextRustle=ctx.currentTime+45;nextHowl=ctx.currentTime+80;
  soundEnabled=true;soundButton.textContent='Sound: ON';soundButton.setAttribute('aria-pressed','true');
  }catch(error){console.error('Audio initialization:',error);popup('Audio unavailable in this browser. The scene remains playable.');}}
 function pulseCricket(v,t){const p=v.pulse.gain;p.cancelScheduledValues(t);p.setValueAtTime(0,t);
@@ -280,19 +291,31 @@ function pulseCricket(v,t){const p=v.pulse.gain;p.cancelScheduledValues(t);p.set
   const at=t+k*.062;const loud=between(.55,1.0);p.setValueAtTime(0,at);p.linearRampToValueAtTime(loud,at+.012);p.exponentialRampToValueAtTime(.0001,at+.045);
  }
 }
+function distantSound(t,howl,answer=false){
+ const gain=ctx.createGain(),pan=ctx.createStereoPanner(),filter=ctx.createBiquadFilter();
+ pan.pan.value=answer?-.7:(Math.random()>.5?.7:-.7);
+ const duration=howl?(answer?3:4.5):2.5;
+ gain.gain.setValueAtTime(.0001,t);
+ gain.gain.linearRampToValueAtTime(howl?(answer?.009:.015):.025,t+duration*.3);
+ gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
+ if(howl){
+  const osc=ctx.createOscillator();osc.type='sawtooth';filter.type='lowpass';filter.frequency.value=460;
+  osc.frequency.setValueAtTime(140,t);osc.frequency.linearRampToValueAtTime(205,t+duration*.4);osc.frequency.linearRampToValueAtTime(125,t+duration);
+  osc.connect(filter).connect(gain).connect(pan).connect(master);osc.start(t);osc.stop(t+duration+.02);
+ }else{
+  const source=ctx.createBufferSource();source.buffer=noiseBuffer;filter.type='bandpass';filter.frequency.value=620;filter.Q.value=.6;
+  source.connect(filter).connect(gain).connect(pan).connect(master);source.start(t);source.stop(t+duration);
+ }
+}
 function updateAudio(){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
  for(const c of cricketVoices){
   const dx=c.x-camera.position.x,dz=c.z-camera.position.z,dist=Math.hypot(dx,dz);
-  const presence=cricketPresence(dist,t,c.holdUntil);
-  c.holdUntil=presence.holdUntil;
-  const attenuation=cricketAttenuation(dist);
-  const vol=presence.audible ? clamp(c.level*attenuation*1.15,0,.18) : 0;
-  c.gain.gain.setTargetAtTime(vol,t,.12);
-  // Pan relative to view direction: left/right changes as the player turns.
-  const rightX=Math.cos(yaw),rightZ=-Math.sin(yaw);
-  c.pan.pan.setTargetAtTime(clamp((dx*rightX+dz*rightZ)/Math.max(8,dist),-1,1),t,.09);
-  if(t>=c.next){pulseCricket(c,t+.015);c.next=t+c.interval+between(-.1,.22);}
+  c.pan.pan.setTargetAtTime(clamp((dx*Math.cos(yaw)-dz*Math.sin(yaw))/Math.max(8,dist),-1,1),t,.15);
+  c.gain.gain.setTargetAtTime(.018*Math.min(1,18/Math.max(8,dist)),t,.3);
+  if(t>=c.next){pulseCricket(c,t+.015);c.next=t+7+Math.random()*10;}
  }
+ if(t>=nextRustle){distantSound(t+.03,false);nextRustle=t+30+Math.random()*90;}
+ if(t>=nextHowl){distantSound(t+.03,true);if(Math.random()<.3)distantSound(t+7,true,true);nextHowl=t+180+Math.random()*120;}
 }
 function footstep(inGrass){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
  const source=ctx.createBufferSource();source.buffer=noiseBuffer;
@@ -308,7 +331,7 @@ document.getElementById('begin').addEventListener('click',()=>{started=true;intr
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}
 window.addEventListener('resize',resize);resize();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.06),t=clock.elapsedTime;sky.position.copy(camera.position);sky.position.y=0;
- grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);
+ grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);updateFireflies(t);
  if(started){let mvx=0,mvz=0,speed=keys.has('ShiftLeft')||keys.has('ShiftRight')?5.1:2.5;
  const f=Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
  const s=Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft'));
