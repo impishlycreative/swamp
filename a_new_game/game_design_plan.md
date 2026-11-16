@@ -120,3 +120,25 @@ Lighting targets include physically plausible moonlight, soft/complex shadows, d
 ### Status and boundaries
 
 These are **design requirements, not implemented gameplay**. A generated reference image can illustrate the desired look, but is **concept art, not a real in-engine screenshot**. No engine, assets, budget, performance target, exact town, story, or multiplayer implementation has yet been chosen.
+
+## 9. First playable browser prototype — November 16, 2026
+
+**Code location:** `impishlycreative/swamp/a_new_game/` (`index.html`, `main.js`, `README.md`). This is an implementation milestone, not a claim that the intended visual quality has been achieved. The desired concept image remains the **actual gameplay-quality target**.
+
+### Walking and surface-specific audio — confirmed
+
+- The player hears footsteps **only while actually moving**. Their timing follows distance travelled rather than a permanently repeating loop.
+- Dirt-road footsteps should be distinct, heavier and grittier, with surface-appropriate impacts.
+- When the player steps into long grass, the audio changes to softer footfalls accompanied by blades of grass brushing and rustling against the character.
+- Transition between dirt and grass should occur when crossing the road edge, and motion sounds stop promptly when the player stops.
+- This is part of the **initial playable scene**, not something to defer until an expanded game.
+
+### Prototype code now written
+
+- Procedural WebGL scene with moonlit dirt road, long grass, trees, fences, puddles, full moon, distant township lights and a lantern equipped at the beginning.
+- Desktop WASD movement and mouse look; touchscreen tap-a-ground-destination to walk and drag to look, without an on-screen joystick.
+- Dynamic warm lantern light and shadows; lantern can be toggled.
+- Procedurally synthesized cricket voices with relative stereo pan and proximity suppression; approximate 1.5-second return delay after leaving an area.
+- Movement-triggered footsteps, with different synthesized dirt and grass effects.
+
+**Verification status:** files committed and JavaScript syntax checked. In-browser visual and audio behavior are **not yet device-tested**. Scene geometry, synthetic sound and placeholder materials are not photorealistic; professional assets, high-quality field audio and visual calibration are required before claiming the desired quality standard.
