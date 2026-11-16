@@ -1,4 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import {terrainAt,cricketPresence,cricketAttenuation} from './gameplay.js';
 
 // The scene is procedural, so it can run without licensed or downloaded art/audio assets.
 // All audio starts only after explicit player interaction.
@@ -278,10 +279,10 @@ function pulseCricket(v,t){const p=v.pulse.gain;p.cancelScheduledValues(t);p.set
 function updateAudio(){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
  for(const c of cricketVoices){
   const dx=c.x-camera.position.x,dz=c.z-camera.position.z,dist=Math.hypot(dx,dz);
-  if(dist<7.2)c.holdUntil=t+1.55;
-  const active=t>=c.holdUntil && dist>=7.2;
-  const attenuation=1/(1+dist*.07+dist*dist*.006);
-  const vol=active ? clamp(c.level*attenuation*1.15,0,.18) : 0;
+  const presence=cricketPresence(dist,t,c.holdUntil);
+  c.holdUntil=presence.holdUntil;
+  const attenuation=cricketAttenuation(dist);
+  const vol=presence.audible ? clamp(c.level*attenuation*1.15,0,.18) : 0;
   c.gain.gain.setTargetAtTime(vol,t,.12);
   // Pan relative to view direction: left/right changes as the player turns.
   const rightX=Math.cos(yaw),rightZ=-Math.sin(yaw);
@@ -316,11 +317,11 @@ function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDel
  camera.position.x=clamp(camera.position.x+dx,-62,62);camera.position.z=clamp(camera.position.z+dz,-110,79);
  const advanced=Math.hypot(camera.position.x-oldx,camera.position.z-oldz);
  if(advanced>.0001){moving=true;walkedDistance+=advanced;travel+=advanced;bob+=dt*speed*6.7;
- if(travel>=.75){travel%=.75;stepFoot++;footstep(Math.abs(camera.position.x)>3.1);}}
+ if(travel>=.75){travel%=.75;stepFoot++;footstep(terrainAt(camera.position.x)==='grass');}}
  }
  if(!moving){travel=0;bob*=Math.exp(-dt*4);}
  if(ctx&&grassBrushGain){grassBrushGain.gain.setTargetAtTime(
-   moving&&Math.abs(camera.position.x)>3.1&&soundEnabled?.045:0,ctx.currentTime,.16
+   moving&&terrainAt(camera.position.x)==='grass'&&soundEnabled?.045:0,ctx.currentTime,.16
  );}
  const walkBob=moving?Math.sin(bob)*.032:Math.sin(t*.82)*.009;
  camera.position.y=1.72+walkBob;
