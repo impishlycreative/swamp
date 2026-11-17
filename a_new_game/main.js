@@ -1,4 +1,5 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
 // The scene is procedural, so it can run without licensed or downloaded art/audio assets.
@@ -370,63 +371,179 @@ function updateFireflies(t){
  }
 }
 
-// Distant watcher: a crouched silhouette slowly rises behind the roadside grass.
- // It never attacks and remains outside the player's immediate reach.
-const watcher=new THREE.Group();
-const shadowMat=new THREE.MeshBasicMaterial({color:0x050608,side:THREE.DoubleSide,fog:true});
-const eyeMat=new THREE.MeshBasicMaterial({color:0xffc447,toneMapped:false});
-function watcherPart(geometry,x,y,z){const mesh=new THREE.Mesh(geometry,shadowMat);mesh.position.set(x,y,z);watcher.add(mesh);return mesh;}
-watcherPart(new THREE.CapsuleGeometry(.46,1.65,4,8),0,2.05,0);
-watcherPart(new THREE.SphereGeometry(.36,8,6),0,3.38,0);
-for(const side of [-1,1]){
- const ear=watcherPart(new THREE.ConeGeometry(.16,.55,5),side*.25,3.77,0);ear.rotation.z=-side*.24;
- const arm=watcherPart(new THREE.CapsuleGeometry(.15,1.5,3,6),side*.61,2.13,0);arm.rotation.z=side*.17;
- const leg=watcherPart(new THREE.CapsuleGeometry(.21,1.4,3,6),side*.25,.72,0);leg.rotation.z=side*.07;
- const eye=new THREE.Mesh(new THREE.SphereGeometry(.145,10,8),eyeMat);
- eye.position.set(side*.21,3.43,.38);watcher.add(eye);
+// v0.3: spectral people replace the former wolf. The primary body comes from
+// Khronos/Cesium's attributed CC-BY-4.0 glTF asset. A detailed procedural fallback
+// remains playable offline or when third-party model hosting is unavailable.
+const spectralMaterial=()=>new THREE.MeshStandardMaterial({
+  color:0xc0e0e5,emissive:0x456f81,emissiveIntensity:.46,
+  transparent:true,opacity:.31,depthWrite:false,roughness:.9,
+  side:THREE.DoubleSide
+});
+let ghostTemplate=null,modelAvailable=false;
+const ghostLoader=new GLTFLoader();
+ghostLoader.load(
+ 'https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/CesiumMan/glTF-Binary/CesiumMan.glb',
+ gltf=>{
+  ghostTemplate=gltf.scene;
+  ghostTemplate.traverse(o=>{if(o.isMesh){o.material=spectralMaterial();o.castShadow=false;o.receiveShadow=false;}});
+  modelAvailable=true;
+  // Swap active procedural bodies without interrupting their existing encounters.
+  for(const g of ghosts)replaceGhostBody(g);
+ },undefined,()=>{modelAvailable=false;}
+);
+function makeFallbackPerson(){
+ const body=new THREE.Group(),mat=spectralMaterial();
+ const part=(geometry,x,y,z,sx=1,sy=1,sz=1)=>{
+  const mesh=new THREE.Mesh(geometry,mat);mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);body.add(mesh);return mesh;
+ };
+ // Anatomical proportions, visible neck/cheeks/chin/nose, articulated-looking hands.
+ part(new THREE.SphereGeometry(1,20,14),0,1.48,0,.40,.69,.23);
+ part(new THREE.SphereGeometry(1,20,14),0,.90,0,.28,.39,.22);
+ part(new THREE.CylinderGeometry(.115,.13,.25,12),0,2.20,0);
+ part(new THREE.SphereGeometry(1,24,18),0,2.51,0,.27,.34,.23);
+ part(new THREE.SphereGeometry(1,12,10),0,2.39,.19,.205,.13,.09); // cheeks
+ part(new THREE.SphereGeometry(1,12,10),0,2.24,.12,.135,.09,.115); // chin
+ part(new THREE.SphereGeometry(1,10,8),0,2.52,.24,.065,.115,.095); // nose
+ const eyes=new THREE.MeshBasicMaterial({color:0x23343d,transparent:true,opacity:.53,depthWrite:false});
+ for(const s of [-1,1]){
+  const eye=new THREE.Mesh(new THREE.SphereGeometry(.047,10,8),eyes);
+  eye.position.set(s*.115,2.61,.204);body.add(eye);
+  const arm=part(new THREE.CapsuleGeometry(.10,.77,5,10),s*.46,1.60,0);
+  arm.rotation.z=s*.15;
+  const hand=part(new THREE.SphereGeometry(.11,12,8),s*.56,.91,.01,1,1.3,.68);
+  for(let i=0;i<4;i++){
+   const f=part(new THREE.CapsuleGeometry(.018,.115,3,6),
+       s*(.49+i*.046),.75,.035);f.rotation.z=s*.1;
+  }
+  const leg=part(new THREE.CapsuleGeometry(.14,.82,5,10),s*.18,.45,0);
+  leg.rotation.z=s*.07;
+ }
+ return body;
 }
-const snout=watcherPart(new THREE.ConeGeometry(.25,.58,7),0,3.26,.39);snout.rotation.x=Math.PI/2;
-watcher.visible=false;scene.add(watcher);
-let watcherState='waiting',watcherTimer=9,watcherAge=0,watcherDuration=0;
-const watcherPos=new THREE.Vector3();
-function spawnWatcher(test=false){
- // Bring the watcher into the forward camera view for mobile testing.
- const side=Math.random()<.5?-1:1,dist=test?18:20+Math.random()*8;
- const lateral=test?3:3.4+Math.random()*1.3;
- const fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
- const x=clamp(camera.position.x+fx*dist+rx*lateral*side,-55,55);
- const z=clamp(camera.position.z+fz*dist+rz*lateral*side,-158,77);
- watcherPos.set(x,0,z);watcher.position.copy(watcherPos);
- watcher.rotation.y=Math.atan2(camera.position.x-x,camera.position.z-z);
- watcher.visible=true;watcherAge=0;watcherDuration=test?27:20+Math.random()*8;
- watcherState=Math.random()<.5?'retreat':'watch';
+const ghosts=[];
+function replaceGhostBody(g){
+ if(!modelAvailable||!ghostTemplate)return;
+ g.rig.remove(g.body);
+ const model=ghostTemplate.clone(true);
+ model.traverse(o=>{if(o.isMesh){o.material=spectralMaterial();o.frustumCulled=false;}});
+ model.updateMatrixWorld(true);
+ const bounds=new THREE.Box3().setFromObject(model),size=new THREE.Vector3();
+ bounds.getSize(size);
+ const s=2.75/Math.max(.01,size.y);model.scale.setScalar(s);
+ model.position.y=-bounds.min.y*s;
+ g.rig.add(model);g.body=model;
+ g.head=model.getObjectByName('Head')||model.getObjectByName('head')||null;
 }
-function updateWatcher(dt){
+function createGhost(){
+ const group=new THREE.Group(),rig=new THREE.Group(),body=makeFallbackPerson();
+ rig.add(body);group.add(rig);scene.add(group);
+ const wisps=[];
+ const wispMat=new THREE.MeshBasicMaterial({color:0xa9e4e7,transparent:true,opacity:0,depthWrite:false});
+ for(let i=0;i<9;i++){
+  const w=new THREE.Mesh(new THREE.SphereGeometry(.055,7,6),wispMat.clone());
+  group.add(w);wisps.push({mesh:w,phase:Math.random()*Math.PI*2});
+ }
+ const g={group,rig,body,wisps,head:null,age:0,duration:0,side:1,heading:0,fade:0,active:false,test:false};
+ if(modelAvailable)replaceGhostBody(g);
+ return g;
+}
+const ghost=createGhost();
+ghosts.push(ghost);
+let nextGhost=18,ghostCooldown=0;
+const ghostRelative=new THREE.Vector3();
+function placeGhost(test=false){
+ const g=ghost;
+ const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+ const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+ const side=Math.random()<.5?-1:1,d=test?15:20+Math.random()*22,offset=test?4.2:8+Math.random()*10;
+ const p=camera.position.clone().addScaledVector(forward,d).addScaledVector(right,offset*side);
+ g.group.position.set(clamp(p.x,-58,58),.23,clamp(p.z,-141,76));
+ g.side=side;g.heading=side;g.age=0;g.duration=test?28:18+Math.random()*13;g.active=true;g.test=test;
+ g.group.visible=true;g.rig.rotation.y=Math.atan2(camera.position.x-g.group.position.x,camera.position.z-g.group.position.z);
+ g.group.scale.setScalar(1);
+ for(const w of g.wisps)w.mesh.material.opacity=0;
+ nextGhost=65+Math.random()*115;
+}
+ghost.group.visible=false;
+function updateGhosts(dt,t){
  if(!started)return;
- if(watcherState==='waiting'){
-  watcherTimer-=dt;
-  if(watcherTimer<=0)spawnWatcher();
-  return;
+ if(!ghost.active){nextGhost-=dt;if(nextGhost<=0)placeGhost();return;}
+ ghost.age+=dt;
+ const g=ghost,distance=Math.hypot(g.group.position.x-camera.position.x,g.group.position.z-camera.position.z);
+ g.fade=THREE.MathUtils.smoothstep(g.age,0,2)*
+  (1-THREE.MathUtils.smoothstep(g.age,g.duration-4,g.duration));
+ g.group.position.y=.25+Math.sin(t*.9+g.side)*.085;
+ g.group.position.x+=dt*.27*g.side;
+ g.rig.rotation.z=.045*Math.sin(t*.45);
+ const swivel=Math.sin(t*.42)*.23;
+ if(g.head)g.head.rotation.y=swivel;
+ else g.rig.rotation.y+=Math.sin(t*.34)*dt*.06;
+ const close=distance<15;
+ g.group.traverse(o=>{
+  if(o.isMesh&&o.material?.transparent && !g.wisps.some(w=>w.mesh===o))
+   o.material.opacity=(o.material.color?.getHex()===0x23343d?.53:.31)*g.fade;
+ });
+ for(let i=0;i<g.wisps.length;i++){
+  const w=g.wisps[i],phase=(t*.8+w.phase+i*.8)%(Math.PI*2);
+  w.mesh.position.set(Math.cos(phase*1.7+i)*(.28+.15*i/9),1+Math.sin(i*2)*.8+phase*.05,Math.sin(phase+i)*.23);
+  w.mesh.scale.setScalar(.65+.8*(phase/(Math.PI*2)));
+  w.mesh.material.opacity=close?g.fade*(.06+.15*Math.sin(phase/2)):0;
  }
- watcherAge+=dt;
- const distance=Math.hypot(watcher.position.x-camera.position.x,watcher.position.z-camera.position.z);
- const approach=watcherState==='retreat'&&distance<13;
- const rising=THREE.MathUtils.smoothstep(watcherAge,1.2,6.5);
- watcher.scale.set(1-.22*(1-rising),.42+.58*rising,1);
- watcher.position.y=-.1;
- shadowMat.transparent=true;shadowMat.depthWrite=false;
- shadowMat.opacity=.93*THREE.MathUtils.smoothstep(watcherAge,2,5.5);
- const fadeIn=THREE.MathUtils.smoothstep(watcherAge,0,.9);
- const fadeOut=approach?Math.max(0,1-(watcherAge-6)/2):Math.min(1,Math.max(0,(watcherDuration-watcherAge)/3));
- eyeMat.transparent=true;eyeMat.opacity=fadeIn*fadeOut;
- shadowMat.opacity*=fadeOut;
- if((approach&&watcherAge>8)||watcherAge>=watcherDuration){
-  watcher.visible=false;watcherState='waiting';watcherTimer=23+Math.random()*20;
+ if(g.age>=g.duration){
+  g.group.visible=false;g.active=false;
  }
+}
+// Fleeting shadow runners are deliberately hard to distinguish from moonlit terrain.
+const runnerMat=new THREE.MeshBasicMaterial({color:0x010204,transparent:true,opacity:.09,depthWrite:false});
+const runner=new THREE.Group();
+function shadowPart(geometry,x,y,z){const m=new THREE.Mesh(geometry,runnerMat);m.position.set(x,y,z);runner.add(m);return m;}
+shadowPart(new THREE.CapsuleGeometry(.27,.72,4,8),0,1.04,0);
+shadowPart(new THREE.SphereGeometry(.23,10,7),0,1.85,0);
+for(const s of [-1,1]){
+ const arm=shadowPart(new THREE.CapsuleGeometry(.075,.58,3,6),s*.35,1.14,0);arm.rotation.z=s*.37;
+ const leg=shadowPart(new THREE.CapsuleGeometry(.10,.65,3,6),s*.16,.38,0);leg.rotation.z=s*.19;
+}
+runner.visible=false;scene.add(runner);
+let runnerAge=0,runnerDuration=0,runnerStart=null,runnerEnd=null,runnerTest=false,nextRunner=55;
+function spawnRunner(test=false){
+ const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+ const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+ const far= test?18:22+Math.random()*18;
+ const side=Math.random()<.5?-1:1;
+ const center=camera.position.clone().addScaledVector(forward,far);
+ runnerStart=center.clone().addScaledVector(right,side*(test?8:18));
+ runnerEnd=center.clone().addScaledVector(right,-side*(test?8:18));
+ runnerStart.y=0;runnerEnd.y=0;runner.position.copy(runnerStart);
+ runner.rotation.y=Math.atan2(runnerEnd.x-runnerStart.x,runnerEnd.z-runnerStart.z);
+ runner.scale.setScalar(test?1.2:.86+Math.random()*.32);
+ runnerAge=0;runnerDuration=test?3.2:1.4+Math.random()*.8;runnerTest=test;runner.visible=true;
+ nextRunner=80+Math.random()*140;
+}
+function updateRunners(dt){
+ if(!started)return;
+ if(!runner.visible){nextRunner-=dt;if(nextRunner<=0)spawnRunner();return;}
+ runnerAge+=dt;const f=Math.min(1,runnerAge/runnerDuration);
+ runner.position.lerpVectors(runnerStart,runnerEnd,f);
+ runner.position.y=.03+Math.abs(Math.sin(f*14*Math.PI))*.075;
+ runnerMat.opacity=(runnerTest?.34:.10)*Math.min(1,f*8, (1-f)*8);
+ if(f>=1)runner.visible=false;
 }
 
 // Web Audio: individually positioned synthetic cricket chirps + dirt/grass movement effects.
-let ctx=null, master=null, noiseBuffer=null, soundEnabled=false, cricketVoices=[], grassBrushGain=null,nextRustle=0,nextHowl=0;
+let ctx=null, master=null, noiseBuffer=null, soundEnabled=false, cricketVoices=[], grassBrushGain=null,nextRustle=0,nextVoice=0;
+const spokenClips=new Map();
+const voiceNames=['mommy','daddy','have-you-seen-my-mummy','hello','child-laugh'];
+async function loadSpokenClips(){
+ for(const name of voiceNames){
+  try{
+   const response=await fetch('./audio/'+name+'.ogg');
+   if(!response.ok)continue;
+   const decoded=await ctx.decodeAudioData(await response.arrayBuffer());
+   spokenClips.set(name,decoded);
+  }catch(e){/* An optional recording is absent or the device cannot decode it. */}
+ }
+}
+
 function noise(time){const len=Math.round(ctx.sampleRate*time),b=ctx.createBuffer(1,len,ctx.sampleRate),a=b.getChannelData(0);
  for(let i=0;i<len;i++)a[i]=Math.random()*2-1;return b;}
 function initAudio(){if(ctx){ctx.resume();return;}try{
@@ -444,7 +561,7 @@ function initAudio(){if(ctx){ctx.resume();return;}try{
  const gain=ctx.createGain();gain.gain.value=.018;
  const pan=ctx.createStereoPanner();osc.connect(pulse).connect(gain).connect(pan).connect(master);osc.start();
  cricketVoices.push({x:8,z:camera.position.z-12,pulse,gain,pan,next:ctx.currentTime+5});
- nextRustle=ctx.currentTime+45;nextHowl=ctx.currentTime+18;
+ nextRustle=ctx.currentTime+30;nextVoice=ctx.currentTime+55;void loadSpokenClips();
  soundEnabled=true;soundButton.textContent='Sound: ON';soundButton.setAttribute('aria-pressed','true');
  }catch(error){console.error('Audio initialization:',error);popup('Audio unavailable in this browser. The scene remains playable.');}}
 function pulseCricket(v,t){const p=v.pulse.gain;p.cancelScheduledValues(t);p.setValueAtTime(0,t);
@@ -452,33 +569,40 @@ function pulseCricket(v,t){const p=v.pulse.gain;p.cancelScheduledValues(t);p.set
   const at=t+k*.062;const loud=between(.55,1.0);p.setValueAtTime(0,at);p.linearRampToValueAtTime(loud,at+.012);p.exponentialRampToValueAtTime(.0001,at+.045);
  }
 }
-function distantSound(t,howl,answer=false){
- const gain=ctx.createGain(),pan=ctx.createStereoPanner(),filter=ctx.createBiquadFilter();
- pan.pan.value=answer?-.6:(Math.random()>.5?.45:-.45);
- const duration=howl?(answer?3.6:5.2):2.1;
+function movingRustle(test=false){
+ if(!ctx||!soundEnabled)return;
+ const t=ctx.currentTime+.04,duration=test?3.8:2.4+Math.random()*1.4;
+ const source=ctx.createBufferSource();source.buffer=noiseBuffer;source.loop=true;
+ const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=860;filter.Q.value=.6;
+ const gain=ctx.createGain(),pan=ctx.createStereoPanner(),direction=Math.random()<.5?-1:1;
+ pan.pan.setValueAtTime(direction*.76,t);
+ pan.pan.linearRampToValueAtTime(-direction*.76,t+duration);
  gain.gain.setValueAtTime(.0001,t);
- if(howl){
-  gain.gain.linearRampToValueAtTime(answer?.12:.24,t+duration*.27);
-  gain.gain.setValueAtTime(answer?.12:.24,t+duration*.47);
-  gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
-  filter.type='lowpass';filter.frequency.value=1050;
-  const voice=ctx.createOscillator(),upper=ctx.createOscillator(),upperGain=ctx.createGain();
-  voice.type='sawtooth';upper.type='triangle';upperGain.gain.value=.3;
-  for(const [osc,multiple] of [[voice,1],[upper,2.02]]){
-   osc.frequency.setValueAtTime(155*multiple,t);
-   osc.frequency.linearRampToValueAtTime(242*multiple,t+duration*.4);
-   osc.frequency.linearRampToValueAtTime(132*multiple,t+duration);
-   osc.start(t);osc.stop(t+duration+.03);
-  }
-  voice.connect(filter);upper.connect(upperGain).connect(filter);
- }else{
-  gain.gain.linearRampToValueAtTime(.007,t+duration*.3);
-  gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
-  const source=ctx.createBufferSource();source.buffer=noiseBuffer;
-  filter.type='bandpass';filter.frequency.value=620;filter.Q.value=.6;
-  source.connect(filter);source.start(t);source.stop(t+duration);
+ gain.gain.linearRampToValueAtTime(test?.065:.014,t+.38);
+ gain.gain.setValueAtTime(test?.065:.014,t+duration*.68);
+ gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
+ source.connect(filter).connect(gain).connect(pan).connect(master);
+ source.start(t);source.stop(t+duration+.02);
+ // A voice may occasionally follow the running sound, but only if prerecorded.
+ if(Math.random()<.46 && spokenClips.size){
+  const name=Math.random()<.3?'child-laugh':(['mommy','daddy','have-you-seen-my-mummy','hello'][Math.floor(Math.random()*4)]);
+  setTimeout(()=>playRecordedVoice(name,direction*.58),550+Math.random()*550);
  }
- filter.connect(gain).connect(pan).connect(master);
+}
+function playRecordedVoice(name,position=0){
+ if(!ctx||!soundEnabled)return false;
+ const buffer=spokenClips.get(name);
+ if(!buffer)return false; // No synthesized device voice substitution.
+ const t=ctx.currentTime+.04;
+ const voice=ctx.createBufferSource();voice.buffer=buffer;
+ const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1400;
+ const gain=ctx.createGain(),pan=ctx.createStereoPanner();pan.pan.value=position;
+ gain.gain.setValueAtTime(.0001,t);
+ gain.gain.linearRampToValueAtTime(.10,t+.18);
+ gain.gain.setValueAtTime(.10,t+Math.max(.2,buffer.duration-.27));
+ gain.gain.exponentialRampToValueAtTime(.0001,t+buffer.duration);
+ voice.connect(filter).connect(gain).connect(pan).connect(master);
+ voice.start(t);return true;
 }
 
 function updateAudio(){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
@@ -488,8 +612,14 @@ function updateAudio(){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
   c.gain.gain.setTargetAtTime(.018*Math.min(1,18/Math.max(8,dist)),t,.3);
   if(t>=c.next){pulseCricket(c,t+.015);c.next=t+7+Math.random()*10;}
  }
- if(t>=nextRustle){distantSound(t+.03,false);nextRustle=t+30+Math.random()*90;}
- if(t>=nextHowl){distantSound(t+.03,true);if(Math.random()<.3)distantSound(t+7,true,true);nextHowl=t+180+Math.random()*120;}
+ if(t>=nextRustle){movingRustle();nextRustle=t+65+Math.random()*110;}
+ if(t>=nextVoice){
+  if(spokenClips.size && Math.random()<.65){
+   const name=voiceNames[Math.floor(Math.random()*voiceNames.length)];
+   playRecordedVoice(name,Math.random()*1.5-.75);
+  }
+  nextVoice=t+80+Math.random()*150;
+ }
 }
 function footstep(inGrass){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
  const source=ctx.createBufferSource();source.buffer=noiseBuffer;
@@ -505,18 +635,21 @@ document.getElementById('begin').addEventListener('click',()=>{
  started=true;intro.hidden=true;initAudio();
  if(!isTouch)popup('Click to walk · Double-click to run · Drag to look · Right-click to lock view');
 });
-document.getElementById('testHowl').addEventListener('click',()=>{
- initAudio();if(!ctx)return;
- if(!soundEnabled){
-  soundEnabled=true;master.gain.setTargetAtTime(.75,ctx.currentTime,.1);
-  soundButton.textContent='Sound: ON';soundButton.setAttribute('aria-pressed','true');
- }
- ctx.resume().then(()=>distantSound(ctx.currentTime+.06,true))
-  .catch(()=>popup('Audio blocked. Tap Sound to enable.'));
+document.getElementById('testGhost').addEventListener('click',()=>{
+ if(!started)return;placeGhost(true);
 });
-document.getElementById('testWatcher').addEventListener('click',()=>{
- if(!started)return;spawnWatcher(true);
+document.getElementById('testShadow').addEventListener('click',()=>{
+ if(!started)return;spawnRunner(true);
 });
+document.getElementById('testRustle').addEventListener('click',()=>{
+ if(!started)return;initAudio();movingRustle(true);
+});
+document.getElementById('testVoice').addEventListener('click',()=>{
+ if(!started)return;initAudio();
+ if(!spokenClips.size){popup('Child voice clips not yet packaged. Connect audio generation to finish them.');return;}
+ void ctx.resume().then(()=>playRecordedVoice('have-you-seen-my-mummy',-.35));
+});
+
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}
 window.addEventListener('resize',resize);resize();
 function animate(){
@@ -524,7 +657,7 @@ function animate(){
  const dt=Math.min(clock.getDelta(),.06),t=clock.elapsedTime;
  sky.position.copy(camera.position);sky.position.y=0;
  grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);
- updateFireflies(t);updateWatcher(dt);
+ updateFireflies(t);updateGhosts(dt,t);updateRunners(dt);
  if(started){
   let mvx=0,mvz=0;
   const f=Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
@@ -568,7 +701,10 @@ function animate(){
   camera.position.y=1.72+walkBob;
   lanternRig.position.y=-.52+(moving?Math.sin(bob-1)*.035:Math.sin(t*1.6)*.009);
   lanternRig.rotation.z=(moving?Math.sin(bob*.5)*.04:0);
-  lanternLight.intensity=lanternOn?20+Math.sin(t*17)*.34+Math.sin(t*9)*.3:0;
+  const ghostDistance=ghost.active?Math.hypot(ghost.group.position.x-camera.position.x,ghost.group.position.z-camera.position.z):100;
+  const ghostNear=THREE.MathUtils.clamp((12-ghostDistance)/12,0,1);
+  lanternLight.intensity=lanternOn?(20+Math.sin(t*17)*.34+Math.sin(t*9)*.3)*(1-ghostNear*.12*(.5+.5*Math.sin(t*8))):0;
+  for(const c of cricketVoices)c.gain.gain.setTargetAtTime(.018*(1-ghostNear*.78),ctx?.currentTime||0,.5);
   camera.rotation.set(pitch,yaw,0);
   if(frameCount++%3===0)updateAudio();
   const heading=(((-yaw*180/Math.PI)%360)+360)%360;

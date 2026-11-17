@@ -1,3 +1,24 @@
+# The Road — v0.3.0 spectral encounters (November 17, 2026)
+
+## Newly implemented
+- Removed the wolf silhouette, golden eyes, synthesized howls, howl scheduler and wolf testing buttons.
+- Added faint translucent, hovering human spectres with visible anatomically modeled features; periodically they drift, turn their heads and release wisps when close. A CC-BY-4.0 CesiumMan glTF asset loads opportunistically; a procedural human fallback is provided for failed/offline loads. Actual appearance requires browser visual verification and is not guaranteed to meet the user's high-detail model target.
+- Added rare nearly-black shadow runners that move through the darkest field sections and vanish. Manual **Show shadow** testing is more visible than the normal encounter.
+- Added soft stereo grass-rustles travelling left to right or right to left, with a **Test rustle** control. Rustles are quieter than the previous synthesis.
+- Added a prerecorded-clip playback pipeline with stereo pan and distance-like filtering for "Mommy?", "Daddy?", "Have you seen my mummy?", "Hello?" and laughter, with a **Test voice** control. **Voice recordings themselves are not yet present**, because realistic childlike AI audio generation needs a connected voice/audio generator. No phone text-to-speech is used and no fake recordings are claimed.
+- Preserved v0.2.0 player controls, stamina, town edge, fireflies and existing ambient footsteps/crickets.
+
+## Test / remaining tasks
+1. Connect a voice generation service and export five audio files in Ogg/Vorbis or Ogg/Opus format under a_new_game/audio/ with exact names listed in README. Confirm license/consent and suitability, then test on iPhone.
+2. Verify CesiumMan model loads through the external CDN and is appropriate for the look; replace with a user-approved licensed higher-quality model if the test falls short.
+3. Check mobile GPU performance, ghost opacity, shadow near-invisibility, wind/rustle loudness and all four test buttons.
+4. Check nearby crickets fade and lantern subtly flickers when a ghost is close.
+5. Once tested, reduce supernatural frequency further if encounters become predictable.
+
+## Source attribution
+CesiumMan by Cesium, CC-BY-4.0; see https://github.com/KhronosGroup/glTF-Sample-Assets/blob/main/Models/CesiumMan/LICENSE.md. The external model may display Cesium-related markings and is a replaceable prototype asset.
+
+---
 # The Road — Prototype Plan
 
 ## Version v0.2.0 — November 17, 2026

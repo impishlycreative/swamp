@@ -1,4 +1,4 @@
-# A New Game — The Road (prototype v0.2.0)
+# A New Game — The Road (prototype v0.3.0)
 
 A first-person browser prototype for the rural opening scene of **A New Game**. This is an actual rendered, navigable 3D environment, **not** the generated reference screenshot and **not yet photorealistic**.
 
@@ -38,3 +38,11 @@ These tests do not render WebGL, measure frame rate, listen to audio, or establi
 **Next milestone:** Replace primitive assets with licensed/created high-detail meshes and PBR materials; improve moonlight/exposure/atmospherics, grass sway, lantern and occlusion, then use field recordings for realistic cricket and footstep sound. Establish a visual quality gate before expanding the open world. The choice of browser engine versus a game engine remains open if actual high-fidelity targets require it.
 
 See [`game_design_plan.md`](./game_design_plan.md) for agreed requirements, including the adult urban horror direction and eventual solo and multiplayer play.
+
+## Spectral encounters and missing voice recordings (v0.3)
+
+Werewolves and howls have been removed. The game now has hovering ghostly humans, subtle drifting wisps, very dark running silhouettes, and moving positional grass rustles. Test from the on-screen Ghost / Shadow / Rustle controls. An attributed CesiumMan CC-BY-4.0 glTF model is loaded from a CDN; a simpler procedural body is shown if that model cannot load. This is a visual prototype, not a verified high-fidelity human asset.
+
+The voice playback engine expects these separately generated audio clips: `audio/mommy.ogg`, `audio/daddy.ogg`, `audio/have-you-seen-my-mummy.ogg`, `audio/hello.ogg` and `audio/child-laugh.ogg`. **They have not yet been generated or included.** The voice test shows an informative status until recordings exist; it never silently uses the phone's text-to-speech voice. Any audio producer may export Ogg (Opus or Vorbis) 44.1 kHz or 48 kHz. Ensure playback on iPhone Safari and license rights before release. The repository is still usable and other audio remains functional without these optional files.
+
+Asset credit: CesiumMan by Cesium, CC-BY-4.0 (with additional trademark/logo restrictions); https://github.com/KhronosGroup/glTF-Sample-Assets/blob/main/Models/CesiumMan/LICENSE.md.
