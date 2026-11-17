@@ -1,4 +1,4 @@
-# A New Game — The Road (prototype v0.3.0)
+# A New Game — The Road (prototype v0.4.0)
 
 A first-person browser prototype for the rural opening scene of **A New Game**. This is an actual rendered, navigable 3D environment, **not** the generated reference screenshot and **not yet photorealistic**.
 
@@ -46,3 +46,9 @@ Werewolves and howls have been removed. The game now has hovering ghostly humans
 The voice playback engine expects these separately generated audio clips: `audio/mommy.ogg`, `audio/daddy.ogg`, `audio/have-you-seen-my-mummy.ogg`, `audio/hello.ogg` and `audio/child-laugh.ogg`. **They have not yet been generated or included.** The voice test shows an informative status until recordings exist; it never silently uses the phone's text-to-speech voice. Any audio producer may export Ogg (Opus or Vorbis) 44.1 kHz or 48 kHz. Ensure playback on iPhone Safari and license rights before release. The repository is still usable and other audio remains functional without these optional files.
 
 Asset credit: CesiumMan by Cesium, CC-BY-4.0 (with additional trademark/logo restrictions); https://github.com/KhronosGroup/glTF-Sample-Assets/blob/main/Models/CesiumMan/LICENSE.md.
+
+## Pattycaker encounter (v0.4.0)
+
+Pattycaker now appears when the player approaches the town boundary, or immediately through the **Show Pattycaker** test button. This original procedural monster has six hand-footed walking limbs, six fanned back arms with eyeball-and-mouth palms, and two plain human hands that cover her eyeless face. She stalks the player with intermittent positional hand-claps, pauses when close, then disappears. There is no gore or combat.
+
+The model and animation are playable prototype geometry, not production-quality art. Browser-based visual and audio acceptance testing is still required.
