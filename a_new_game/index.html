@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0b111b">
   <meta name="description" content="A New Game: first-person moonlit countryside horror scene prototype">
-  <title>The Road — v0.1.0</title>
+  <title>The Road — v0.2.0</title>
   <style>
     :root{font-family:Georgia,serif;color:#ecede4;color-scheme:dark}*{box-sizing:border-box}
     html,body{height:100%;margin:0;overflow:hidden;background:#070b12;touch-action:none}
@@ -31,6 +31,12 @@
     #intro small{display:block;margin-top:18px;color:#b9b7b0;font:12px/1.7 system-ui,sans-serif}
     #alert{position:fixed;left:50%;top:20%;transform:translateX(-50%);max-width:80vw;background:#231e1b;border:1px solid #ac885b;padding:12px 15px;font:14px system-ui,sans-serif;display:none;pointer-events:none}
     #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#070b12;color:#e4d4b7;font:13px system-ui,sans-serif;letter-spacing:.16em;z-index:20}
+    #staminaWrap{margin-top:11px;max-width:175px}
+    #staminaLabel{font:11px system-ui,sans-serif;color:#ead9b7;letter-spacing:.1em}
+    #staminaTrack{height:8px;margin-top:5px;border:1px solid #897b66;background:rgba(11,16,23,.8);border-radius:8px;overflow:hidden}
+    #staminaBar{height:100%;width:100%;background:linear-gradient(90deg,#ac804b,#e8d394);transition:width .075s linear}
+    #testControls{display:flex;gap:6px;margin-top:10px;pointer-events:auto;flex-wrap:wrap}
+    #testControls button{min-height:30px;padding:6px 9px;font-size:11px}
     @media(max-width:620px){#hud{padding:15px}#hud header{gap:5px}h1{font-size:18px}#hud footer{align-items:flex-end}#status{font-size:11px;max-width:60%}button{padding:10px 12px}#intro{padding:30px}#intro h2{font-size:45px}}
   </style>
 </head>
@@ -38,10 +44,14 @@
   <canvas id="game" aria-label="Interactive first-person moonlit road"></canvas>
   <div id="shade" aria-hidden="true"></div>
   <div id="hud" aria-live="polite">
-    <header><div><div class="eyebrow">A New Game · First playable scene</div><h1>THE ROAD</h1></div><div id="compass" aria-label="Compass">N · 000°</div></header>
-    <footer><div id="status" class="muted">WASD to walk · Mouse to look · Shift to hurry<br>On touchscreens, tap the ground to walk; drag to look.</div><div class="controls"><button id="lantern" type="button" aria-pressed="true">Lantern: ON</button><button id="sound" type="button" aria-pressed="false">Sound: OFF</button></div></footer>
+    <header><div><div class="eyebrow">A New Game · First playable scene</div><h1>THE ROAD</h1>
+      <div id="staminaWrap"><div id="staminaLabel">STAMINA · 100%</div>
+      <div id="staminaTrack" role="progressbar" aria-label="Running stamina" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="staminaBar"></div></div></div>
+      <div id="testControls"><button id="testHowl" type="button">Test howl</button><button id="testWatcher" type="button">Show wolf</button></div>
+    </div><div id="compass" aria-label="Compass">N · 000°</div></header>
+    <footer><div id="status" class="muted">Tap/click to walk · Double tap/click to run.<br>Single tap cancels running · Drag to look.</div><div class="controls"><button id="lantern" type="button" aria-pressed="true">Lantern: ON</button><button id="sound" type="button" aria-pressed="false">Sound: OFF</button></div></footer>
   </div>
-  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.1.0</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Desktop: WASD, mouse look, Shift to hurry. Tap or click the ground to walk there; drag to look. Sound begins after interaction. This is a procedural WebGL prototype, not the final photorealistic target.</small></article></div>
+  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.2.0</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Tap or click to walk; double-tap or double-click to run. One tap while running switches to walking toward a new destination. Drag to look, Shift + WASD to run on desktop, right-click to lock mouselook. Test buttons reveal a wolf or play a howl. Sound requires interaction. This is a procedural WebGL prototype.</small></article></div>
   <div id="alert" role="status"></div>
   <div id="loading">BUILDING THE NIGHT…</div>
   <script>
