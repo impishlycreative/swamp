@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
+import {createPattycakerEncounter} from './pattycaker_encounter.js';
 import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
 // The scene is procedural, so it can run without licensed or downloaded art/audio assets.
@@ -494,6 +495,8 @@ function updateGhosts(dt,t){
   g.group.visible=false;g.active=false;
  }
 }
+const pattycakerEncounter=createPattycakerEncounter(THREE,scene,camera,TOWN_EDGE_Z,popup,()=>({ctx,soundEnabled,noiseBuffer,master}));
+
 // Fleeting shadow runners are deliberately hard to distinguish from moonlit terrain.
 const runnerMat=new THREE.MeshBasicMaterial({color:0x010204,transparent:true,opacity:.09,depthWrite:false});
 const runner=new THREE.Group();
@@ -648,6 +651,7 @@ function ensureTestAudio(){
  }
  void ctx.resume();return true;
 }
+document.getElementById('testPatty').addEventListener('click',()=>pattycakerEncounter.show(started,true));
 document.getElementById('testGhost').addEventListener('click',()=>{
  if(!started)return;placeGhost(true);
 });
@@ -670,7 +674,7 @@ function animate(){
  const dt=Math.min(clock.getDelta(),.06),t=clock.elapsedTime;
  sky.position.copy(camera.position);sky.position.y=0;
  grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);
- updateFireflies(t);updateGhosts(dt,t);updateRunners(dt);
+ updateFireflies(t);updateGhosts(dt,t);updateRunners(dt);pattycakerEncounter.tick(dt,t,started);
  if(started){
   let mvx=0,mvz=0;
   const f=Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
