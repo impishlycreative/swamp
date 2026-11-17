@@ -355,7 +355,7 @@ function distantSound(t,howl,answer=false){
  pan.pan.value=answer?-.7:(Math.random()>.5?.7:-.7);
  const duration=howl?(answer?3:4.5):2.5;
  gain.gain.setValueAtTime(.0001,t);
- gain.gain.linearRampToValueAtTime(howl?(answer?.009:.015):.025,t+duration*.3);
+ gain.gain.linearRampToValueAtTime(howl?(answer?.036:.06):.025,t+duration*.3);
  gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
  if(howl){
   const osc=ctx.createOscillator();osc.type='sawtooth';filter.type='lowpass';filter.frequency.value=460;
