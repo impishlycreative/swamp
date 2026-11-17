@@ -88,9 +88,24 @@ test('run controls, town boundary and test UI are present',()=>{
  assert.match(js,/clamp\(oldz\+dz,TOWN_EDGE_Z,79\)/);
  assert.match(js,/goToPixel\(x,y,tap.double\)/);
  assert.match(js,/runToDestination=run && canStartRun\(stamina\)/);
- assert.match(js,/spawnWatcher\(true\)/);
- assert.match(js,/distantSound\(ctx.currentTime\+\.06,true\)/);
+ assert.match(js,/pattycakerEncounter\.show\(started,true\)/);
+ assert.match(js,/pattycakerEncounter\.tick\(dt,t,started\)/);
  assert.match(html,/id="staminaTrack"/);
- assert.match(html,/id="testHowl"/);
- assert.match(html,/id="testWatcher"/);
+ assert.match(html,/id="testGhost"/);
+ assert.match(html,/id="testPatty"/);
+});
+
+test('Pattycaker encounter is connected to game, model and test UI',()=>{
+ const js=readFileSync(join(folder,'main.js'),'utf8');
+ const encounter=readFileSync(join(folder,'pattycaker_encounter.js'),'utf8');
+ const model=readFileSync(join(folder,'pattycaker.js'),'utf8');
+ const html=readFileSync(join(folder,'index.html'),'utf8');
+ assert.match(js,/createPattycakerEncounter/);
+ assert.match(encounter,/townEdge\+43/);
+ assert.match(encounter,/phase='cover'/);
+ assert.match(encounter,/phase='stalk'/);
+ assert.match(encounter,/phase='linger'/);
+ assert.match(model,/const walkLegs=\[\]/);
+ assert.match(model,/const fanArms=\[\]/);
+ assert.match(html,/id="testPatty"/);
 });
