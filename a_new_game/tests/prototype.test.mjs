@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {join,dirname} from 'node:path';
-import {ROAD_HALF_WIDTH,CRICKET_QUIET_RADIUS,CRICKET_RECOVERY_SECONDS,terrainAt,cricketPresence,cricketAttenuation} from '../gameplay.js';
+import {ROAD_HALF_WIDTH,CRICKET_QUIET_RADIUS,CRICKET_RECOVERY_SECONDS,terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,MIN_RUN_STAMINA,canStartRun,staminaStep,classifyTap} from '../gameplay.js';
 
 const folder=join(dirname(fileURLToPath(import.meta.url)),'..');
 
@@ -59,4 +59,38 @@ test('browser scene uses the tested rules and key gameplay features',()=>{
   assert.match(js,/touchstart/);
   assert.match(html,/<canvas id="game"/);
   assert.match(html,/<button id="lantern"/);
+});
+
+test('running drains stamina and resumes walking after exhaustion',()=>{
+ assert.equal(RUN_SPEED,2*WALK_SPEED);
+ assert.equal(STAMINA_MAX,100);
+ const depleted=staminaStep(100,true,true,8);
+ assert.equal(depleted.stamina,0);
+ assert.equal(depleted.running,false);
+ assert.equal(staminaStep(0,false,true,12).stamina,100);
+ assert.equal(staminaStep(0,false,false,12).stamina,100);
+ assert.equal(staminaStep(40,true,false,3).stamina,65);
+ assert.equal(canStartRun(MIN_RUN_STAMINA-.1),false);
+ assert.equal(canStartRun(MIN_RUN_STAMINA),true);
+ assert.throws(()=>staminaStep(NaN,true,true,1),RangeError);
+});
+test('double-tap requires proximity and timing',()=>{
+ const first=classifyTap(null,1000,100,100);
+ assert.equal(first.double,false);
+ assert.equal(classifyTap(first.previous,1250,120,110).double,true);
+ assert.equal(classifyTap(first.previous,1390,120,110).double,false);
+ assert.equal(classifyTap(first.previous,1250,160,100).double,false);
+});
+test('run controls, town boundary and test UI are present',()=>{
+ const js=readFileSync(join(folder,'main.js'),'utf8');
+ const html=readFileSync(join(folder,'index.html'),'utf8');
+ assert.equal(TOWN_EDGE_Z,-147.5);
+ assert.match(js,/clamp\(oldz\+dz,TOWN_EDGE_Z,79\)/);
+ assert.match(js,/goToPixel\(x,y,tap.double\)/);
+ assert.match(js,/runToDestination=run && canStartRun\(stamina\)/);
+ assert.match(js,/spawnWatcher\(true\)/);
+ assert.match(js,/distantSound\(ctx.currentTime\+\.06,true\)/);
+ assert.match(html,/id="staminaTrack"/);
+ assert.match(html,/id="testHowl"/);
+ assert.match(html,/id="testWatcher"/);
 });
