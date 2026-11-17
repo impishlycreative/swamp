@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0b111b">
   <meta name="description" content="A New Game: first-person moonlit countryside horror scene prototype">
-  <title>The Road — v0.3.0</title>
+  <title>The Road — v0.4.0</title>
   <style>
     :root{font-family:Georgia,serif;color:#ecede4;color-scheme:dark}*{box-sizing:border-box}
     html,body{height:100%;margin:0;overflow:hidden;background:#070b12;touch-action:none}
@@ -47,11 +47,11 @@
     <header><div><div class="eyebrow">A New Game · First playable scene</div><h1>THE ROAD</h1>
       <div id="staminaWrap"><div id="staminaLabel">STAMINA · 100%</div>
       <div id="staminaTrack" role="progressbar" aria-label="Running stamina" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="staminaBar"></div></div></div>
-      <div id="testControls"><button id="testGhost" type="button">Show ghost</button><button id="testShadow" type="button">Show shadow</button><button id="testRustle" type="button">Test rustle</button><button id="testVoice" type="button">Test voice</button></div>
+      <div id="testControls"><button id="testPatty" type="button">Show Pattycaker</button><button id="testGhost" type="button">Show ghost</button><button id="testShadow" type="button">Show shadow</button><button id="testRustle" type="button">Test rustle</button><button id="testVoice" type="button">Test voice</button></div>
     </div><div id="compass" aria-label="Compass">N · 000°</div></header>
     <footer><div id="status" class="muted">Tap/click to walk · Double tap/click to run.<br>Single tap cancels running · Drag to look.</div><div class="controls"><button id="lantern" type="button" aria-pressed="true">Lantern: ON</button><button id="sound" type="button" aria-pressed="false">Sound: OFF</button></div></footer>
   </div>
-  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.3.0</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Tap or click to walk; double-tap or double-click to run. One tap while running switches to walking toward a new destination. Drag to look, Shift + WASD to run on desktop, right-click to lock mouselook. Test buttons reveal ghosts and fleeting shadows, or play a moving grass rustle. Recorded child voices require audio clips. Sound requires interaction. This is a procedural WebGL prototype.</small></article></div>
+  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.4.0</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Tap or click to walk; double-tap or double-click to run. One tap while running switches to walking toward a new destination. Drag to look, Shift + WASD to run on desktop, right-click to lock mouselook. Pattycaker appears near the town limits, or use Show Pattycaker to test her now. Other controls reveal ghosts, shadows, and rustles. Recorded child voices require audio clips. Sound requires interaction. This is a procedural WebGL prototype.</small></article></div>
   <div id="alert" role="status"></div>
   <div id="loading">BUILDING THE NIGHT…</div>
   <script>
