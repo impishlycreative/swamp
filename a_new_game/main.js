@@ -1,5 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
-import {terrainAt,cricketPresence,cricketAttenuation} from './gameplay.js';
+import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
 // The scene is procedural, so it can run without licensed or downloaded art/audio assets.
 // All audio starts only after explicit player interaction.
@@ -11,6 +11,7 @@ const soundButton = document.getElementById('sound');
 const lanternButton = document.getElementById('lantern');
 const loadingEl = document.getElementById('loading');
 const alertEl = document.getElementById('alert');
+const staminaBar=document.getElementById('staminaBar'),staminaLabel=document.getElementById('staminaLabel'),staminaTrack=document.getElementById('staminaTrack');
 const isTouch = matchMedia('(pointer: coarse)').matches;
 const halfPI = Math.PI / 2;
 const clamp = THREE.MathUtils.clamp;
@@ -240,30 +241,96 @@ const flame=new THREE.Mesh(new THREE.SphereGeometry(.066,10,8),new THREE.MeshBas
 const lanternLight=new THREE.PointLight(0xffb66e,20,19,2);lanternLight.position.set(0,.015,0);lanternLight.castShadow=true;lanternLight.shadow.mapSize.set(512,512);lanternLight.shadow.bias=-.001;lanternRig.add(lanternLight);
 const lightFill=new THREE.PointLight(0xfcb36f,1.5,4,2);lightFill.position.set(.02,0,0);lanternRig.add(lightFill);
 
-// Live interaction and grounded movement logic.
-const keys=new Set();const clock=new THREE.Clock();let yaw=0,pitch=0,travel=0,bob=0,started=false,lanternOn=true;
+// Destination controls: single tap walks, double tap runs; drag turns view.
+const keys=new Set(),clock=new THREE.Clock();
+let yaw=0,pitch=0,travel=0,bob=0,started=false,lanternOn=true;
 let destination=null,walkedDistance=0,stepFoot=0,mouseDrag=false,mobileGesture=null,frameCount=0;
-const cursorMarker=new THREE.Group();const circle=new THREE.Mesh(new THREE.RingGeometry(.19,.25,32),new THREE.MeshBasicMaterial({color:0xffdb97,transparent:true,opacity:.75,side:THREE.DoubleSide,depthWrite:false}));circle.rotation.x=-halfPI;cursorMarker.add(circle);cursorMarker.visible=false;scene.add(cursorMarker);
-const pointer=new THREE.Vector2();const raycaster=new THREE.Raycaster();const plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
-function goToPixel(px,py){
- pointer.set(px/innerWidth*2-1,-py/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);const pos=new THREE.Vector3();
- if(raycaster.ray.intersectPlane(plane,pos)&&pos.distanceTo(camera.position)<90){destination=new THREE.Vector3(clamp(pos.x,-62,62),0,clamp(pos.z,-112,78));cursorMarker.position.set(destination.x,.06,destination.z);cursorMarker.visible=true;}
+let stamina=STAMINA_MAX,runToDestination=false,keyboardRun=false,lastTap=null;
+let mouseStart=null,suppressClick=false;
+const cursorMarker=new THREE.Group();
+const circle=new THREE.Mesh(new THREE.RingGeometry(.19,.25,32),
+ new THREE.MeshBasicMaterial({color:0xffdb97,transparent:true,opacity:.75,side:THREE.DoubleSide,depthWrite:false}));
+circle.rotation.x=-halfPI;cursorMarker.add(circle);cursorMarker.visible=false;scene.add(cursorMarker);
+const pointer=new THREE.Vector2(),raycaster=new THREE.Raycaster();
+const plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+function goToPixel(px,py,run=false){
+ pointer.set(px/innerWidth*2-1,-py/innerHeight*2+1);
+ raycaster.setFromCamera(pointer,camera);
+ const pos=new THREE.Vector3();
+ if(!raycaster.ray.intersectPlane(plane,pos))return;
+ destination=new THREE.Vector3(clamp(pos.x,-62,62),0,clamp(pos.z,TOWN_EDGE_Z,79));
+ cursorMarker.position.set(destination.x,.06,destination.z);cursorMarker.visible=true;
+ // Even with stamina left, a single tap cancels the current run immediately.
+ runToDestination=run && canStartRun(stamina);
 }
-function popup(message){alertEl.textContent=message;alertEl.style.display='block';setTimeout(()=>{alertEl.style.display='none';},4000);}
-window.addEventListener('keydown',e=>{if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight','Space'].includes(e.code)){keys.add(e.code);destination=null;cursorMarker.visible=false;e.preventDefault();}});
-window.addEventListener('keyup',e=>keys.delete(e.code));
-window.addEventListener('blur',()=>{keys.clear();});
-canvas.addEventListener('click',e=>{if(!started||isTouch)return;if(document.pointerLockElement!==canvas){goToPixel(e.clientX,e.clientY);canvas.requestPointerLock?.();}});
-canvas.addEventListener('pointerdown',e=>{if(!started||isTouch)return;mouseDrag=true;canvas.setPointerCapture?.(e.pointerId);});
-canvas.addEventListener('pointerup',e=>{if(!isTouch)mouseDrag=false;});
-window.addEventListener('mousemove',e=>{if(!started||isTouch)return;if(document.pointerLockElement===canvas||mouseDrag){yaw-=e.movementX*.0025;pitch=clamp(pitch-e.movementY*.0025,-1.35,1.35);}});
-canvas.addEventListener('touchstart',e=>{if(!started)return;e.preventDefault();if(e.touches.length===1){const t=e.touches[0];mobileGesture={x:t.clientX,y:t.clientY,lastX:t.clientX,lastY:t.clientY,moved:false};}}, {passive:false});
-canvas.addEventListener('touchmove',e=>{if(!started||!mobileGesture||e.touches.length!==1)return;e.preventDefault();const t=e.touches[0],g=mobileGesture;
- const dx=t.clientX-g.lastX,dy=t.clientY-g.lastY;g.lastX=t.clientX;g.lastY=t.clientY;
+function popup(message){
+ alertEl.textContent=message;alertEl.style.display='block';
+ setTimeout(()=>{alertEl.style.display='none';},4000);
+}
+window.addEventListener('keydown',e=>{
+ if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight','Space'].includes(e.code)){
+  if((e.code==='ShiftLeft'||e.code==='ShiftRight')&&!keys.has(e.code)&&canStartRun(stamina))keyboardRun=true;
+  keys.add(e.code);
+  if(e.code!=='ShiftLeft'&&e.code!=='ShiftRight'){
+   destination=null;runToDestination=false;cursorMarker.visible=false;
+  }
+  e.preventDefault();
+ }
+});
+window.addEventListener('keyup',e=>{
+ keys.delete(e.code);
+ if(!keys.has('ShiftLeft')&&!keys.has('ShiftRight'))keyboardRun=false;
+});
+window.addEventListener('blur',()=>{keys.clear();keyboardRun=false;});
+canvas.addEventListener('pointerdown',e=>{
+ if(!started||isTouch||e.button!==0)return;
+ mouseDrag=true;mouseStart={x:e.clientX,y:e.clientY};
+ canvas.setPointerCapture?.(e.pointerId);
+});
+canvas.addEventListener('pointerup',()=>{mouseDrag=false;mouseStart=null;});
+canvas.addEventListener('pointercancel',()=>{mouseDrag=false;mouseStart=null;});
+canvas.addEventListener('mousemove',e=>{
+ if(!started||isTouch)return;
+ if(mouseStart&&Math.hypot(e.clientX-mouseStart.x,e.clientY-mouseStart.y)>9)suppressClick=true;
+ if(document.pointerLockElement===canvas||mouseDrag){
+  yaw-=e.movementX*.0025;pitch=clamp(pitch-e.movementY*.0025,-1.35,1.35);
+ }
+});
+canvas.addEventListener('click',e=>{
+ if(!started||isTouch)return;
+ if(suppressClick){suppressClick=false;return;}
+ const locked=document.pointerLockElement===canvas;
+ goToPixel(locked?innerWidth/2:e.clientX,locked?innerHeight/2:e.clientY,e.detail>=2);
+});
+canvas.addEventListener('dblclick',e=>e.preventDefault());
+canvas.addEventListener('contextmenu',e=>{
+ e.preventDefault();if(!started)return;
+ if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+ else canvas.requestPointerLock?.();
+});
+canvas.addEventListener('touchstart',e=>{
+ if(!started)return;e.preventDefault();
+ if(e.touches.length===1){
+  const t=e.touches[0];
+  mobileGesture={x:t.clientX,y:t.clientY,lastX:t.clientX,lastY:t.clientY,moved:false};
+ }else{mobileGesture=null;lastTap=null;}
+},{passive:false});
+canvas.addEventListener('touchmove',e=>{
+ if(!started||!mobileGesture||e.touches.length!==1)return;e.preventDefault();
+ const t=e.touches[0],g=mobileGesture,dx=t.clientX-g.lastX,dy=t.clientY-g.lastY;
+ g.lastX=t.clientX;g.lastY=t.clientY;
  if(Math.hypot(t.clientX-g.x,t.clientY-g.y)>13)g.moved=true;
  if(g.moved){yaw-=dx*.0035;pitch=clamp(pitch-dy*.0035,-1.3,1.3);}
-}, {passive:false});
-canvas.addEventListener('touchend',e=>{if(!started||!mobileGesture)return;e.preventDefault();if(!mobileGesture.moved)goToPixel(mobileGesture.x,mobileGesture.y);mobileGesture=null;}, {passive:false});
+},{passive:false});
+canvas.addEventListener('touchend',e=>{
+ if(!started||!mobileGesture)return;e.preventDefault();
+ if(!mobileGesture.moved&&e.touches.length===0){
+  const {x,y}=mobileGesture,tap=classifyTap(lastTap,performance.now(),x,y);
+  lastTap=tap.previous;goToPixel(x,y,tap.double);
+ }else lastTap=null;
+ mobileGesture=null;
+},{passive:false});
+canvas.addEventListener('touchcancel',()=>{mobileGesture=null;lastTap=null;});
 
 // Brighter, longer-lasting fireflies with pearly halos and curved flight.
 const fireflyGeometry=new THREE.SphereGeometry(.09,8,6),fireflies=[];
@@ -434,39 +501,85 @@ function footstep(inGrass){if(!ctx||!soundEnabled)return;const t=ctx.currentTime
 }
 soundButton.addEventListener('click',async()=>{if(!ctx){initAudio();return;}soundEnabled=!soundEnabled;master.gain.setTargetAtTime(soundEnabled?.75:0,ctx.currentTime,.1);soundButton.textContent=`Sound: ${soundEnabled?'ON':'OFF'}`;soundButton.setAttribute('aria-pressed',String(soundEnabled));if(soundEnabled)ctx.resume();});
 lanternButton.addEventListener('click',()=>{lanternOn=!lanternOn;lanternLight.visible=lanternOn;lightFill.visible=lanternOn;flame.visible=lanternOn;lanternButton.textContent=`Lantern: ${lanternOn?'ON':'OFF'}`;lanternButton.setAttribute('aria-pressed',String(lanternOn));});
-document.getElementById('begin').addEventListener('click',()=>{started=true;intro.hidden=true;initAudio();if(!isTouch)popup('WASD to walk · Move the mouse to look · Esc releases the mouse');});
+document.getElementById('begin').addEventListener('click',()=>{
+ started=true;intro.hidden=true;initAudio();
+ if(!isTouch)popup('Click to walk · Double-click to run · Drag to look · Right-click to lock view');
+});
+document.getElementById('testHowl').addEventListener('click',()=>{
+ initAudio();if(!ctx)return;
+ if(!soundEnabled){
+  soundEnabled=true;master.gain.setTargetAtTime(.75,ctx.currentTime,.1);
+  soundButton.textContent='Sound: ON';soundButton.setAttribute('aria-pressed','true');
+ }
+ ctx.resume().then(()=>distantSound(ctx.currentTime+.06,true))
+  .catch(()=>popup('Audio blocked. Tap Sound to enable.'));
+});
+document.getElementById('testWatcher').addEventListener('click',()=>{
+ if(!started)return;spawnWatcher(true);
+});
 function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}
 window.addEventListener('resize',resize);resize();
-function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.06),t=clock.elapsedTime;sky.position.copy(camera.position);sky.position.y=0;
- grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);updateFireflies(t);updateWatcher(dt);
- if(started){let mvx=0,mvz=0,speed=keys.has('ShiftLeft')||keys.has('ShiftRight')?5.1:2.5;
- const f=Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
- const s=Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft'));
- if(f||s){destination=null;cursorMarker.visible=false;mvx=-Math.sin(yaw)*f+Math.cos(yaw)*s;mvz=-Math.cos(yaw)*f-Math.sin(yaw)*s;}
- else if(destination){const dx=destination.x-camera.position.x,dz=destination.z-camera.position.z,d=Math.hypot(dx,dz);
-  if(d<.42){destination=null;cursorMarker.visible=false;}else{mvx=dx/d;mvz=dz/d;speed=2.3;}
- }
- const len=Math.hypot(mvx,mvz);let moving=false;
- if(len>.01){const dx=mvx/len*speed*dt,dz=mvz/len*speed*dt;const oldx=camera.position.x,oldz=camera.position.z;
- camera.position.x=clamp(camera.position.x+dx,-62,62);camera.position.z=clamp(camera.position.z+dz,-110,79);
- const advanced=Math.hypot(camera.position.x-oldx,camera.position.z-oldz);
- if(advanced>.0001){moving=true;walkedDistance+=advanced;travel+=advanced;bob+=dt*speed*6.7;
- if(travel>=.75){travel%=.75;stepFoot++;footstep(terrainAt(camera.position.x)==='grass');}}
- }
- if(!moving){travel=0;bob*=Math.exp(-dt*4);}
- if(ctx&&grassBrushGain){grassBrushGain.gain.setTargetAtTime(
-   moving&&terrainAt(camera.position.x)==='grass'&&soundEnabled?.009:0,ctx.currentTime,.16
- );}
- const walkBob=moving?Math.sin(bob)*.032:Math.sin(t*.82)*.009;
- camera.position.y=1.72+walkBob;
- lanternRig.position.y=-.52+(moving?Math.sin(bob-1)*.035:Math.sin(t*1.6)*.009);
- lanternRig.rotation.z=(moving?Math.sin(bob*.5)*.04:0);
- lanternLight.intensity=lanternOn?20+Math.sin(t*17)*.34+Math.sin(t*9)*.3:0;
- camera.rotation.set(pitch,yaw,0);
- if(frameCount++%3===0)updateAudio();
- const heading=(((-yaw*180/Math.PI)%360)+360)%360;
- compassEl.textContent=`${heading<45||heading>=315?'N':heading<135?'E':heading<225?'S':'W'} · ${Math.round(heading).toString().padStart(3,'0')}°`;
- if(isTouch){statusEl.textContent=destination?'Walking toward your marker · Drag to look':'Tap the road or grass to walk · Drag to look';}
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.06),t=clock.elapsedTime;
+ sky.position.copy(camera.position);sky.position.y=0;
+ grassUniforms.uGrassTime.value=t;grassUniforms.uWalker.value.copy(camera.position);
+ updateFireflies(t);updateWatcher(dt);
+ if(started){
+  let mvx=0,mvz=0;
+  const f=Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown'));
+  const side=Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft'));
+  if(f||side){
+   destination=null;runToDestination=false;cursorMarker.visible=false;
+   mvx=-Math.sin(yaw)*f+Math.cos(yaw)*side;
+   mvz=-Math.cos(yaw)*f-Math.sin(yaw)*side;
+  }else if(destination){
+   const dx=destination.x-camera.position.x,dz=destination.z-camera.position.z,d=Math.hypot(dx,dz);
+   if(d<.42){destination=null;runToDestination=false;cursorMarker.visible=false;}
+   else{mvx=dx/d;mvz=dz/d;}
+  }
+  const len=Math.hypot(mvx,mvz);
+  const wantsRun=len>.01&&((f||side)?keyboardRun:runToDestination)&&stamina>0;
+  const speed=wantsRun?RUN_SPEED:WALK_SPEED;
+  let moving=false;
+  if(len>.01){
+   const dx=mvx/len*speed*dt,dz=mvz/len*speed*dt,oldx=camera.position.x,oldz=camera.position.z;
+   camera.position.x=clamp(oldx+dx,-62,62);
+   camera.position.z=clamp(oldz+dz,TOWN_EDGE_Z,79);
+   const advanced=Math.hypot(camera.position.x-oldx,camera.position.z-oldz);
+   if(advanced>.0001){
+    moving=true;walkedDistance+=advanced;travel+=advanced;bob+=dt*speed*6.7;
+    if(travel>=.75){travel%=.75;stepFoot++;footstep(terrainAt(camera.position.x)==='grass');}
+   }
+  }
+  const state=staminaStep(stamina,wantsRun,moving,dt);
+  stamina=state.stamina;
+  if(wantsRun&&!state.running){runToDestination=false;keyboardRun=false;}
+  staminaBar.style.width=stamina.toFixed(1)+'%';
+  staminaLabel.textContent='STAMINA · '+Math.round(stamina)+'%';
+  staminaTrack.setAttribute('aria-valuenow',String(Math.round(stamina)));
+  if(!moving){travel=0;bob*=Math.exp(-dt*4);}
+  if(ctx&&grassBrushGain){
+   grassBrushGain.gain.setTargetAtTime(
+    moving&&terrainAt(camera.position.x)==='grass'&&soundEnabled?.009:0,ctx.currentTime,.16
+   );
+  }
+  const walkBob=moving?Math.sin(bob)*.032:Math.sin(t*.82)*.009;
+  camera.position.y=1.72+walkBob;
+  lanternRig.position.y=-.52+(moving?Math.sin(bob-1)*.035:Math.sin(t*1.6)*.009);
+  lanternRig.rotation.z=(moving?Math.sin(bob*.5)*.04:0);
+  lanternLight.intensity=lanternOn?20+Math.sin(t*17)*.34+Math.sin(t*9)*.3:0;
+  camera.rotation.set(pitch,yaw,0);
+  if(frameCount++%3===0)updateAudio();
+  const heading=(((-yaw*180/Math.PI)%360)+360)%360;
+  compassEl.textContent=(heading<45||heading>=315?'N':heading<135?'E':heading<225?'S':'W')+
+   ' · '+Math.round(heading).toString().padStart(3,'0')+'°';
+  if(isTouch){
+   statusEl.textContent=destination?(runToDestination?'Running toward marker · Tap to walk':'Walking toward marker · Double-tap to run'):
+    'Tap to walk · Double-tap to run · Drag to look';
+  }else{
+   statusEl.textContent='Click to walk · Double-click to run · Shift + WASD to run';
+  }
  }
  renderer.render(scene,camera);
 }
