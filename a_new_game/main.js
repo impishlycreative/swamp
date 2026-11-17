@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
 // The scene is procedural, so it can run without licensed or downloaded art/audio assets.
@@ -424,7 +425,7 @@ const ghosts=[];
 function replaceGhostBody(g){
  if(!modelAvailable||!ghostTemplate)return;
  g.rig.remove(g.body);
- const model=ghostTemplate.clone(true);
+ const model=cloneSkeleton(ghostTemplate);
  model.traverse(o=>{if(o.isMesh){o.material=spectralMaterial();o.frustumCulled=false;}});
  model.updateMatrixWorld(true);
  const bounds=new THREE.Box3().setFromObject(model),size=new THREE.Vector3();
@@ -609,7 +610,9 @@ function updateAudio(){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
  for(const c of cricketVoices){
   const dx=c.x-camera.position.x,dz=c.z-camera.position.z,dist=Math.hypot(dx,dz);
   c.pan.pan.setTargetAtTime(clamp((dx*Math.cos(yaw)-dz*Math.sin(yaw))/Math.max(8,dist),-1,1),t,.15);
-  c.gain.gain.setTargetAtTime(.018*Math.min(1,18/Math.max(8,dist)),t,.3);
+  const ghostDist=ghost.active?Math.hypot(ghost.group.position.x-camera.position.x,ghost.group.position.z-camera.position.z):100;
+  const hush=1-THREE.MathUtils.clamp((12-ghostDist)/12,0,1)*.78;
+  c.gain.gain.setTargetAtTime(.018*Math.min(1,18/Math.max(8,dist))*hush,t,.3);
   if(t>=c.next){pulseCricket(c,t+.015);c.next=t+7+Math.random()*10;}
  }
  if(t>=nextRustle){movingRustle();nextRustle=t+65+Math.random()*110;}
@@ -635,6 +638,16 @@ document.getElementById('begin').addEventListener('click',()=>{
  started=true;intro.hidden=true;initAudio();
  if(!isTouch)popup('Click to walk · Double-click to run · Drag to look · Right-click to lock view');
 });
+function ensureTestAudio(){
+ if(!ctx)initAudio();
+ if(!ctx)return false;
+ if(!soundEnabled){
+  soundEnabled=true;master.gain.setTargetAtTime(.75,ctx.currentTime,.1);
+  soundButton.textContent='Sound: ON';
+  soundButton.setAttribute('aria-pressed','true');
+ }
+ void ctx.resume();return true;
+}
 document.getElementById('testGhost').addEventListener('click',()=>{
  if(!started)return;placeGhost(true);
 });
@@ -642,10 +655,10 @@ document.getElementById('testShadow').addEventListener('click',()=>{
  if(!started)return;spawnRunner(true);
 });
 document.getElementById('testRustle').addEventListener('click',()=>{
- if(!started)return;initAudio();movingRustle(true);
+ if(!started||!ensureTestAudio())return;movingRustle(true);
 });
 document.getElementById('testVoice').addEventListener('click',()=>{
- if(!started)return;initAudio();
+ if(!started||!ensureTestAudio())return;
  if(!spokenClips.size){popup('Child voice clips not yet packaged. Connect audio generation to finish them.');return;}
  void ctx.resume().then(()=>playRecordedVoice('have-you-seen-my-mummy',-.35));
 });
@@ -704,7 +717,7 @@ function animate(){
   const ghostDistance=ghost.active?Math.hypot(ghost.group.position.x-camera.position.x,ghost.group.position.z-camera.position.z):100;
   const ghostNear=THREE.MathUtils.clamp((12-ghostDistance)/12,0,1);
   lanternLight.intensity=lanternOn?(20+Math.sin(t*17)*.34+Math.sin(t*9)*.3)*(1-ghostNear*.12*(.5+.5*Math.sin(t*8))):0;
-  for(const c of cricketVoices)c.gain.gain.setTargetAtTime(.018*(1-ghostNear*.78),ctx?.currentTime||0,.5);
+
   camera.rotation.set(pitch,yaw,0);
   if(frameCount++%3===0)updateAudio();
   const heading=(((-yaw*180/Math.PI)%360)+360)%360;
