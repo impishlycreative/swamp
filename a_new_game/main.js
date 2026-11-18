@@ -615,7 +615,9 @@ function updateAudio(){if(!ctx||!soundEnabled)return;const t=ctx.currentTime;
   c.pan.pan.setTargetAtTime(clamp((dx*Math.cos(yaw)-dz*Math.sin(yaw))/Math.max(8,dist),-1,1),t,.15);
   const ghostDist=ghost.active?Math.hypot(ghost.group.position.x-camera.position.x,ghost.group.position.z-camera.position.z):100;
   const hush=1-THREE.MathUtils.clamp((12-ghostDist)/12,0,1)*.78;
-  c.gain.gain.setTargetAtTime(.018*Math.min(1,18/Math.max(8,dist))*hush,t,.3);
+  const chirping=cricketPresence(dist,t,c.holdUntil);
+  c.holdUntil=chirping.holdUntil;
+  c.gain.gain.setTargetAtTime(.018*Math.min(1,18/Math.max(8,dist))*hush*(chirping.audible?1:0),t,.3);
   if(t>=c.next){pulseCricket(c,t+.015);c.next=t+7+Math.random()*10;}
  }
  if(t>=nextRustle){movingRustle();nextRustle=t+65+Math.random()*110;}
