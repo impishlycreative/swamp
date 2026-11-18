@@ -1,6 +1,6 @@
 // Pattycaker: compact adult spider-like woman for The Road.
 // A connected bone hierarchy deforms an actual weighted SkinnedMesh.
-// All sixteen limbs and seventy fingers are physically articulated in the rig;
+// All fourteen limbs and seventy fingers are physically articulated in the rig;
 // six walking hands, six eyed/mouthed fan palms, and two ordinary human hands.
 export function makePattycaker(THREE) {
   const root=new THREE.Group();
@@ -241,11 +241,13 @@ export function makePattycaker(THREE) {
       strand(limb.palm,[[0,.014,k*.046],[limb.side*.105,.016,k*.046+.006]],.004,shadowSkin);
     }
   }
+  // A compact silhouette: head just above an adult's eye line, not a towering giant.
+  root.scale.setScalar(.78);
   root.visible=false;
   root.userData.rig={
     weightedMesh:true,boneCount:bones.length,walkingLimbs:6,
     fanArms:6,humanArms:2,articulatedHands:14,fingerCount:70,
-    estimatedHeight:2.65
+    estimatedHeight:2.16
   };
   function animate(t,phase='linger'){
     const stalking=phase==='stalk';
