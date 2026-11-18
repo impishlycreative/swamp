@@ -109,3 +109,13 @@ test('Pattycaker encounter is connected to game, model and test UI',()=>{
  assert.match(model,/const fanArms=\[\]/);
  assert.match(html,/id="testPatty"/);
 });
+
+test('Pattycaker weighted rig and dress attach to defined pelvis',()=>{
+ const model=readFileSync(join(folder,'pattycaker.js'),'utf8');
+ assert.match(model,/const pelvis=joint\('Pelvis'/);
+ assert.match(model,/new THREE\.Skeleton\(bones\)/);
+ assert.match(model,/new THREE\.SkinnedMesh\(g,skin\)/);
+ assert.match(model,/part\(pelvis,skirtGeo,dress/);
+ assert.doesNotMatch(model,/\bpart\(abdomen,/);
+ assert.match(model,/fingerCount:70/);
+});
