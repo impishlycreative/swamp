@@ -1,4 +1,4 @@
-import {makePattycaker} from './pattycaker.js';
+import {makePattycaker} from './pattycaker.js?v=0.5.2';
 
 // Live town-limits encounter: discover, cover face, follow, close-range pause.
 // All geometry and clapping are procedural; no third-party character assets.
