@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
-import {createPattycakerEncounter} from './pattycaker_encounter.js';
+import {createPattycakerEncounter} from './pattycaker_encounter.js?v=0.5.2';
 import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
 // The scene is procedural, so it can run without licensed or downloaded art/audio assets.
