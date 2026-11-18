@@ -1,7 +1,7 @@
 {
   "name": "a-new-game-the-road",
   "private": true,
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "module",
   "description": "The Road: moonlit first-person horror atmosphere prototype",
   "scripts": {
