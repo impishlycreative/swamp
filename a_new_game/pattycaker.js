@@ -188,10 +188,10 @@ export function makePattycaker(THREE) {
     ca.setX(i,x*(1+.03*Math.sin(a*9+y*10)));
   }
   skirtGeo.computeVertexNormals();
-  part(abdomen,skirtGeo,dress,0,-.15,.01);
+  part(pelvis,skirtGeo,dress,0,-.15,.01);
   for(let i=0;i<18;i++){
     const a=2*Math.PI*i/18;
-    const strip=part(abdomen,new THREE.PlaneGeometry(.13,.19+.04*(i%4)),
+    const strip=part(pelvis,new THREE.PlaneGeometry(.13,.19+.04*(i%4)),
       i%4===0?hem:dress,Math.cos(a)*.64,-.62,Math.sin(a)*.64);
     strip.rotation.y=Math.PI/2-a;
     strip.rotation.z=.15*Math.sin(i*3.9);
