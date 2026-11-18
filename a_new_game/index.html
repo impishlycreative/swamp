@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0b111b">
   <meta name="description" content="A New Game: first-person moonlit countryside horror scene prototype">
-  <title>The Road — v0.4.0</title>
+  <title>The Road — v0.5.1</title>
   <style>
     :root{font-family:Georgia,serif;color:#ecede4;color-scheme:dark}*{box-sizing:border-box}
     html,body{height:100%;margin:0;overflow:hidden;background:#070b12;touch-action:none}
@@ -51,25 +51,40 @@
     </div><div id="compass" aria-label="Compass">N · 000°</div></header>
     <footer><div id="status" class="muted">Tap/click to walk · Double tap/click to run.<br>Single tap cancels running · Drag to look.</div><div class="controls"><button id="lantern" type="button" aria-pressed="true">Lantern: ON</button><button id="sound" type="button" aria-pressed="false">Sound: OFF</button></div></footer>
   </div>
-  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.4.0</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Tap or click to walk; double-tap or double-click to run. One tap while running switches to walking toward a new destination. Drag to look, Shift + WASD to run on desktop, right-click to lock mouselook. Pattycaker appears near the town limits, or use Show Pattycaker to test her now. Other controls reveal ghosts, shadows, and rustles. Recorded child voices require audio clips. Sound requires interaction. This is a procedural WebGL prototype.</small></article></div>
+  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.5.1</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Tap or click to walk; double-tap or double-click to run. One tap while running switches to walking toward a new destination. Drag to look, Shift + WASD to run on desktop, right-click to lock mouselook. Pattycaker appears near the town limits, or use Show Pattycaker to test her now. Other controls reveal ghosts, shadows, and rustles. Recorded child voices require audio clips. Sound requires interaction. This is a procedural WebGL prototype.</small></article></div>
   <div id="alert" role="status"></div>
   <div id="loading">BUILDING THE NIGHT…</div>
   <script>
-    // A blocked CDN module or unsupported WebGL should never leave a permanent
-    // unexplained "BUILDING THE NIGHT" screen.
-    function showStartupProblem() {
-      const loading = document.getElementById('loading');
-      if (!loading) return; // The game removed it after a successful start.
-      loading.textContent = 'The 3D scene could not start. Check WebGL support and your internet connection, then reload the page.';
-      loading.setAttribute('role', 'alert');
-      loading.style.padding = '2rem';
-      loading.style.textAlign = 'center';
-      loading.style.lineHeight = '1.7';
-      loading.style.letterSpacing = '.02em';
-    }
-    window.addEventListener('error', showStartupProblem);
-    window.addEventListener('unhandledrejection', showStartupProblem);
-    window.setTimeout(showStartupProblem, 20000);
+    // Surface the actual startup error, rather than blaming WebGL for every failure.
+    (function () {
+      function explain(event) {
+        const loading = document.getElementById('loading');
+        if (!loading) return; // The scene already started and removed it.
+        let detail = '';
+        if (event && event.type === 'unhandledrejection') {
+          detail = event.reason && (event.reason.stack || event.reason.message || String(event.reason));
+        } else if (event && event.type === 'error') {
+          detail = event.message || (event.target && (event.target.src || event.target.href)) || '';
+          if (event.filename) detail += ' (' + event.filename + ':' + (event.lineno || '?') + ')';
+        }
+        if (!detail) detail = 'The scene is taking longer than 20 seconds to initialize. It may be waiting for a 3D library.';
+        const heading = detail.startsWith('The scene is taking') ? 'The Road is still loading.' : 'The Road hit a startup error.';
+        loading.textContent = heading + ' ' + detail;
+        loading.style.cssText += ';padding:2rem;text-align:center;line-height:1.7;letter-spacing:.01em;flex-direction:column;gap:1rem;overflow:auto';
+        loading.setAttribute('role','alert');
+        let retry=document.getElementById('startup-retry');
+        if(!retry) {
+          retry=document.createElement('button');
+          retry.id='startup-retry';
+          retry.textContent='RELOAD THE ROAD';
+          retry.addEventListener('click',()=>location.reload());
+          loading.appendChild(retry);
+        }
+      }
+      window.addEventListener('error',explain,true);
+      window.addEventListener('unhandledrejection',explain);
+      window.setTimeout(()=>explain(null),20000);
+    })();
   </script>
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
   <script type="module" src="./main.js"></script>
