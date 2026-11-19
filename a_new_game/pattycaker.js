@@ -357,7 +357,7 @@ export function makePattycaker(THREE) {
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
   function animate(t,phase='linger',dt=1/60,lookTarget=null){
     const stalking=phase==='stalk';
-    const cycle=t*Math.PI*2*1.15;
+    const cycle=t*Math.PI*2*1.55;
     const breathe=Math.sin(t*.95);
     rig.position.y=(stalking?.018:.006)*Math.sin(cycle*2);
     pelvis.rotation.z=.025*Math.sin(cycle)*(stalking?1:.2);
