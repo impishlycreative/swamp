@@ -216,9 +216,8 @@ export function createSpectralGhost(THREE){
     const digits=[];
     for(let digit=0;digit<4;digit++){
       // Slender, tapered fingers, not spheres for knuckles or a paddle hand.
-      const d=makeSweptLimb(THREE,fingertip,side);
-      // Replace the large sleeve radius with short geometry for each digit below.
-      d.mesh.geometry.dispose();
+      const fingerMesh=new THREE.Mesh(new THREE.BufferGeometry(),fingertip);
+      // Finger contour attaches to the same moving wrist. No sphere joints.
       const curve=new THREE.CatmullRomCurve3([
         new THREE.Vector3(0,0,0),
         new THREE.Vector3(.004,.025,-.003),
@@ -226,8 +225,8 @@ export function createSpectralGhost(THREE){
         new THREE.Vector3(.006,.079,.002)
       ]);
       const g=new THREE.TubeGeometry(curve,8,.0085,6,false);
-      d.mesh.geometry=g;group.add(d.mesh);
-      digits.push(d.mesh);
+      fingerMesh.geometry.dispose();fingerMesh.geometry=g;group.add(fingerMesh);
+      digits.push(fingerMesh);
     }
     return {side,arm,digits};
   });
