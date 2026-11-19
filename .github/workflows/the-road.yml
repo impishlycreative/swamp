@@ -24,3 +24,24 @@ jobs:
       - name: Validate syntax, scene and Pattycaker
         working-directory: a_new_game
         run: npm test
+      - name: Install Chromium smoke-test dependencies
+        working-directory: a_new_game
+        run: |
+          npm install --no-save --no-audit --no-fund three@0.170.0 playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Serve browser scene
+        run: |
+          nohup python3 -m http.server 8000 --bind 127.0.0.1 --directory . >/tmp/the-road-http.log 2>&1 &
+          sleep 2
+          curl --fail --silent http://127.0.0.1:8000/a_new_game/ >/dev/null
+      - name: Browser rendering and GLB export smoke test
+        working-directory: a_new_game
+        run: node --test tests/e2e/browser-smoke.mjs
+      - name: Upload browser screenshot and exported rig
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pattycaker-browser-evidence
+          path: a_new_game/artifacts/*
+          if-no-files-found: ignore
+
