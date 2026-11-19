@@ -39,7 +39,7 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
     assert.ok(webgl.version?.includes('WebGL'),JSON.stringify(webgl));
     await page.locator('#begin').click();
     await page.locator('#testGhost').click();
-    await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('pale figure'),null,{timeout:7000});
+    await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('plain-dressed farmer'),null,{timeout:7000});
     await page.waitForTimeout(1900);
     await page.screenshot({path:join(artifacts,'ghost-v0.8-in-game.png')});
     const ghostDebug=await page.evaluate(()=>window.__roadGhostDebug?.());
