@@ -331,51 +331,152 @@ export function makePattycaker(THREE) {
     fanArms:6,humanArms:2,articulatedHands:14,fingerCount:70,
     estimatedHeight:2.16,palmEyes:6,palmMouths:6,kinematics:'analytic-IK',groundedKnuckles:true
   };
-  function animate(t,phase='linger'){
-    const stalking=phase==='stalk';
-    const cycle=t*3.8;
-    const breathe=Math.sin(t*.95);
-    rig.position.y=(stalking?.027:.008)*Math.sin(cycle*2);
-    pelvis.rotation.z=.026*Math.sin(cycle)*(stalking?1:.3);
-    lumbar.rotation.x=.07+.025*breathe;
-    chest.rotation.z=.025*Math.sin(t*.8);
-    neck.rotation.x=-.09+.025*Math.sin(t*.67);
-    head.rotation.y=.09*Math.sin(t*.63);
-    head.rotation.z=.04*Math.sin(t*.78);
-    for(const a of walkLegs){
-      const phaseOffset=a.level*2*Math.PI/3+(a.side>0?Math.PI:0);
-      const swing=Math.sin(cycle+phaseOffset);
-      const lift=stalking?Math.max(0,swing):0;
-      a.shoulder.rotation.z=a.side*.10*swing*(stalking?1:.18);
-      a.shoulder.rotation.y=.065*Math.sin(cycle+phaseOffset);
-      a.elbow.rotation.x=.13*lift;
-      a.elbow.rotation.z=a.side*(stalking?-.08*swing:0);
-      a.wrist.rotation.x=-.21*lift;
-      a.palm.rotation.x=.10*Math.sin(cycle+phaseOffset);
-    }
-    for(const a of fanArms){
-      const w=Math.sin(t*1.3+a.level*.8+(a.side>0?1.5:0));
-      a.shoulder.rotation.z=a.side*(.065+.09*w);
-      a.elbow.rotation.x=.08*Math.sin(t*.9+a.level);
-      a.wrist.rotation.z=a.side*.13*Math.sin(t*1.1+a.level);
-      a.palm.rotation.y=.10*Math.sin(t*.64+a.level);
-    }
-    const cover=phase==='cover'||phase==='stalk'?1:.55;
-    for(const a of humanArms){
-      a.shoulder.rotation.z=a.side*(-.11*cover+.055*breathe);
-      a.elbow.rotation.x=-.13*cover;
-      a.wrist.rotation.z=a.side*(.06+.07*cover);
-      a.palm.rotation.x=-.17*cover;
-    }
-    for(const h of allHands){
-      for(const f of h.fingers){
-        const pulse=.5+.5*Math.sin(t*(h.kind==='walking'?2.7:1.25)+f.index*.55+(h.side>0?2:0));
-        f.base.rotation.x=(h.kind==='walking'?-.12:-.11)*pulse;
-        f.middle.rotation.x=(h.kind==='walking'?-.40:-.30)*pulse;
-        f.tip.rotation.x=(h.kind==='walking'?-.28:-.24)*pulse;
-        f.base.rotation.z=(f.index-2)*.045;
-      }
+  // Transparent contact penumbrae, tied to each planted knuckle rather than the torso.
+  const contactGeometry=new THREE.CircleGeometry(.22,24);
+  for(const leg of walkLegs){
+    const m=new THREE.Mesh(contactGeometry,new THREE.MeshBasicMaterial({
+      color:0x07080a,transparent:true,opacity:.19,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2
+    }));
+    m.rotation.x=-Math.PI/2;m.renderOrder=1;root.add(m);leg.contact=m;
+    leg.footWorld=null;leg.inSwing=false;
+  }
+  function reset(){
+    for(const leg of walkLegs){
+      leg.footWorld=null;leg.inSwing=false;leg.swingStart=null;leg.swingEnd=null;
     }
   }
-  return {group:root,animate,skeleton,anatomy};
+  // Rotate the bone toward an IK destination in its PARENT'S space. The bind lengths
+  // never change: both the skin mesh and all attached joints deform with the solution.
+  function aimBone(bone,child,worldDestination){
+    bone.parent.updateWorldMatrix(true,false);
+    const local=bone.parent.worldToLocal(worldDestination.clone()).sub(bone.position);
+    if(local.lengthSq()<1e-8)return;
+    bone.quaternion.setFromUnitVectors(child.position.clone().normalize(),local.normalize());
+    bone.updateWorldMatrix(false,true);
+  }
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  function animate(t,phase='linger',dt=1/60,lookTarget=null){
+    const stalking=phase==='stalk';
+    const cycle=t*Math.PI*2*1.15;
+    const breathe=Math.sin(t*.95);
+    rig.position.y=(stalking?.018:.006)*Math.sin(cycle*2);
+    pelvis.rotation.z=.025*Math.sin(cycle)*(stalking?1:.2);
+    pelvis.rotation.y=.028*Math.sin(cycle*.5);
+    lumbar.rotation.x=.115+.032*breathe;
+    chest.rotation.z=.024*Math.sin(t*.80);
+    chest.rotation.x=.035*Math.sin(t*.6);
+    neck.rotation.x=-.11+.022*Math.sin(t*.67);
+    head.rotation.y=.07*Math.sin(t*.63);
+    head.rotation.z=.033*Math.sin(t*.78);
+    root.updateMatrixWorld(true);
+
+    // Six-beat alternating gait; planted targets remain in WORLD coordinates.
+    // The analytic two-link solver determines the elbow bend from a forward pole.
+    for(const leg of walkLegs){
+      const homeX=leg.side*(.94+.04*leg.level);
+      const homeZ=(leg.level-1)*.34+.12;
+      const rest=()=>root.localToWorld(V(homeX,.15,homeZ));
+      if(!leg.footWorld)leg.footWorld=rest();
+      const gp=swingProgress(gaitPhase(t,leg.level,leg.side));
+      let wristTarget=leg.footWorld.clone();
+      if(stalking && gp.swing){
+        if(!leg.inSwing){
+          leg.swingStart=leg.footWorld.clone();
+          leg.swingEnd=root.localToWorld(V(homeX,.15,homeZ+.43));
+          leg.inSwing=true;
+        }
+        wristTarget.lerpVectors(leg.swingStart,leg.swingEnd,gp.progress);
+        wristTarget.y+=.23*gp.lift;
+      }else if(leg.inSwing){
+        leg.footWorld.copy(leg.swingEnd);
+        wristTarget.copy(leg.footWorld);
+        leg.inSwing=false;
+      }
+      // If the root rotates sharply, the solver limits extension instead of
+      // tearing limbs away from their pelvis or stretching the weighted skin.
+      root.updateMatrixWorld(true);
+      const shoulderWorld=leg.shoulder.getWorldPosition(V());
+      const upper=leg.elbow.position.length()*root.scale.x;
+      const lower=leg.wrist.position.length()*root.scale.x;
+      const pole=root.localToWorld(V(leg.side*1.4,.64,(leg.level-1)*.36+.58));
+      const {elbow,wrist}=solveTwoBone(
+        shoulderWorld.toArray(),wristTarget.toArray(),upper,lower,pole.toArray()
+      );
+      aimBone(leg.shoulder,leg.elbow,V(...elbow));
+      aimBone(leg.elbow,leg.wrist,V(...wrist));
+      leg.palm.rotation.x=.035+(stalking?-.055*Math.sin(cycle+leg.level*2+leg.side):0);
+      leg.palm.rotation.z=leg.side*(stalking?-.025:.012);
+      // Contact shadows remain on the road, even while the finger joints lift.
+      const contactPoint=root.worldToLocal(V(wristTarget.x,.035,wristTarget.z));
+      leg.contact.position.copy(contactPoint);
+      leg.contact.material.opacity=gp.swing&&stalking?.09:.19;
+      leg.contact.scale.setScalar(gp.swing&&stalking?.82:1);
+    }
+    for(const a of fanArms){
+      const w=Math.sin(t*1.31+a.level*.8+(a.side>0?1.5:0));
+      a.shoulder.rotation.z=a.side*(.045+.075*w);
+      a.shoulder.rotation.x=.025*Math.sin(t*.85+a.level);
+      a.elbow.rotation.x=.075*Math.sin(t*.90+a.level);
+      a.elbow.rotation.y=.045*Math.sin(t*1.4+a.level*1.3);
+      a.wrist.rotation.z=a.side*.11*Math.sin(t*1.10+a.level);
+      a.palm.rotation.y=.085*Math.sin(t*.64+a.level);
+    }
+    const cover=phase==='cover'||phase==='stalk'?1:.5;
+    for(const a of humanArms){
+      a.shoulder.rotation.z=a.side*(-.11*cover+.045*breathe);
+      a.elbow.rotation.x=-.13*cover;
+      a.wrist.rotation.z=a.side*(.06+.06*cover);
+      a.palm.rotation.x=-.15*cover;
+    }
+    for(const h of allHands){
+      const walking=h.kind==='walking';
+      for(const f of h.fingers){
+        const pulse=.5+.5*Math.sin(t*(walking?2.7:1.25)+f.index*.55+(h.side>0?2:0));
+        if(walking){
+          // An actual three-knuckle curl under weight, flexing during push-off.
+          f.base.rotation.z=h.side*(-.28-.14*pulse);
+          f.middle.rotation.z=h.side*(.54+.16*pulse);
+          f.tip.rotation.z=h.side*(-.23-.08*pulse);
+          f.end.rotation.z=h.side*.08;
+          f.base.rotation.x=(f.index-2)*.018;
+        }else{
+          f.base.rotation.x=-.10-.14*pulse;
+          f.middle.rotation.x=-.20-.29*pulse;
+          f.tip.rotation.x=-.17-.24*pulse;
+          f.end.rotation.x=-.08-.12*pulse;
+          f.base.rotation.z=(f.index-2)*.047;
+        }
+      }
+    }
+    // Six asynchronous eyes independently scan, track, and blink. Their cavities
+    // and jaws are actual meshes, not flat decals on top of an oval hand.
+    for(const f of palmFaces){
+      const seed=f.level*2.1+f.side*1.73;
+      const blink=Math.pow(Math.max(0,Math.sin(t*.71+seed)),26);
+      f.top.position.y=.123-.051*blink;
+      f.top.scale.y=.025+.021*blink;
+      f.bottom.position.y=.009+.035*blink;
+      f.bottom.scale.y=.019+.015*blink;
+      let trackX=Math.sin(t*.37+seed)*.007;
+      let trackY=Math.cos(t*.41+seed)*.006;
+      if(lookTarget){
+        f.palm.updateWorldMatrix(true,false);
+        const v=f.palm.worldToLocal(lookTarget.clone());
+        const distance=Math.max(1,v.length());
+        trackX=clamp(v.x/distance*.048+trackX,-.016,.016);
+        trackY=clamp(v.y/distance*.045+trackY,-.016,.016);
+      }
+      f.gaze.position.set(trackX,trackY,.071);
+      f.eyeballPivot.rotation.y=trackX*2.7;
+      f.eyeballPivot.rotation.x=-trackY*2.5;
+      const opened=.42+.30*Math.sin(t*.83+seed)+.17*Math.sin(t*1.76+seed);
+      f.jaw.position.y=-.114-.015*Math.max(0,opened);
+      f.cavity.scale.y=.72+.31*Math.max(0,opened);
+    }
+    for(const {lock,i} of hairLocks){
+      lock.rotation.z=.028*Math.sin(t*.89+i*1.73);
+      lock.rotation.x=.018*Math.sin(t*.57+i*.81);
+    }
+  }
+  return {group:root,animate,reset,skeleton,anatomy};
 }
