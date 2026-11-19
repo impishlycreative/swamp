@@ -18,6 +18,10 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
   const page=await browser.newPage({viewport:{width:1200,height:750},acceptDownloads:true});
   const exceptions=[];
   page.on('pageerror',error=>exceptions.push(error.message));
+  page.on('console',msg=>{
+    if(msg.type()==='error' && /WebGLProgram|shader.*error|ERROR:\\s*0:/i.test(msg.text()))
+      exceptions.push('WebGL shader: '+msg.text().slice(0,1200));
+  });
   try{
     await page.goto(url,{waitUntil:'domcontentloaded',timeout:40000});
     try{
@@ -34,6 +38,11 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
     assert.ok(webgl.width>100 && webgl.height>100);
     assert.ok(webgl.version?.includes('WebGL'),JSON.stringify(webgl));
     await page.locator('#begin').click();
+    await page.locator('#testGhost').click();
+    await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('pale figure'),null,{timeout:7000});
+    await page.waitForTimeout(1900);
+    await page.screenshot({path:join(artifacts,'ghost-v0.7-in-game.png')});
+    assert.deepEqual(exceptions,[],'ghost must render without uncaught errors or shader compilation failures');
     await page.locator('#testPatty').click();
     await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('Pattycaker'),null,{timeout:7000});
     await page.waitForTimeout(1700);
