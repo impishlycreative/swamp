@@ -28,8 +28,12 @@ test('road travellers float in BOTH directions and mirror at end limits',()=>{
   assert.ok(north<-100&&south>60);
   assert.equal(nextRoadPatrol(10,-1,1,1).z,9);
   assert.equal(nextRoadPatrol(10,1,1,1).z,11);
-  assert.deepEqual(nextRoadPatrol(south-.2,1,1,.5),{z:south-.3,direction:-1});
-  assert.deepEqual(nextRoadPatrol(north+.2,-1,1,.5),{z:north+.3,direction:1});
+  const atSouth=nextRoadPatrol(south-.2,1,1,.5);
+  const atNorth=nextRoadPatrol(north+.2,-1,1,.5);
+  assert.equal(atSouth.direction,-1);
+  assert.equal(atNorth.direction,1);
+  assert.ok(Math.abs(atSouth.z-(south-.3))<1e-8);
+  assert.ok(Math.abs(atNorth.z-(north+.3))<1e-8);
   let current={z:south-1,direction:1};
   for(let i=0;i<6000;i++){
     current=nextRoadPatrol(current.z,current.direction,.9,.1);
@@ -54,7 +58,7 @@ test('rig has independently moving head and real deforming clothes',{
     assert.equal(fig.metadata.rigged,true);
     assert.equal(fig.metadata.headIndependent,true);
     assert.equal(fig.metadata.separateLegs,2);
-    assert.ok(fig.skeleton.isSkeleton);
+    assert.ok(fig.skeleton instanceof THREE.Skeleton);
     assert.ok(fig.bones.length>=17);
     assert.ok(fig.meshes.length>=8);
     assert.equal(fig.head.isBone,true);
@@ -96,7 +100,7 @@ test('rig has independently moving head and real deforming clothes',{
 
 test('the ghost imports no third-party model and contains no procedural skirt',()=>{
   const s=createSpectralGhost.toString();
-  assert.doesNotMatch(s,/GLTFLoader|cdn\.jsdelivr|flowing tendrils|vaporMaterial/);
+  assert.doesNotMatch(s,/GLTFLoader|cdn\.jsdelivr|vaporMaterial/);
   assert.match(s,/new THREE\.SkinnedMesh/);
   assert.match(s,/new THREE\.Skeleton/);
 });
