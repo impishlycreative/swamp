@@ -155,9 +155,9 @@ function makeSweptLimb(THREE,material,side){
     // Four anatomical pivots with believable elbow and wrist placement.
     const knots=[
       new THREE.Vector3(side*.285,1.285,.003),
-      new THREE.Vector3(side*(.388+elbowShift),1.068,.025),
-      new THREE.Vector3(side*(.406+wristShift),.829,.075),
-      new THREE.Vector3(side*(.404+wristShift),.728,.086)
+      new THREE.Vector3(side*(.462+elbowShift),1.055,.025),
+      new THREE.Vector3(side*(.390+wristShift),.821,.075),
+      new THREE.Vector3(side*(.378+wristShift),.720,.086)
     ];
     const curve=new THREE.CatmullRomCurve3(knots,false,'centripetal');
     const up=new THREE.Vector3(0,0,1),normal=new THREE.Vector3(),binormal=new THREE.Vector3();
@@ -165,8 +165,12 @@ function makeSweptLimb(THREE,material,side){
       const u=i/rings,center=curve.getPoint(u),tangent=curve.getTangent(u).normalize();
       normal.crossVectors(tangent,up).normalize();
       binormal.crossVectors(tangent,normal).normalize();
-      const radius=u<.33?.106-(u/.33)*.025:
-        u<.72?.081-((u-.33)/.39)*.028:.053-((u-.72)/.28)*.013;
+      // A narrow buried shoulder root smoothly expands into the cloth sleeve,
+      // rather than showing an open circular cap or polygonal shoulder stump.
+      const radius=u<.11?.030+.078*Math.sin(u/.11*Math.PI*.5):
+        u<.33?.108-((u-.11)/.22)*.024:
+        u<.72?.084-((u-.33)/.39)*.027:
+        .057-((u-.72)/.28)*.029;
       for(let j=0;j<=sides;j++){
         const a=j/sides*Math.PI*2,k=(i*(sides+1)+j)*3;
         const fold=1+.043*Math.sin(a*5+i*.83);
@@ -221,7 +225,7 @@ export function createSpectralGhost(THREE){
   const arms=[-1,1].map(side=>{
     const arm=makeSweptLimb(THREE,cloth,side);group.add(arm.mesh);
     const digits=[];
-    for(let digit=0;digit<4;digit++){
+    for(let digit=0;digit<5;digit++){
       // Slender, tapered fingers, not spheres for knuckles or a paddle hand.
       const fingerMesh=new THREE.Mesh(new THREE.BufferGeometry(),fingertip);
       // Finger contour attaches to the same moving wrist. No sphere joints.
@@ -275,10 +279,13 @@ export function createSpectralGhost(THREE){
     for(const limb of arms){
       const end=limb.arm.update(t);
       for(let i=0;i<limb.digits.length;i++){
-        const d=limb.digits[i];
-        const offset=(i-1.5)*.022;
-        d.position.set(end.x+offset,end.y-.069+Math.sin(t*.91+i)*.008,end.z+.014);
-        d.rotation.z=Math.PI+(i-1.5)*.06+Math.sin(t*.74+i)*.07;
+        const d=limb.digits[i],thumb=i===4;
+        const offset=thumb?limb.side*.053:(i-1.5)*.019;
+        // Fingers begin inside the tapered wrist/hand mesh; no floating sticks.
+        d.position.set(end.x+offset,end.y+(thumb?.020:.002)+Math.sin(t*.91+i)*.003,end.z+.018);
+        d.rotation.z=thumb?Math.PI-limb.side*.63:
+          Math.PI+(i-1.5)*.055+Math.sin(t*.74+i)*.055;
+        d.scale.setScalar(thumb?.68:1);
       }
     }
     for(const r of ribbons){
