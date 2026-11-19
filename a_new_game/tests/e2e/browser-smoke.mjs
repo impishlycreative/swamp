@@ -39,9 +39,18 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
     await page.waitForTimeout(1700);
     await page.screenshot({path:join(artifacts,'pattycaker-in-game.png')});
     assert.deepEqual(exceptions,[],'browser must not throw during the encounter');
-    const downloadPromise=page.waitForEvent('download',{timeout:45000});
+    const diagnostic=page.waitForFunction(()=>{
+      const msg=document.querySelector('#alert')?.textContent||'';
+      if(msg.includes('export failed'))return {error:msg};
+      return null;
+    },null,{timeout:20000}).then(handle=>handle.jsonValue());
+    const downloadPromise=page.waitForEvent('download',{timeout:20000}).then(download=>({download}));
     await page.locator('#exportPatty').click();
-    const download=await downloadPromise;
+    const outcome=await Promise.race([diagnostic,downloadPromise]).catch(error=>{
+      throw new Error('Rig export timed out. UI: '+error.message);
+    });
+    if(outcome.error)throw new Error(outcome.error);
+    const download=outcome.download;
     assert.equal(download.suggestedFilename(),'Pattycaker-rig-v0.6.0.glb');
     const path=join(artifacts,download.suggestedFilename());
     await download.saveAs(path);
