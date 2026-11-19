@@ -31,6 +31,13 @@ test('the rig constructs and every weighted vertex is finite',smoke,()=>{
     }
   });
   assert.equal(openings,6);
+  const cavities=[];
+  group.traverse(object=>{
+    if(object.name.endsWith('_mouth_cavity'))cavities.push(object);
+  });
+  assert.equal(cavities.length,6);
+  for(const cavity of cavities)assert.ok(cavity.scale.y<.07,'mouth aperture stays smaller than the palm');
+
 });
 
 test('planted walking hands stay in place when the torso moves',smoke,()=>{
