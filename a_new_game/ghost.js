@@ -119,7 +119,8 @@ function makeSpectralMaterial(THREE,colour,baseAlpha,texture=null){
       'float interference=0.95+0.045*sin(vSpectralWorld.y*33.0+uGhostTime*0.48);\n' +
       'gl_FragColor.a*=uGhostFade*(0.17+0.83*lower)*breath*interference;\n' +
       'gl_FragColor.a=clamp(gl_FragColor.a+fresnel*0.065*uGhostFade*lower,0.0,0.70);\n' +
-      'gl_FragColor.rgb+=vec3(0.035,0.064,0.078)*fresnel*uGhostFade;\n');
+      'gl_FragColor.rgb+=vec3(0.035,0.064,0.078)*fresnel*uGhostFade;\n' +
+      'if(gl_FragColor.a<0.025) discard;\n');
   };
   material.customProgramCacheKey=()=> 'ghost-veil-v0.7';
   return material;
@@ -135,7 +136,7 @@ function makeSweptLimb(THREE,material,side){
   }
   for(let i=0;i<rings;i++)for(let j=0;j<sides;j++){
     const a=i*(sides+1)+j,b=a+sides+1;
-    ids.push(a,b,a+1,a+1,b,b+1);
+    ids.push(a,a+1,b,a+1,b+1,b);
   }
   geo.setAttribute('position',new THREE.BufferAttribute(points,3));
   geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));
@@ -202,6 +203,7 @@ export function createSpectralGhost(THREE){
   const cloth=makeSpectralMaterial(THREE,0x889ba1,.64,clothTex);
   const face=makeSpectralMaterial(THREE,0x9a9e9c,.53);
   const hair=makeSpectralMaterial(THREE,0x292d32,.52);
+  hair.side=THREE.DoubleSide;
   const fingertip=makeSpectralMaterial(THREE,0x879299,.43);
   const ghostMaterials=[cloth,face,hair,fingertip];
   const form=buildFigureGeometry(THREE);
