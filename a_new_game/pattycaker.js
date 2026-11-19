@@ -22,7 +22,7 @@ export function makePattycaker(THREE, options={}) {
     const h=(Math.sin(x*127.1+y*311.7)*43758.5453)%1;
     const pores=Math.abs(h-Math.trunc(h));
     const crease=Math.pow(Math.max(0,Math.sin(y*.49+Math.sin(x*.15)*1.4)),16);
-    const v=Math.round(128+(pores-.5)*45-crease*35);
+    const v=Math.round(216+(pores-.5)*32-crease*31);
     pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;
   }
   const micro=new THREE.DataTexture(pixels,128,128,THREE.RGBAFormat);
@@ -412,7 +412,7 @@ export function makePattycaker(THREE, options={}) {
       }
       // If the root rotates sharply, the solver limits extension instead of
       // tearing limbs away from their pelvis or stretching the weighted skin.
-      root.updateMatrixWorld(true);
+      // The shoulder can update its own ancestor chain; avoid traversing the full rig six times.
       const shoulderWorld=leg.shoulder.getWorldPosition(V());
       const upper=leg.elbow.position.length()*root.scale.x;
       const lower=leg.wrist.position.length()*root.scale.x;
