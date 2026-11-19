@@ -28,7 +28,7 @@ jobs:
         working-directory: a_new_game
         run: |
           npm install --no-save --no-audit --no-fund three@0.170.0 playwright@1.56.1
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
       - name: Serve browser scene
         run: |
           nohup python3 -m http.server 8000 --bind 127.0.0.1 --directory . >/tmp/the-road-http.log 2>&1 &
