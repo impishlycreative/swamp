@@ -57,6 +57,12 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
     const header=await readFile(path);
     assert.equal(header.subarray(0,4).toString(),'glTF');
     assert.ok((await stat(path)).size>50000,'GLB must contain actual geometry and skinning');
+    const chunkLen=header.readUInt32LE(12);
+    assert.equal(header.toString('ascii',16,20),'JSON','GLB first chunk must be JSON');
+    const gltf=JSON.parse(header.subarray(20,20+chunkLen).toString('utf8'));
+    assert.ok(gltf.skins?.length>=1,'export must preserve a real deformable skeleton');
+    assert.equal(gltf.animations?.length,2,'export must bake idle and stalking actions');
+    assert.ok(gltf.meshes?.length>0,'export must contain actual geometric meshes');
     assert.deepEqual(exceptions,[],'browser must not throw during GLB export');
   }finally{
     await browser.close();
