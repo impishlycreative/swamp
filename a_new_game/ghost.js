@@ -91,26 +91,27 @@ function createClothTexture(THREE){
   tex.anisotropy=4;tex.needsUpdate=true;
   return tex;
 }
-function makeSpectralMaterial(THREE,colour,baseAlpha,texture=null){
+function makeSpectralMaterial(THREE,colour,baseAlpha,texture=null,isFace=false){
   const material=new THREE.MeshStandardMaterial({
     color:colour,roughness:.96,metalness:0,side:THREE.FrontSide,
-    emissive:0x263441,emissiveIntensity:.18,
+    emissive:0x405561,emissiveIntensity:.24,
     map:texture,transparent:true,opacity:baseAlpha,
     depthWrite:true,depthTest:true,alphaTest:.015
   });
-  const controls={fade:0,time:0,ground:0};
+  const controls={fade:0,time:0,ground:0,isFace:isFace?1:0};
   material.userData.ghostControls=controls;
   material.onBeforeCompile=shader=>{
     shader.uniforms.uGhostFade={value:controls.fade};
     shader.uniforms.uGhostTime={value:controls.time};
     shader.uniforms.uGhostFloor={value:controls.ground};
+    shader.uniforms.uGhostFace={value:controls.isFace};
     material.userData.shader=shader;
     shader.vertexShader=shader.vertexShader.replace('#include <common>',
-      '#include <common>\nvarying vec3 vSpectralWorld;\nvarying vec3 vSpectralNormal;');
+      '#include <common>\nvarying vec3 vSpectralWorld;\nvarying vec3 vSpectralNormal;\nvarying vec3 vSpectralLocal;');
     shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>',
-      '#include <worldpos_vertex>\nvSpectralWorld=(modelMatrix*vec4(transformed,1.0)).xyz;\nvSpectralNormal=normalize(mat3(modelMatrix)*objectNormal);');
+      '#include <worldpos_vertex>\nvSpectralWorld=(modelMatrix*vec4(transformed,1.0)).xyz;\nvSpectralNormal=normalize(mat3(modelMatrix)*objectNormal);\nvSpectralLocal=transformed;');
     shader.fragmentShader=shader.fragmentShader.replace('#include <common>',
-      '#include <common>\nvarying vec3 vSpectralWorld;\nvarying vec3 vSpectralNormal;\nuniform float uGhostFade;\nuniform float uGhostTime;\nuniform float uGhostFloor;');
+      '#include <common>\nvarying vec3 vSpectralWorld;\nvarying vec3 vSpectralNormal;\nuniform float uGhostFade;\nuniform float uGhostTime;\nuniform float uGhostFloor;\nuniform float uGhostFace;\nvarying vec3 vSpectralLocal;');
     shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',
       '#include <opaque_fragment>\n' +
       'float lower=smoothstep(uGhostFloor+0.05,uGhostFloor+0.75,vSpectralWorld.y);\n' +
@@ -119,6 +120,12 @@ function makeSpectralMaterial(THREE,colour,baseAlpha,texture=null){
       'float interference=0.95+0.045*sin(vSpectralWorld.y*33.0+uGhostTime*0.48);\n' +
       'gl_FragColor.a*=uGhostFade*(0.17+0.83*lower)*breath*interference;\n' +
       'gl_FragColor.a=clamp(gl_FragColor.a+fresnel*0.065*uGhostFade*lower,0.0,0.70);\n' +
+      // Features are shaded on the already sculpted face surface, not attached
+      // glossy circular eyeballs. Visible only on the forward-facing cheeks.
+      'float front=smoothstep(0.078,0.115,vSpectralLocal.z);\n' +
+      'float eyeHollow=exp(-pow((abs(vSpectralLocal.x)-0.048)/0.022,2.0)-pow((vSpectralLocal.y-1.669)/0.020,2.0));\n' +
+      'float mouthCrease=exp(-pow(vSpectralLocal.x/0.060,2.0)-pow((vSpectralLocal.y-1.524)/0.009,2.0));\n' +
+      'gl_FragColor.rgb*=1.0-uGhostFace*front*(0.46*eyeHollow+0.27*mouthCrease);\n' +
       'gl_FragColor.rgb+=vec3(0.035,0.064,0.078)*fresnel*uGhostFade;\n' +
       'if(gl_FragColor.a<0.025) discard;\n');
   };
@@ -200,8 +207,8 @@ export function createSpectralGhost(THREE){
   const group=new THREE.Group();group.name='SpectralWitness';
   group.userData.ghostVersion='0.7.0';
   const clothTex=createClothTexture(THREE);
-  const cloth=makeSpectralMaterial(THREE,0x889ba1,.64,clothTex);
-  const face=makeSpectralMaterial(THREE,0x9a9e9c,.53);
+  const cloth=makeSpectralMaterial(THREE,0x9dadb2,.70,clothTex);
+  const face=makeSpectralMaterial(THREE,0xa7aca8,.59,null,true);
   const hair=makeSpectralMaterial(THREE,0x292d32,.52);
   hair.side=THREE.DoubleSide;
   const fingertip=makeSpectralMaterial(THREE,0x879299,.43);
@@ -235,15 +242,7 @@ export function createSpectralGhost(THREE){
     const r=hairRibbon(THREE,hair,i);
     group.add(r.mesh);ribbons.push(r);
   }
-  // A few fine trailing vapour threads. No soap-bubble particles.
-  const vapor=[];
-  const vaporMaterial=new THREE.LineBasicMaterial({color:0x91aab2,transparent:true,opacity:0,depthWrite:false});
-  for(let i=0;i<7;i++){
-    const coords=new Float32Array(10*3),g=new THREE.BufferGeometry();
-    g.setAttribute('position',new THREE.BufferAttribute(coords,3));
-    const line=new THREE.Line(g,vaporMaterial.clone());line.frustumCulled=false;
-    group.add(line);vapor.push({line,coords,seed:i});
-  }
+  // No straight translucent line segments across the dress: those read as wireframe.
   const base=form.base,position=form.geometry.attributes.position;
   function update(t,fade=1,floor=0){
     const visibility=Math.max(0,Math.min(1,fade));
@@ -285,17 +284,6 @@ export function createSpectralGhost(THREE){
     for(const r of ribbons){
       r.mesh.rotation.z=.012*Math.sin(t*.58+r.seed*1.2);
       r.mesh.rotation.x=.014*Math.cos(t*.68+r.seed);
-    }
-    for(const v of vapor){
-      const arr=v.coords,q=v.seed;
-      for(let i=0;i<10;i++){
-        const u=i/9;
-        arr[i*3]=Math.cos(q*2.4+u*4)*(.23+u*.13)+.022*Math.sin(t*.4+q);
-        arr[i*3+1]=.15+u*.67;
-        arr[i*3+2]=Math.sin(q*2.4+u*3)*(.17+u*.08)+.028*Math.cos(t*.32+q);
-      }
-      v.line.geometry.attributes.position.needsUpdate=true;
-      v.line.material.opacity=visibility*.045;
     }
   }
   update(0,0,0);
