@@ -14,9 +14,9 @@ export function nextRoadPatrol(z,direction,speed,dt,north=GHOST_PATROL_BOUNDS.no
   if(![z,direction,speed,dt,north,south].every(Number.isFinite)||speed<0||dt<0||north>=south)
     throw new RangeError('Invalid ghost patrol');
   const sign=direction>=0?1:-1,span=south-north;
-  let p=z+sign*speed*dt;
-  // Mirror at endpoints; this also handles large time steps without escaping bounds.
-  const phase=((p-north)%(2*span)+2*span)%(2*span);
+  const unfolded=sign>0?z-north:2*span-(z-north);
+  // Mirror at both endpoints and retain the incoming travel direction.
+  const phase=((unfolded+speed*dt)%(2*span)+2*span)%(2*span);
   const next=phase<=span?north+phase:south-(phase-span);
   const facing=phase<span?1:-1;
   return {z:next,direction:facing};
