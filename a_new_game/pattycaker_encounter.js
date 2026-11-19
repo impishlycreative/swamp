@@ -2,8 +2,9 @@ import {makePattycaker} from './pattycaker.js?v=0.6.0';
 
 // Live town-limits encounter: discover, cover face, follow, close-range pause.
 // All geometry and clapping are procedural; no third-party character assets.
-export function createPattycakerEncounter(THREE,scene,camera,townEdge,popup,audio) {
-  const patty=makePattycaker(THREE),group=patty.group;
+export function createPattycakerEncounter(THREE,scene,camera,townEdge,popup,audio,groundMeshes=[]) {
+  const patty=makePattycaker(THREE,{groundMeshes}),group=patty.group;
+  const facing=new THREE.Object3D();
   scene.add(group);
   let phase='waiting',age=0,nextClap=.5;
   const clamp=THREE.MathUtils.clamp;
@@ -12,6 +13,7 @@ export function createPattycakerEncounter(THREE,scene,camera,townEdge,popup,audi
     phase='cover';age=0;nextClap=.35;group.visible=true;patty.reset();
     group.position.set(test?camera.position.x:0,0,
       test?Math.max(townEdge+6,camera.position.z-13):townEdge+5.5);
+    group.lookAt(camera.position.x,group.position.y,camera.position.z);
     popup(test?'Pattycaker covers her face. Watch her hands.':'A many-armed figure waits at the town limits.');
     return true;
   }
@@ -37,12 +39,15 @@ export function createPattycakerEncounter(THREE,scene,camera,townEdge,popup,audi
     if(phase==='waiting'&&camera.position.z<=townEdge+43)show(true);
     if(phase==='waiting'||phase==='gone')return;
     age+=dt;
-    if(phase==='cover'&&age>=2.8){phase='stalk';age=0;}
+    if(phase==='cover'&&age>=2.8){phase='rise';age=0;}
+    if(phase==='rise'&&age>=1.6){phase='stalk';age=0;}
     const dx=camera.position.x-group.position.x,dz=camera.position.z-group.position.z;
     const distance=Math.hypot(dx,dz);
-    if(phase==='stalk'){
+    if(phase==='stalk'&&age>4&&distance>17){phase='pursuit';age=0;}
+    if(phase==='pursuit'&&distance<9){phase='stalk';age=0;}
+    if(phase==='stalk'||phase==='pursuit'){
       if(distance>2.6){
-        const step=Math.min(1.6*dt,distance-2.6);
+        const step=Math.min((phase==='pursuit'?2.7:1.6)*dt,distance-2.6);
         group.position.x+=dx/distance*step;
         group.position.z+=dz/distance*step;
       }else{
@@ -50,12 +55,14 @@ export function createPattycakerEncounter(THREE,scene,camera,townEdge,popup,audi
         popup('Pattycaker has reached you. Her hands go silent.');
       }
       nextClap-=dt;
-      if(nextClap<=0&&distance<27){clap();nextClap=.45+Math.random()*.50;}
+      if(nextClap<=0&&distance<27){clap();nextClap=phase==='pursuit'?.24+Math.random()*.34:.45+Math.random()*.50;}
     }
     // IK must be evaluated AFTER both the root translation and facing update.
     // Otherwise planted hand-feet lag behind a rotating/sliding body.
-    group.lookAt(camera.position.x,group.position.y,camera.position.z);
-    patty.animate(t,phase,dt,camera.position);
+    facing.position.copy(group.position);
+    facing.lookAt(camera.position.x,group.position.y,camera.position.z);
+    group.quaternion.slerp(facing.quaternion,Math.min(1,dt*4.6));
+    patty.animate(t,phase,dt,camera.position,age);
     if(phase==='linger'&&age>5){phase='gone';group.visible=false;}
   }
   return {show,tick,get phase(){return phase;}};
