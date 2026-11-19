@@ -382,6 +382,27 @@ const ghost={
 };
 scene.add(ghost.group);
 ghost.group.visible=false;
+if(new URLSearchParams(location.search).has('debug')){
+  Object.defineProperty(window,'__roadGhostDebug',{value:()=>{
+    camera.updateMatrixWorld(true);
+    ghost.group.updateMatrixWorld(true);
+    const bbox=new THREE.Box3().setFromObject(ghost.group);
+    const center=bbox.getCenter(new THREE.Vector3());
+    const projected=center.clone().project(camera);
+    return {
+      active:ghost.active,visible:ghost.group.visible,fade:ghost.fade,
+      position:ghost.group.position.toArray(),
+      center:center.toArray(),bboxSize:bbox.getSize(new THREE.Vector3()).toArray(),
+      projectedCenter:projected.toArray(),
+      meshes:(()=>{let n=0;ghost.group.traverse(o=>{if(o.isMesh)n++;});return n;})(),
+      materials:ghostFigure.materials.map(m=>({
+        opacity:m.opacity,fade:m.userData.ghostControls.fade,
+        shaderFade:m.userData.shader?.uniforms.uGhostFade?.value??null,
+        depthWrite:m.depthWrite
+      }))
+    };
+  },configurable:false});
+}
 let nextGhost=18;
 const ghostFacing=new THREE.Object3D();
 function placeGhost(test=false){
