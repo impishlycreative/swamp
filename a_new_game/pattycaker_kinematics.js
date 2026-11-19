@@ -29,7 +29,7 @@ export function solveTwoBone(shoulder, target, upper, lower, pole) {
   return {elbow,wrist,reachable:requestedDistance<=upper+lower && requestedDistance>=Math.abs(upper-lower)};
 }
 
-export function gaitPhase(seconds, level, side, hz=1.15) {
+export function gaitPhase(seconds, level, side, hz=1.55) {
   if (![seconds,level,side,hz].every(Number.isFinite)||hz<=0) throw new RangeError('Invalid gait');
   return ((seconds*hz+level/3+(side>0?.5:0))%1+1)%1;
 }
