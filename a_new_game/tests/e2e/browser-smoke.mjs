@@ -23,7 +23,7 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
       exceptions.push('WebGL shader: '+msg.text().slice(0,1200));
   });
   try{
-    await page.goto(url,{waitUntil:'domcontentloaded',timeout:40000});
+    await page.goto(url+(url.includes('?')?'&':'?')+'debug=1',{waitUntil:'domcontentloaded',timeout:40000});
     try{
       await page.waitForFunction(()=>!document.getElementById('loading'),null,{timeout:40000});
     }catch(error){
@@ -42,6 +42,11 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
     await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('pale figure'),null,{timeout:7000});
     await page.waitForTimeout(1900);
     await page.screenshot({path:join(artifacts,'ghost-v0.7-in-game.png')});
+    const ghostDebug=await page.evaluate(()=>window.__roadGhostDebug?.());
+    console.log('Ghost visual diagnostic:',JSON.stringify(ghostDebug));
+    assert.ok(ghostDebug?.visible&&ghostDebug?.active,'ghost must be visible and active');
+    assert.ok(ghostDebug.fade>.15,'ghost opacity envelope must be active');
+    assert.ok(ghostDebug.projectedCenter[2]<1,'ghost must be in front of camera');
     assert.deepEqual(exceptions,[],'ghost must render without uncaught errors or shader compilation failures');
     await page.locator('#testPatty').click();
     await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('Pattycaker'),null,{timeout:7000});
