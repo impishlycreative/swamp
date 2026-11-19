@@ -428,8 +428,9 @@ function updateGhosts(dt,t){
   if(!g.active){nextGhost-=dt;if(nextGhost<=0)placeGhost();return;}
   g.age+=dt;
   const distance=Math.hypot(g.group.position.x-camera.position.x,g.group.position.z-camera.position.z);
-  g.fade=THREE.MathUtils.smoothstep(g.age,0,2.4)*
-    (1-THREE.MathUtils.smoothstep(g.age,g.duration-4.2,g.duration));
+  const entrance=g.test?Math.max(.95,THREE.MathUtils.smoothstep(g.age,0,2.4)):
+    THREE.MathUtils.smoothstep(g.age,0,2.4);
+  g.fade=entrance*(1-THREE.MathUtils.smoothstep(g.age,g.duration-4.2,g.duration));
   g.group.position.y=.16+.046*Math.sin(t*.57+g.side);
   g.group.position.x+=dt*.095*g.side;
   // A slow, deliberate facing change. A hovering person should not snap its
