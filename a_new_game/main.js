@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
-import {createPattycakerEncounter} from './pattycaker_encounter.js?v=0.5.2';
+import {createPattycakerEncounter} from './pattycaker_encounter.js?v=0.6.0';
 import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
 // The scene is procedural, so it can run without licensed or downloaded art/audio assets.
@@ -654,6 +654,17 @@ function ensureTestAudio(){
  void ctx.resume();return true;
 }
 document.getElementById('testPatty').addEventListener('click',()=>pattycakerEncounter.show(started,true));
+document.getElementById('exportPatty').addEventListener('click',async()=>{
+  try{
+    popup('Preparing Pattycaker rig and baked animation clips…');
+    const {exportPattycakerGLB}=await import('./pattycaker_export.js?v=0.6.0');
+    const result=await exportPattycakerGLB(THREE);
+    popup('Pattycaker GLB saved: '+result.bones+' bones, '+result.clips.length+' animation clips.');
+  }catch(error){
+    console.error('Pattycaker export failed',error);
+    popup('Pattycaker export failed: '+(error?.message||String(error)));
+  }
+});
 document.getElementById('testGhost').addEventListener('click',()=>{
  if(!started)return;placeGhost(true);
 });
