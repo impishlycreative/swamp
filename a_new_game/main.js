@@ -389,7 +389,7 @@ function placeGhost(test=false){
   const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
   const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
   const side=Math.random()<.5?-1:1;
-  const d=test?10.5:19+Math.random()*19,offset=test?2.3:7+Math.random()*8;
+  const d=test?6.8:19+Math.random()*19,offset=test?1.15:7+Math.random()*8;
   const p=camera.position.clone().addScaledVector(forward,d).addScaledVector(right,offset*side);
   g.group.position.set(clamp(p.x,-58,58),.16,clamp(p.z,-141,76));
   g.side=side;g.age=0;g.duration=test?28:20+Math.random()*11;
