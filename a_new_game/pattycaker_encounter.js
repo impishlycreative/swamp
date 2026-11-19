@@ -1,4 +1,4 @@
-import {makePattycaker} from './pattycaker.js?v=0.5.2';
+import {makePattycaker} from './pattycaker.js?v=0.6.0';
 
 // Live town-limits encounter: discover, cover face, follow, close-range pause.
 // All geometry and clapping are procedural; no third-party character assets.
@@ -9,7 +9,7 @@ export function createPattycakerEncounter(THREE,scene,camera,townEdge,popup,audi
   const clamp=THREE.MathUtils.clamp;
   function show(started=false,test=false) {
     if(!started || (phase!=='waiting'&&phase!=='gone'&&!test))return false;
-    phase='cover';age=0;nextClap=.35;group.visible=true;
+    phase='cover';age=0;nextClap=.35;group.visible=true;patty.reset();
     group.position.set(test?camera.position.x:0,0,
       test?Math.max(townEdge+6,camera.position.z-13):townEdge+5.5);
     popup(test?'Pattycaker covers her face. Watch her hands.':'A many-armed figure waits at the town limits.');
@@ -52,8 +52,10 @@ export function createPattycakerEncounter(THREE,scene,camera,townEdge,popup,audi
       nextClap-=dt;
       if(nextClap<=0&&distance<27){clap();nextClap=.45+Math.random()*.50;}
     }
-    patty.animate(t,phase);
+    // IK must be evaluated AFTER both the root translation and facing update.
+    // Otherwise planted hand-feet lag behind a rotating/sliding body.
     group.lookAt(camera.position.x,group.position.y,camera.position.z);
+    patty.animate(t,phase,dt,camera.position);
     if(phase==='linger'&&age>5){phase='gone';group.visible=false;}
   }
   return {show,tick,get phase(){return phase;}};
