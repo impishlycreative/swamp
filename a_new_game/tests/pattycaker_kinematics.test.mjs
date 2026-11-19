@@ -65,6 +65,6 @@ test('scene integrates weighted anatomical joints and six grounded hand-feet',()
   assert.match(model,/f\.gaze\.position\.set/);
   assert.match(model,/f\.jaw\.position\.y/);
   assert.match(model,/Math\.pow\(Math\.max\(0,Math\.sin\(t\*\.71\+seed\)\),26\)/);
-  assert.match(encounter,/group\.lookAt\([\s\S]*patty\.animate\(t,phase,dt,camera\.position\)/);
+  assert.match(encounter,/facing\.lookAt\([\s\S]*group\.quaternion\.slerp\([\s\S]*patty\.animate\(t,phase,dt,camera\.position,age\)/);
   assert.match(model,/palmEyes:6,palmMouths:6/);
 });
