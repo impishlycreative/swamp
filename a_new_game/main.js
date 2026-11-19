@@ -377,7 +377,7 @@ function updateFireflies(t){
 const ghostFigure=createSpectralGhost(THREE);
 const ghost={group:ghostFigure.group,figure:ghostFigure,
   age:0,duration:0,fade:0,active:false,test:false,
-  side:1,heading:-1,speed:.20};
+  side:1,heading:-1,travelAngle:0,speed:.20};
 scene.add(ghost.group);
 ghost.group.visible=false;
 let nextGhost=18;
@@ -436,13 +436,14 @@ function placeGhost(test=false){
   const d=test?6.8:18+Math.random()*19,offset=test?1.15:6+Math.random()*7;
   const p=camera.position.clone().addScaledVector(forward,d).addScaledVector(right,offset*side);
   g.group.position.set(clamp(p.x,-58,58),.14,clamp(p.z,-141,76));
-  g.side=side;g.heading=Math.random()<.5?-1:1;
+  g.side=side;g.travelAngle=test?0:Math.random()*Math.PI*2;
+  g.heading=Math.cos(g.travelAngle)>=0?1:-1;
   g.speed=.16+Math.random()*.16;
   g.age=0;g.duration=test?34:21+Math.random()*16;
   g.active=true;g.test=test;g.group.visible=true;
   // His whole body faces one direction along the road; only the HEAD will
   // rotate independently when the player comes close enough.
-  g.group.rotation.y=g.heading>0?0:Math.PI;
+  g.group.rotation.y=g.travelAngle;
   g.figure.update(0,test?.96:0,g.group.position.y,
     {player:camera.position,distance:Infinity,dt:1/60});
   nextGhost=85+Math.random()*120;
@@ -478,7 +479,17 @@ function updateGhosts(dt,t){
   g.fade=entrance*(1-THREE.MathUtils.smoothstep(g.age,g.duration-4.2,g.duration));
   // Slow directional movement, with grounded human pose and no walking cycle.
   g.group.position.y=.14+.016*Math.sin(t*.56+g.side);
-  g.group.position.z+=dt*g.heading*g.speed;
+  g.group.position.x+=dt*Math.sin(g.travelAngle)*g.speed;
+  g.group.position.z+=dt*Math.cos(g.travelAngle)*g.speed;
+  if(Math.abs(g.group.position.x)>57){
+    g.group.position.x=clamp(g.group.position.x,-57,57);
+    g.travelAngle=-g.travelAngle;
+  }
+  if(g.group.position.z>75||g.group.position.z<-140){
+    g.group.position.z=clamp(g.group.position.z,-140,75);
+    g.travelAngle=Math.PI-g.travelAngle;
+  }
+  g.group.rotation.y=g.travelAngle;
   g.figure.update(t,g.fade,g.group.position.y,{
     dt,player:camera.position,distance,moving:true
   });
