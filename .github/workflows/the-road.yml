@@ -1,0 +1,26 @@
+name: The Road — regression and rig smoke tests
+on:
+  push:
+    paths:
+      - 'a_new_game/**'
+      - '.github/workflows/the-road.yml'
+  pull_request:
+    paths:
+      - 'a_new_game/**'
+      - '.github/workflows/the-road.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Three.js for headless geometry smoke tests
+        working-directory: a_new_game
+        run: npm install --no-save --no-audit --no-fund three@0.170.0
+      - name: Validate syntax, scene and Pattycaker
+        working-directory: a_new_game
+        run: npm test
