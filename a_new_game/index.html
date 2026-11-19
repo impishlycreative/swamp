@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0b111b">
   <meta name="description" content="A New Game: first-person moonlit countryside horror scene prototype">
-  <title>The Road — v0.7.0</title>
+  <title>The Road — v0.8.0</title>
   <style>
     :root{font-family:Georgia,serif;color:#ecede4;color-scheme:dark}*{box-sizing:border-box}
     html,body{height:100%;margin:0;overflow:hidden;background:#070b12;touch-action:none}
@@ -51,7 +51,7 @@
     </div><div id="compass" aria-label="Compass">N · 000°</div></header>
     <footer><div id="status" class="muted">Tap/click to walk · Double tap/click to run.<br>Single tap cancels running · Drag to look.</div><div class="controls"><button id="lantern" type="button" aria-pressed="true">Lantern: ON</button><button id="sound" type="button" aria-pressed="false">Sound: OFF</button></div></footer>
   </div>
-  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.7.0</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Tap or click to walk; double-tap or double-click to run. One tap while running switches to walking toward a new destination. Drag to look, Shift + WASD to run on desktop, right-click to lock mouselook. Pattycaker appears near the town limits, or use Show Pattycaker to test her now. Other controls reveal ghosts, shadows, and rustles. Recorded child voices require audio clips. Sound requires interaction. Ghosts now use a connected person-shaped silhouette, animated sleeves, atmospheric edges and lower-body fading. This is a procedural WebGL prototype. Use Export Pattycaker GLB to save her reusable skinned rig with basic animation clips; it remains prototype-quality art.</small></article></div>
+  <div id="intro"><article><div class="eyebrow">A first-person horror atmosphere prototype · v0.8.0</div><h2>There's a road.<br>Somewhere, a town.</h2><p>It is after midnight. The moon is full. The grass is moving, and the crickets sound close enough to touch. You are already holding a lantern.</p><button id="begin" type="button">BEGIN WALKING</button><small>Tap or click to walk; double-tap or double-click to run. One tap while running switches to walking toward a new destination. Drag to look, Shift + WASD to run on desktop, right-click to lock mouselook. Pattycaker appears near the town limits, or use Show Pattycaker to test her now. Other controls reveal ghosts, shadows, and rustles. Recorded child voices require audio clips. Sound requires interaction. The ghost is a rigged Amish-inspired farmer in fitted clothes; one or two float up and down the road, and heads turn toward approaching players. This is a procedural WebGL prototype. Use Export Pattycaker GLB to save her reusable skinned rig with basic animation clips; it remains prototype-quality art.</small></article></div>
   <div id="alert" role="status"></div>
   <div id="loading">BUILDING THE NIGHT…</div>
   <script>
@@ -87,6 +87,6 @@
     })();
   </script>
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
-  <script type="module" src="./main.js?v=0.7.0"></script>
+  <script type="module" src="./main.js?v=0.8.0"></script>
 </body>
 </html>
