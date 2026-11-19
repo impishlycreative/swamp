@@ -1,4 +1,4 @@
-# A New Game — The Road (prototype v0.4.0)
+# A New Game — The Road (prototype v0.6.0)
 
 A first-person browser prototype for the rural opening scene of **A New Game**. This is an actual rendered, navigable 3D environment, **not** the generated reference screenshot and **not yet photorealistic**.
 
@@ -27,7 +27,7 @@ If Swamp GitHub Pages serves the repository root, the scene's relative URL is `/
 ## Automated checks
 
 From the `a_new_game` directory, run `npm test` with Node.js 20+.
-The command checks JavaScript syntax and runs the `tests/prototype.test.mjs` regression suite. The rules for terrain classification and cricket recovery live in `gameplay.js`, which is also imported by the browser scene.
+The command checks syntax and runs the gameplay, Pattycaker kinematics, and model smoke-test suites. Headless Three.js model smoke checks require `npm install --no-save three@0.170.0` first; without the package they are explicitly skipped. The added GitHub Actions workflow installs Three.js and runs all tests. The rules for terrain classification and cricket recovery live in `gameplay.js`, which is also imported by the browser scene.
 
 These tests do not render WebGL, measure frame rate, listen to audio, or establish photorealism. A manual visual and audio check in desktop and mobile browsers is still required.
 
@@ -47,8 +47,17 @@ The voice playback engine expects these separately generated audio clips: `audio
 
 Asset credit: CesiumMan by Cesium, CC-BY-4.0 (with additional trademark/logo restrictions); https://github.com/KhronosGroup/glTF-Sample-Assets/blob/main/Models/CesiumMan/LICENSE.md.
 
-## Pattycaker encounter (v0.4.0)
+## Pattycaker rebuild (v0.6.0)
 
-Pattycaker now appears when the player approaches the town boundary, or immediately through the **Show Pattycaker** test button. This original procedural monster has six hand-footed walking limbs, six fanned back arms with eyeball-and-mouth palms, and two plain human hands that cover her eyeless face. She stalks the player with intermittent positional hand-claps, pauses when close, then disappears. There is no gore or combat.
+Pattycaker remains an original procedural adult horror character with six hand-footed walking limbs, six fanned arms bearing eyes and mouths, two ordinary human face-covering hands, and an eyeless face. The encounter at the town limits and the Show Pattycaker test button remain intact.
 
-The model and animation are playable prototype geometry, not production-quality art. Browser-based visual and audio acceptance testing is still required.
+Version 0.6 introduces:
+- Weighted, deformable connective anatomy, four articulated finger segments with visible knuckles, and irregular skin geometry with procedural PBR micro-texture.
+- Recessed eye and mouth apertures in each of the six fan palms (rather than pasted-on decals), independently tracking/blinking eyes, gums, uneven teeth, and moving lower jaws.
+- A six-limb world-anchored IK gait with alternating plant/swing cycles, contact shadows and road/grass ground-height raycasting. Pattycaker crouches, rises, walks, turns toward the player and accelerates into pursuit when far away.
+- An on-demand **Export Pattycaker GLB** button for the weighted rig and baked idle / in-place stalking clips. The GLB export path and importing those clips into Blender still need manual verification.
+- Numerical IK/gait tests, optional headless Three.js rig tests and an Actions workflow.
+
+The **v0.6 branch is a prototype-quality character rebuild**, not a finished photorealistic sculpt. True muscle-to-skin topology, finger-by-finger collision/contact IK, performance capture, professional textures/hair, close-range visual direction, browser FPS, and GLB import still require review.
+
+See [PATTYCAKER_ACCEPTANCE.md](./PATTYCAKER_ACCEPTANCE.md) for the item-by-item implementation and the ten manual acceptance checks.

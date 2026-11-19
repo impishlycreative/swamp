@@ -106,7 +106,7 @@ test('Pattycaker encounter is connected to game, model and test UI',()=>{
  assert.match(encounter,/phase='stalk'/);
  assert.match(encounter,/phase='linger'/);
  assert.match(model,/const walkLegs=\[\]/);
- assert.match(model,/const fanArms=\[\]/);
+ assert.match(model,/fanArms=\[\]/);
  assert.match(html,/id="testPatty"/);
 });
 
