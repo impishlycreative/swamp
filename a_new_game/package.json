@@ -1,10 +1,10 @@
 {
   "name": "a-new-game-the-road",
   "private": true,
-  "version": "0.5.2",
+  "version": "0.6.0",
   "type": "module",
   "description": "The Road: moonlit first-person horror atmosphere prototype",
   "scripts": {
-    "test": "node --check main.js && node --check gameplay.js && node --check pattycaker.js && node --check pattycaker_encounter.js && node --test tests/*.test.mjs"
+    "test": "node --check main.js && node --check gameplay.js && node --check pattycaker.js && node --check pattycaker_encounter.js && node --check pattycaker_kinematics.js && node --check pattycaker_export.js && node --test tests/*.test.mjs"
   }
 }
