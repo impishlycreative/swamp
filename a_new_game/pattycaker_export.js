@@ -30,7 +30,7 @@ export async function exportPattycakerGLB(THREE){
   root.updateMatrixWorld(true);
   const animations=[
     bakeClip(THREE,asset,'Pattycaker_idle', 'linger',4,40),
-    bakeClip(THREE,asset,'Pattycaker_stalk_in_place','stalk',1/1.15,32)
+    bakeClip(THREE,asset,'Pattycaker_stalk_in_place','stalk',1/1.55,32)
   ];
   // Reset the exported skeleton to a neutral pose; clips retain authored motion.
   asset.reset();asset.animate(0,'linger');
