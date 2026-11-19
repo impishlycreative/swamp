@@ -115,7 +115,8 @@ export function createSpectralGhost(THREE){
   const coat=spectralMaterial(THREE,0x464e4a,.82,texture);
   const trousers=spectralMaterial(THREE,0x303a3b,.82,texture);
   const skin=spectralMaterial(THREE,0x999b92,.73);
-  const black=spectralMaterial(THREE,0x171b1d,.86);
+  const black=spectralMaterial(THREE,0x2b3335,.89);
+  black.emissive.setHex(0x233138);black.emissiveIntensity=.20;
   const beard=spectralMaterial(THREE,0x252724,.77);
   beard.side=THREE.DoubleSide;
   const shirt=spectralMaterial(THREE,0x89908c,.72);
@@ -216,7 +217,7 @@ export function createSpectralGhost(THREE){
   }
   // Plain broad-brim, dark farmer's hat. As a child of the Head bone it turns
   // with the face. Keep shape solid and unbillowing.
-  attachMesh(THREE,head,new THREE.CylinderGeometry(.292,.292,.018,28),black,
+  attachMesh(THREE,head,new THREE.CylinderGeometry(.312,.312,.022,28),black,
     'Wide brim plain farmer hat',0,.193,.008);
   attachMesh(THREE,head,new THREE.CylinderGeometry(.151,.165,.145,24),black,
     'Hat crown',0,.270,.004);
