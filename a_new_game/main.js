@@ -495,7 +495,7 @@ function updateGhosts(dt,t){
   g.group.visible=false;g.active=false;
  }
 }
-const pattycakerEncounter=createPattycakerEncounter(THREE,scene,camera,TOWN_EDGE_Z,popup,()=>({ctx,soundEnabled,noiseBuffer,master}));
+const pattycakerEncounter=createPattycakerEncounter(THREE,scene,camera,TOWN_EDGE_Z,popup,()=>({ctx,soundEnabled,noiseBuffer,master}),[road,terrain]);
 
 // Fleeting shadow runners are deliberately hard to distinguish from moonlit terrain.
 const runnerMat=new THREE.MeshBasicMaterial({color:0x010204,transparent:true,opacity:.09,depthWrite:false});
