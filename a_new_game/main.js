@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
+import {createSpectralGhost} from './ghost.js?v=0.7.0';
 import {createPattycakerEncounter} from './pattycaker_encounter.js?v=0.6.0';
 import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
@@ -373,127 +372,74 @@ function updateFireflies(t){
  }
 }
 
-// v0.3: spectral people replace the former wolf. The primary body comes from
-// Khronos/Cesium's attributed CC-BY-4.0 glTF asset. A detailed procedural fallback
-// remains playable offline or when third-party model hosting is unavailable.
-const spectralMaterial=()=>new THREE.MeshStandardMaterial({
-  color:0xc0e0e5,emissive:0x456f81,emissiveIntensity:.46,
-  transparent:true,opacity:.31,depthWrite:false,roughness:.9,
-  side:THREE.DoubleSide
-});
-let ghostTemplate=null,modelAvailable=false;
-const ghostLoader=new GLTFLoader();
-ghostLoader.load(
- 'https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/CesiumMan/glTF-Binary/CesiumMan.glb',
- gltf=>{
-  ghostTemplate=gltf.scene;
-  ghostTemplate.traverse(o=>{if(o.isMesh){o.material=spectralMaterial();o.castShadow=false;o.receiveShadow=false;}});
-  modelAvailable=true;
-  // Swap active procedural bodies without interrupting their existing encounters.
-  for(const g of ghosts)replaceGhostBody(g);
- },undefined,()=>{modelAvailable=false;}
-);
-function makeFallbackPerson(){
- const body=new THREE.Group(),mat=spectralMaterial();
- const part=(geometry,x,y,z,sx=1,sy=1,sz=1)=>{
-  const mesh=new THREE.Mesh(geometry,mat);mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);body.add(mesh);return mesh;
- };
- // Anatomical proportions, visible neck/cheeks/chin/nose, articulated-looking hands.
- part(new THREE.SphereGeometry(1,20,14),0,1.48,0,.40,.69,.23);
- part(new THREE.SphereGeometry(1,20,14),0,.90,0,.28,.39,.22);
- part(new THREE.CylinderGeometry(.115,.13,.25,12),0,2.20,0);
- part(new THREE.SphereGeometry(1,24,18),0,2.51,0,.27,.34,.23);
- part(new THREE.SphereGeometry(1,12,10),0,2.39,.19,.205,.13,.09); // cheeks
- part(new THREE.SphereGeometry(1,12,10),0,2.24,.12,.135,.09,.115); // chin
- part(new THREE.SphereGeometry(1,10,8),0,2.52,.24,.065,.115,.095); // nose
- const eyes=new THREE.MeshBasicMaterial({color:0x23343d,transparent:true,opacity:.53,depthWrite:false});
- for(const s of [-1,1]){
-  const eye=new THREE.Mesh(new THREE.SphereGeometry(.047,10,8),eyes);
-  eye.position.set(s*.115,2.61,.204);body.add(eye);
-  const arm=part(new THREE.CapsuleGeometry(.10,.77,5,10),s*.46,1.60,0);
-  arm.rotation.z=s*.15;
-  const hand=part(new THREE.SphereGeometry(.11,12,8),s*.56,.91,.01,1,1.3,.68);
-  for(let i=0;i<4;i++){
-   const f=part(new THREE.CapsuleGeometry(.018,.115,3,6),
-       s*(.49+i*.046),.75,.035);f.rotation.z=s*.1;
-  }
-  const leg=part(new THREE.CapsuleGeometry(.14,.82,5,10),s*.18,.45,0);
-  leg.rotation.z=s*.07;
- }
- return body;
-}
-const ghosts=[];
-function replaceGhostBody(g){
- if(!modelAvailable||!ghostTemplate)return;
- g.rig.remove(g.body);
- const model=cloneSkeleton(ghostTemplate);
- model.traverse(o=>{if(o.isMesh){o.material=spectralMaterial();o.frustumCulled=false;}});
- model.updateMatrixWorld(true);
- const bounds=new THREE.Box3().setFromObject(model),size=new THREE.Vector3();
- bounds.getSize(size);
- const s=2.75/Math.max(.01,size.y);model.scale.setScalar(s);
- model.position.y=-bounds.min.y*s;
- g.rig.add(model);g.body=model;
- g.head=model.getObjectByName('Head')||model.getObjectByName('head')||null;
-}
-function createGhost(){
- const group=new THREE.Group(),rig=new THREE.Group(),body=makeFallbackPerson();
- rig.add(body);group.add(rig);scene.add(group);
- const wisps=[];
- const wispMat=new THREE.MeshBasicMaterial({color:0xa9e4e7,transparent:true,opacity:0,depthWrite:false});
- for(let i=0;i<9;i++){
-  const w=new THREE.Mesh(new THREE.SphereGeometry(.055,7,6),wispMat.clone());
-  group.add(w);wisps.push({mesh:w,phase:Math.random()*Math.PI*2});
- }
- const g={group,rig,body,wisps,head:null,age:0,duration:0,side:1,heading:0,fade:0,active:false,test:false};
- if(modelAvailable)replaceGhostBody(g);
- return g;
-}
-const ghost=createGhost();
-ghosts.push(ghost);
-let nextGhost=18,ghostCooldown=0;
-const ghostRelative=new THREE.Vector3();
-function placeGhost(test=false){
- const g=ghost;
- const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
- const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
- const side=Math.random()<.5?-1:1,d=test?15:20+Math.random()*22,offset=test?4.2:8+Math.random()*10;
- const p=camera.position.clone().addScaledVector(forward,d).addScaledVector(right,offset*side);
- g.group.position.set(clamp(p.x,-58,58),.23,clamp(p.z,-141,76));
- g.side=side;g.heading=side;g.age=0;g.duration=test?28:18+Math.random()*13;g.active=true;g.test=test;
- g.group.visible=true;g.rig.rotation.y=Math.atan2(camera.position.x-g.group.position.x,camera.position.z-g.group.position.z);
- g.group.scale.setScalar(1);
- for(const w of g.wisps)w.mesh.material.opacity=0;
- nextGhost=65+Math.random()*115;
-}
+// v0.7: no third-party GLB and no translucent capsule-and-sphere mannequin.
+// The actual person-shaped mesh is a continuous garment / neck / head surface
+// with subtle articulated sleeves, dim facial features and fading lower edges.
+const ghostFigure=createSpectralGhost(THREE);
+const ghost={
+  group:ghostFigure.group,figure:ghostFigure,
+  age:0,duration:0,side:1,fade:0,active:false,test:false
+};
+scene.add(ghost.group);
 ghost.group.visible=false;
+if(new URLSearchParams(location.search).has('debug')){
+  Object.defineProperty(window,'__roadGhostDebug',{value:()=>{
+    camera.updateMatrixWorld(true);
+    ghost.group.updateMatrixWorld(true);
+    const bbox=new THREE.Box3().setFromObject(ghost.group);
+    const center=bbox.getCenter(new THREE.Vector3());
+    const projected=center.clone().project(camera);
+    return {
+      active:ghost.active,visible:ghost.group.visible,fade:ghost.fade,
+      position:ghost.group.position.toArray(),
+      center:center.toArray(),bboxSize:bbox.getSize(new THREE.Vector3()).toArray(),
+      projectedCenter:projected.toArray(),
+      meshes:(()=>{let n=0;ghost.group.traverse(o=>{if(o.isMesh)n++;});return n;})(),
+      materials:ghostFigure.materials.map(m=>({
+        opacity:m.opacity,fade:m.userData.ghostControls.fade,
+        shaderFade:m.userData.shader?.uniforms.uGhostFade?.value??null,
+        depthWrite:m.depthWrite
+      }))
+    };
+  },configurable:false});
+}
+let nextGhost=18;
+const ghostFacing=new THREE.Object3D();
+function placeGhost(test=false){
+  const g=ghost;
+  const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+  const side=Math.random()<.5?-1:1;
+  const d=test?6.8:19+Math.random()*19,offset=test?1.15:7+Math.random()*8;
+  const p=camera.position.clone().addScaledVector(forward,d).addScaledVector(right,offset*side);
+  g.group.position.set(clamp(p.x,-58,58),.16,clamp(p.z,-141,76));
+  g.side=side;g.age=0;g.duration=test?28:20+Math.random()*11;
+  g.active=true;g.test=test;g.group.visible=true;
+  ghostFacing.position.copy(g.group.position);
+  ghostFacing.lookAt(camera.position.x,g.group.position.y,camera.position.z);
+  g.group.quaternion.copy(ghostFacing.quaternion);
+  g.figure.update(0,0,g.group.position.y);
+  nextGhost=80+Math.random()*110;
+  if(test)popup('A pale figure stands in the grass. Its feet never quite touch the ground.');
+}
 function updateGhosts(dt,t){
- if(!started)return;
- if(!ghost.active){nextGhost-=dt;if(nextGhost<=0)placeGhost();return;}
- ghost.age+=dt;
- const g=ghost,distance=Math.hypot(g.group.position.x-camera.position.x,g.group.position.z-camera.position.z);
- g.fade=THREE.MathUtils.smoothstep(g.age,0,2)*
-  (1-THREE.MathUtils.smoothstep(g.age,g.duration-4,g.duration));
- g.group.position.y=.25+Math.sin(t*.9+g.side)*.085;
- g.group.position.x+=dt*.27*g.side;
- g.rig.rotation.z=.045*Math.sin(t*.45);
- const swivel=Math.sin(t*.42)*.23;
- if(g.head)g.head.rotation.y=swivel;
- else g.rig.rotation.y+=Math.sin(t*.34)*dt*.06;
- const close=distance<15;
- g.group.traverse(o=>{
-  if(o.isMesh&&o.material?.transparent && !g.wisps.some(w=>w.mesh===o))
-   o.material.opacity=(o.material.color?.getHex()===0x23343d?.53:.31)*g.fade;
- });
- for(let i=0;i<g.wisps.length;i++){
-  const w=g.wisps[i],phase=(t*.8+w.phase+i*.8)%(Math.PI*2);
-  w.mesh.position.set(Math.cos(phase*1.7+i)*(.28+.15*i/9),1+Math.sin(i*2)*.8+phase*.05,Math.sin(phase+i)*.23);
-  w.mesh.scale.setScalar(.65+.8*(phase/(Math.PI*2)));
-  w.mesh.material.opacity=close?g.fade*(.06+.15*Math.sin(phase/2)):0;
- }
- if(g.age>=g.duration){
-  g.group.visible=false;g.active=false;
- }
+  if(!started)return;
+  const g=ghost;
+  if(!g.active){nextGhost-=dt;if(nextGhost<=0)placeGhost();return;}
+  g.age+=dt;
+  const distance=Math.hypot(g.group.position.x-camera.position.x,g.group.position.z-camera.position.z);
+  const entrance=g.test?Math.max(.95,THREE.MathUtils.smoothstep(g.age,0,2.4)):
+    THREE.MathUtils.smoothstep(g.age,0,2.4);
+  g.fade=entrance*(1-THREE.MathUtils.smoothstep(g.age,g.duration-4.2,g.duration));
+  g.group.position.y=.16+.046*Math.sin(t*.57+g.side);
+  g.group.position.x+=dt*.095*g.side;
+  // A slow, deliberate facing change. A hovering person should not snap its
+  // entire mannequin body or move its limbs in perfect synchrony.
+  ghostFacing.position.copy(g.group.position);
+  ghostFacing.lookAt(camera.position.x,g.group.position.y,camera.position.z);
+  if(distance<20)g.group.quaternion.slerp(ghostFacing.quaternion,Math.min(1,dt*.24));
+  g.figure.update(t,g.fade,g.group.position.y);
+  if(g.age>=g.duration){g.active=false;g.group.visible=false;}
 }
 const pattycakerEncounter=createPattycakerEncounter(THREE,scene,camera,TOWN_EDGE_Z,popup,()=>({ctx,soundEnabled,noiseBuffer,master}),[road,terrain]);
 
