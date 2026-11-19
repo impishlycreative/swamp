@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {createSpectralGhost} from './ghost.js?v=0.7.0';
+import {createSpectralGhost,chooseRoadGhostCount,nextRoadPatrol,GHOST_PATROL_BOUNDS,HEAD_TURN_DISTANCE} from './ghost.js?v=0.8.0';
 import {createPattycakerEncounter} from './pattycaker_encounter.js?v=0.6.0';
 import {terrainAt,cricketPresence,cricketAttenuation,TOWN_EDGE_Z,WALK_SPEED,RUN_SPEED,STAMINA_MAX,canStartRun,staminaStep,classifyTap} from './gameplay.js';
 
@@ -372,73 +372,127 @@ function updateFireflies(t){
  }
 }
 
-// v0.7: no third-party GLB and no translucent capsule-and-sphere mannequin.
-// The actual person-shaped mesh is a continuous garment / neck / head surface
-// with subtle articulated sleeves, dim facial features and fading lower edges.
+// v0.8: genuinely rigged, fitted-clothes spectral farmer. A testable nearby
+// encounter coexists with 1–2 long-range wanderers floating in both directions.
 const ghostFigure=createSpectralGhost(THREE);
-const ghost={
-  group:ghostFigure.group,figure:ghostFigure,
-  age:0,duration:0,side:1,fade:0,active:false,test:false
-};
+const ghost={group:ghostFigure.group,figure:ghostFigure,
+  age:0,duration:0,fade:0,active:false,test:false,
+  side:1,heading:-1,travelAngle:0,speed:.20};
 scene.add(ghost.group);
 ghost.group.visible=false;
+let nextGhost=18;
+
+// The road is ~210 m long. These travellers are permanent, independent of
+// the nearby apparition event, and reverse when reaching either end.
+const roadGhostCount=chooseRoadGhostCount(Math.random);
+const roadGhosts=Array.from({length:roadGhostCount},(_,i)=>{
+  const figure=createSpectralGhost(THREE);
+  const direction=Math.random()<.5?-1:1;
+  const x=(Math.random()-.5)*2.8;
+  const z=GHOST_PATROL_BOUNDS.north+
+    (GHOST_PATROL_BOUNDS.south-GHOST_PATROL_BOUNDS.north)*
+      ((i+.25+Math.random()*.50)/roadGhostCount);
+  figure.group.position.set(x,.13,z);
+  figure.group.rotation.y=direction>0?0:Math.PI;
+  scene.add(figure.group);
+  figure.group.visible=false; // revealed when the player starts
+  return {figure,group:figure.group,direction,speed:.52+Math.random()*.38,
+    born:0,age:0,seed:Math.random()*7,baseX:x};
+});
+function diagnosticGhost(g){
+  const bbox=new THREE.Box3().setFromObject(g.group);
+  const center=bbox.getCenter(new THREE.Vector3());
+  const projected=center.clone().project(camera);
+  return {
+    active:g.active??true,visible:g.group.visible,fade:g.fade??1,
+    position:g.group.position.toArray(),center:center.toArray(),
+    projectedCenter:projected.toArray(),
+    bboxSize:bbox.getSize(new THREE.Vector3()).toArray(),
+    rigged:!!g.figure.skeleton,headBone:g.figure.head.name,
+    headYaw:g.figure.headYaw,headTargetYaw:g.figure.headTargetYaw,
+    bones:g.figure.bones.length,
+    materials:g.figure.materials.map(m=>({
+      opacity:m.opacity,fade:m.userData.ghostState?.fade??0,
+      shaderFade:m.userData.shader?.uniforms.uFarmerFade?.value??null,
+      depthWrite:m.depthWrite
+    }))
+  };
+}
 if(new URLSearchParams(location.search).has('debug')){
   Object.defineProperty(window,'__roadGhostDebug',{value:()=>{
     camera.updateMatrixWorld(true);
     ghost.group.updateMatrixWorld(true);
-    const bbox=new THREE.Box3().setFromObject(ghost.group);
-    const center=bbox.getCenter(new THREE.Vector3());
-    const projected=center.clone().project(camera);
-    return {
-      active:ghost.active,visible:ghost.group.visible,fade:ghost.fade,
-      position:ghost.group.position.toArray(),
-      center:center.toArray(),bboxSize:bbox.getSize(new THREE.Vector3()).toArray(),
-      projectedCenter:projected.toArray(),
-      meshes:(()=>{let n=0;ghost.group.traverse(o=>{if(o.isMesh)n++;});return n;})(),
-      materials:ghostFigure.materials.map(m=>({
-        opacity:m.opacity,fade:m.userData.ghostControls.fade,
-        shaderFade:m.userData.shader?.uniforms.uGhostFade?.value??null,
-        depthWrite:m.depthWrite
-      }))
-    };
+    for(const traveller of roadGhosts)traveller.group.updateMatrixWorld(true);
+    return {...diagnosticGhost(ghost),roaming:roadGhosts.map(g=>({
+      ...diagnosticGhost(g),direction:g.direction,speed:g.speed
+    })),roadGhostCount};
   },configurable:false});
 }
-let nextGhost=18;
-const ghostFacing=new THREE.Object3D();
 function placeGhost(test=false){
   const g=ghost;
   const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
   const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
   const side=Math.random()<.5?-1:1;
-  const d=test?6.8:19+Math.random()*19,offset=test?1.15:7+Math.random()*8;
+  const d=test?6.8:18+Math.random()*19,offset=test?1.15:6+Math.random()*7;
   const p=camera.position.clone().addScaledVector(forward,d).addScaledVector(right,offset*side);
-  g.group.position.set(clamp(p.x,-58,58),.16,clamp(p.z,-141,76));
-  g.side=side;g.age=0;g.duration=test?28:20+Math.random()*11;
+  g.group.position.set(clamp(p.x,-58,58),.14,clamp(p.z,-141,76));
+  g.side=side;g.travelAngle=test?0:Math.random()*Math.PI*2;
+  g.heading=Math.cos(g.travelAngle)>=0?1:-1;
+  g.speed=.16+Math.random()*.16;
+  g.age=0;g.duration=test?34:21+Math.random()*16;
   g.active=true;g.test=test;g.group.visible=true;
-  ghostFacing.position.copy(g.group.position);
-  ghostFacing.lookAt(camera.position.x,g.group.position.y,camera.position.z);
-  g.group.quaternion.copy(ghostFacing.quaternion);
-  g.figure.update(0,0,g.group.position.y);
-  nextGhost=80+Math.random()*110;
-  if(test)popup('A pale figure stands in the grass. Its feet never quite touch the ground.');
+  // His whole body faces one direction along the road; only the HEAD will
+  // rotate independently when the player comes close enough.
+  g.group.rotation.y=g.travelAngle;
+  g.figure.update(0,test?.96:0,g.group.position.y,
+    {player:camera.position,distance:Infinity,dt:1/60});
+  nextGhost=85+Math.random()*120;
+  if(test)popup('A plain-dressed farmer stands in the grass. Approach him and watch his head.');
 }
 function updateGhosts(dt,t){
   if(!started)return;
+  // Always update road travellers even when the nearby ghost is inactive.
+  for(let i=0;i<roadGhosts.length;i++){
+    const g=roadGhosts[i];
+    g.group.visible=true;g.age+=dt;
+    const step=nextRoadPatrol(g.group.position.z,g.direction,g.speed,dt);
+    g.group.position.z=step.z;g.direction=step.direction;
+    g.group.position.x=g.baseX+.075*Math.sin(t*.18+g.seed);
+    g.group.position.y=.12+.013*Math.sin(t*.58+g.seed);
+    const desired=g.direction>0?0:Math.PI;
+    const diff=Math.atan2(Math.sin(desired-g.group.rotation.y),
+      Math.cos(desired-g.group.rotation.y));
+    g.group.rotation.y+=diff*(1-Math.exp(-dt*1.3));
+    const d=Math.hypot(g.group.position.x-camera.position.x,
+      g.group.position.z-camera.position.z);
+    g.figure.update(t+g.seed,.88,g.group.position.y,{
+      dt,player:camera.position,distance:d,moving:true
+    });
+  }
   const g=ghost;
   if(!g.active){nextGhost-=dt;if(nextGhost<=0)placeGhost();return;}
   g.age+=dt;
-  const distance=Math.hypot(g.group.position.x-camera.position.x,g.group.position.z-camera.position.z);
+  const distance=Math.hypot(g.group.position.x-camera.position.x,
+    g.group.position.z-camera.position.z);
   const entrance=g.test?Math.max(.95,THREE.MathUtils.smoothstep(g.age,0,2.4)):
     THREE.MathUtils.smoothstep(g.age,0,2.4);
   g.fade=entrance*(1-THREE.MathUtils.smoothstep(g.age,g.duration-4.2,g.duration));
-  g.group.position.y=.16+.046*Math.sin(t*.57+g.side);
-  g.group.position.x+=dt*.095*g.side;
-  // A slow, deliberate facing change. A hovering person should not snap its
-  // entire mannequin body or move its limbs in perfect synchrony.
-  ghostFacing.position.copy(g.group.position);
-  ghostFacing.lookAt(camera.position.x,g.group.position.y,camera.position.z);
-  if(distance<20)g.group.quaternion.slerp(ghostFacing.quaternion,Math.min(1,dt*.24));
-  g.figure.update(t,g.fade,g.group.position.y);
+  // Slow directional movement, with grounded human pose and no walking cycle.
+  g.group.position.y=.14+.016*Math.sin(t*.56+g.side);
+  g.group.position.x+=dt*Math.sin(g.travelAngle)*g.speed;
+  g.group.position.z+=dt*Math.cos(g.travelAngle)*g.speed;
+  if(Math.abs(g.group.position.x)>57){
+    g.group.position.x=clamp(g.group.position.x,-57,57);
+    g.travelAngle=-g.travelAngle;
+  }
+  if(g.group.position.z>75||g.group.position.z<-140){
+    g.group.position.z=clamp(g.group.position.z,-140,75);
+    g.travelAngle=Math.PI-g.travelAngle;
+  }
+  g.group.rotation.y=g.travelAngle;
+  g.figure.update(t,g.fade,g.group.position.y,{
+    dt,player:camera.position,distance,moving:true
+  });
   if(g.age>=g.duration){g.active=false;g.group.visible=false;}
 }
 const pattycakerEncounter=createPattycakerEncounter(THREE,scene,camera,TOWN_EDGE_Z,popup,()=>({ctx,soundEnabled,noiseBuffer,master}),[road,terrain]);

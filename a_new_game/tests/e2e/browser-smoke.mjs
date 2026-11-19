@@ -39,14 +39,29 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
     assert.ok(webgl.version?.includes('WebGL'),JSON.stringify(webgl));
     await page.locator('#begin').click();
     await page.locator('#testGhost').click();
-    await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('pale figure'),null,{timeout:7000});
+    await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('plain-dressed farmer'),null,{timeout:7000});
     await page.waitForTimeout(1900);
-    await page.screenshot({path:join(artifacts,'ghost-v0.7-in-game.png')});
+    await page.screenshot({path:join(artifacts,'ghost-v0.8-in-game.png')});
     const ghostDebug=await page.evaluate(()=>window.__roadGhostDebug?.());
     console.log('Ghost visual diagnostic:',JSON.stringify(ghostDebug));
     assert.ok(ghostDebug?.visible&&ghostDebug?.active,'ghost must be visible and active');
     assert.ok(ghostDebug.fade>=.9,'Show ghost must become clearly visible without waiting through slow software-rendered frames');
     assert.ok(ghostDebug.projectedCenter[2]<1,'ghost must be in front of camera');
+    assert.equal(ghostDebug.rigged,true,'the apparition must have a genuine deforming skeletal rig');
+    assert.equal(ghostDebug.headBone,'Ghost_Head');
+    assert.ok(ghostDebug.bones>=17,'the full farmer skeleton must be present');
+    assert.ok(ghostDebug.roadGhostCount>=1&&ghostDebug.roadGhostCount<=2);
+    assert.equal(ghostDebug.roaming.length,ghostDebug.roadGhostCount);
+    for(const traveller of ghostDebug.roaming){
+      assert.equal(traveller.rigged,true);
+      assert.equal(traveller.visible,true);
+      assert.ok(traveller.position[2]>=-137&&traveller.position[2]<=71,
+        'patrolling farmers stay on the road between its endpoints');
+      assert.ok(Math.abs(traveller.position[0])<=3.1,
+        'patrol x coordinate stays on the road, not in grass');
+    }
+    assert.ok(Math.abs(ghostDebug.headTargetYaw)>.05,
+      'head target should respond to the player within 12m');
     assert.deepEqual(exceptions,[],'ghost must render without uncaught errors or shader compilation failures');
     await page.locator('#testPatty').click();
     await page.waitForFunction(()=>document.querySelector('#alert')?.textContent?.includes('Pattycaker'),null,{timeout:7000});
