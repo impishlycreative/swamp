@@ -28,6 +28,38 @@ export async function exportPattycakerGLB(THREE){
   const asset=makePattycaker(THREE),root=asset.group;
   root.visible=true;root.position.set(0,0,0);root.rotation.set(0,0,0);
   root.updateMatrixWorld(true);
+  // glTFExporter expects browser images/canvases. Our procedural skin uses
+  // DataTexture for WebGL, whose {data,width,height} payload drawImage rejects.
+  // Convert only in this separate export instance; live game materials stay intact.
+  const textureCache=new Map();
+  function portableTexture(texture){
+    if(!texture?.isDataTexture)return texture;
+    if(textureCache.has(texture))return textureCache.get(texture);
+    const {width,height,data}=texture.image;
+    const canvas=document.createElement('canvas');
+    canvas.width=width;canvas.height=height;
+    const ctx=canvas.getContext('2d');
+    const bytes=new Uint8ClampedArray(data.buffer,data.byteOffset,data.byteLength);
+    ctx.putImageData(new ImageData(new Uint8ClampedArray(bytes),width,height),0,0);
+    const replacement=new THREE.CanvasTexture(canvas);
+    replacement.colorSpace=texture.colorSpace;
+    replacement.wrapS=texture.wrapS;replacement.wrapT=texture.wrapT;
+    replacement.repeat.copy(texture.repeat);
+    replacement.offset.copy(texture.offset);
+    replacement.needsUpdate=true;
+    textureCache.set(texture,replacement);
+    return replacement;
+  }
+  root.traverse(object=>{
+    if(!object.isMesh||!object.material)return;
+    const materials=Array.isArray(object.material)?object.material:[object.material];
+    for(const material of materials){
+      for(const key of ['map','roughnessMap','metalnessMap','normalMap','bumpMap','aoMap','emissiveMap']){
+        if(material[key]?.isDataTexture)material[key]=portableTexture(material[key]);
+      }
+      material.needsUpdate=true;
+    }
+  });
   const animations=[
     bakeClip(THREE,asset,'Pattycaker_idle', 'linger',4,40),
     bakeClip(THREE,asset,'Pattycaker_stalk_in_place','stalk',1/1.55,32)
