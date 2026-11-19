@@ -3,10 +3,18 @@ import {solveTwoBone,gaitPhase,swingProgress} from './pattycaker_kinematics.js';
 // A connected bone hierarchy deforms an actual weighted SkinnedMesh.
 // All fourteen limbs and seventy fingers are physically articulated in the rig;
 // six walking hands, six eyed/mouthed fan palms, and two ordinary human hands.
-export function makePattycaker(THREE) {
+export function makePattycaker(THREE, options={}) {
   const root=new THREE.Group();
   root.name='Pattycaker';
   const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
+  const groundMeshes=options.groundMeshes||[];
+  const groundRay=new THREE.Raycaster();
+  function groundY(x,z){
+    if(!groundMeshes.length)return 0;
+    groundRay.set(V(x,6,z),V(0,-1,0));
+    const hits=groundRay.intersectObjects(groundMeshes,false);
+    return hits.length?hits[0].point.y:0;
+  }
   // Tileable, deterministic micro-relief, not a glossy flat colour.
   const pixels=new Uint8Array(128*128*4);
   for(let y=0;y<128;y++)for(let x=0;x<128;x++){
@@ -340,7 +348,9 @@ export function makePattycaker(THREE) {
     m.rotation.x=-Math.PI/2;m.renderOrder=1;root.add(m);leg.contact=m;
     leg.footWorld=null;leg.inSwing=false;
   }
+  let locomotionTime=0;
   function reset(){
+    locomotionTime=0;
     for(const leg of walkLegs){
       leg.footWorld=null;leg.inSwing=false;leg.swingStart=null;leg.swingEnd=null;
     }
@@ -355,14 +365,16 @@ export function makePattycaker(THREE) {
     bone.updateWorldMatrix(false,true);
   }
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-  function animate(t,phase='linger',dt=1/60,lookTarget=null){
-    const stalking=phase==='stalk';
-    const cycle=t*Math.PI*2*1.55;
+  function animate(t,phase='linger',dt=1/60,lookTarget=null,phaseAge=0){
+    const stalking=phase==='stalk'||phase==='pursuit';
+    locomotionTime+=Math.max(0,dt)*(phase==='pursuit'?1.65:1);
+    const cycle=locomotionTime*Math.PI*2*1.55;
     const breathe=Math.sin(t*.95);
-    rig.position.y=(stalking?.018:.006)*Math.sin(cycle*2);
+    const crouch=phase==='cover'?1:phase==='rise'?Math.max(0,1-phaseAge/1.6):0;
+    rig.position.y=(stalking?.018:.006)*Math.sin(cycle*2)-.16*crouch;
     pelvis.rotation.z=.025*Math.sin(cycle)*(stalking?1:.2);
     pelvis.rotation.y=.028*Math.sin(cycle*.5);
-    lumbar.rotation.x=.115+.032*breathe;
+    lumbar.rotation.x=.115+.032*breathe+.16*crouch;
     chest.rotation.z=.024*Math.sin(t*.80);
     chest.rotation.x=.035*Math.sin(t*.6);
     neck.rotation.x=-.11+.022*Math.sin(t*.67);
@@ -375,14 +387,19 @@ export function makePattycaker(THREE) {
     for(const leg of walkLegs){
       const homeX=leg.side*(.94+.04*leg.level);
       const homeZ=(leg.level-1)*.34+.12;
-      const rest=()=>root.localToWorld(V(homeX,.15,homeZ));
+      const rest=()=>{
+        const v=root.localToWorld(V(homeX,.15,homeZ));
+        v.y=groundY(v.x,v.z)+.118;
+        return v;
+      };
       if(!leg.footWorld)leg.footWorld=rest();
-      const gp=swingProgress(gaitPhase(t,leg.level,leg.side));
+      const gp=swingProgress(gaitPhase(locomotionTime,leg.level,leg.side));
       let wristTarget=leg.footWorld.clone();
       if(stalking && gp.swing){
         if(!leg.inSwing){
           leg.swingStart=leg.footWorld.clone();
           leg.swingEnd=root.localToWorld(V(homeX,.15,homeZ+.43));
+          leg.swingEnd.y=groundY(leg.swingEnd.x,leg.swingEnd.z)+.118;
           leg.inSwing=true;
         }
         wristTarget.lerpVectors(leg.swingStart,leg.swingEnd,gp.progress);
@@ -407,7 +424,7 @@ export function makePattycaker(THREE) {
       leg.palm.rotation.x=.035+(stalking?-.055*Math.sin(cycle+leg.level*2+leg.side):0);
       leg.palm.rotation.z=leg.side*(stalking?-.025:.012);
       // Contact shadows remain on the road, even while the finger joints lift.
-      const contactPoint=root.worldToLocal(V(wristTarget.x,.035,wristTarget.z));
+      const contactPoint=root.worldToLocal(V(wristTarget.x,groundY(wristTarget.x,wristTarget.z)+.018,wristTarget.z));
       leg.contact.position.copy(contactPoint);
       leg.contact.material.opacity=gp.swing&&stalking?.09:.19;
       leg.contact.scale.setScalar(gp.swing&&stalking?.82:1);
