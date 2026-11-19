@@ -1,4 +1,4 @@
-# A New Game — The Road (prototype v0.7.0)
+# A New Game — The Road (prototype v0.8.0)
 
 A first-person browser prototype for the rural opening scene of **A New Game**. This is an actual rendered, navigable 3D environment, **not** the generated reference screenshot and **not yet photorealistic**.
 
@@ -52,6 +52,16 @@ This is a substantial procedural visual improvement, but **not a photo-scanned h
 The voice playback engine expects these separately generated audio clips: `audio/mommy.ogg`, `audio/daddy.ogg`, `audio/have-you-seen-my-mummy.ogg`, `audio/hello.ogg` and `audio/child-laugh.ogg`. **They have not yet been generated or included.** The voice test shows an informative status until recordings exist; it never silently uses the phone's text-to-speech voice. Any audio producer may export Ogg (Opus or Vorbis) 44.1 kHz or 48 kHz. Ensure playback on iPhone Safari and license rights before release. The repository is still usable and other audio remains functional without these optional files.
 
 The v0.7 ghost is newly generated procedural geometry; it does not download or bundle the previous third-party CesiumMan asset.
+
+## Rigged ghost farmer and road patrols (v0.8.0)
+
+The ghost is now an **adult human-shaped, Amish-inspired farmer**, not a flowing dress or vapor creature. A broad-brim dark hat, short beard, plain fitted coat/shirt, separate trousers and plain boots preserve a recognizably human outline with minimal motion and a faint lower-leg dissolve.
+
+This is a genuine Three.js skeletal model: a hip/spine/chest/neck/head chain, two arm chains through elbows/wrists, and two legs through knees/ankles. Its fitted clothing, sleeves, pants, face and hands are weighted SkinnedMeshes. The hat, boots, beard and facial details are attached to the correct bones. The independent head bone deliberately turns toward a player within **12 metres**, easing back to neutral as the player moves away. The body does not snap around to face the camera.
+
+**One or two independent ghosts** are chosen at scene startup and continuously float north and south along the road between approximately z=-137 and z=71. They turn around at the endpoints, vary in speed and location, never step/walk on the ground, and each can turn its head toward the player. They coexist with the standard occasional ghost encounter and the Show ghost debug control.
+
+Tests cover valid human bone hierarchy, real weighted skinning, head movement, directional road limits, 1–2 patrol count, and actual in-browser rendering. The model is still procedural/indie-game quality, not a photorealistic scan of a real person.
 
 ## Pattycaker rebuild (v0.6.0)
 
