@@ -150,6 +150,7 @@ export function makePattycaker(THREE, options={}) {
     const bottom=oval(palm,skin,0,.009,.083,.087,.019,.020);
     // A sunken cavity framed by asymmetrical lips, gums and separate upper/lower teeth.
     const cavity=oval(palm,mouth,0,-.100,-.001,.076,.039,.018);
+    cavity.name=id+'_mouth_cavity';
     const lipPath=[];
     for(let i=0;i<=32;i++){
       const a=i/32*Math.PI*2;
@@ -488,7 +489,7 @@ export function makePattycaker(THREE, options={}) {
       f.eyeballPivot.rotation.x=-trackY*2.5;
       const opened=.42+.30*Math.sin(t*.83+seed)+.17*Math.sin(t*1.76+seed);
       f.jaw.position.y=-.114-.015*Math.max(0,opened);
-      f.cavity.scale.y=.72+.31*Math.max(0,opened);
+      f.cavity.scale.y=.039*(.72+.31*Math.max(0,opened));
     }
     for(const {lock,i} of hairLocks){
       lock.rotation.z=.028*Math.sin(t*.89+i*1.73);
