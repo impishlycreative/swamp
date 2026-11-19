@@ -59,7 +59,7 @@ The ghost is now an **adult human-shaped, Amish-inspired farmer**, not a flowing
 
 This is a genuine Three.js skeletal model: a hip/spine/chest/neck/head chain, two arm chains through elbows/wrists, and two legs through knees/ankles. Its fitted clothing, sleeves, pants, face and hands are weighted SkinnedMeshes. The hat, boots, beard and facial details are attached to the correct bones. The independent head bone deliberately turns toward a player within **12 metres**, easing back to neutral as the player moves away. The body does not snap around to face the camera.
 
-**One or two independent ghosts** are chosen at scene startup and continuously float north and south along the road between approximately z=-137 and z=71. They turn around at the endpoints, vary in speed and location, never step/walk on the ground, and each can turn its head toward the player. They coexist with the standard occasional ghost encounter and the Show ghost debug control.
+**One or two independent ghosts** are chosen at scene startup and continuously float north and south along the road between approximately z=-137 and z=71. They turn around at the endpoints, vary in speed and location, never step/walk on the ground, and each can turn its head toward the player. They coexist with the standard occasional ghost encounter, which can drift in any compass direction and reflect at scene boundaries, and the Show ghost debug control.
 
 Tests cover valid human bone hierarchy, real weighted skinning, head movement, directional road limits, 1–2 patrol count, and actual in-browser rendering. The model is still procedural/indie-game quality, not a photorealistic scan of a real person.
 
