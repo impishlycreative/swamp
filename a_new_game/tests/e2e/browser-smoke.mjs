@@ -45,7 +45,7 @@ test('live WebGL scene starts, displays Pattycaker, and exports a valid GLB head
     const ghostDebug=await page.evaluate(()=>window.__roadGhostDebug?.());
     console.log('Ghost visual diagnostic:',JSON.stringify(ghostDebug));
     assert.ok(ghostDebug?.visible&&ghostDebug?.active,'ghost must be visible and active');
-    assert.ok(ghostDebug.fade>.15,'ghost opacity envelope must be active');
+    assert.ok(ghostDebug.fade>=.9,'Show ghost must become clearly visible without waiting through slow software-rendered frames');
     assert.ok(ghostDebug.projectedCenter[2]<1,'ghost must be in front of camera');
     assert.deepEqual(exceptions,[],'ghost must render without uncaught errors or shader compilation failures');
     await page.locator('#testPatty').click();
