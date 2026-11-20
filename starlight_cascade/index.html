@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d23">
+<title>Starlight Cascade | Swamp</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#080c1e;color:#f9edcf}
+#viewport{position:fixed;inset:0;display:block}
+#viewport canvas{display:block;width:100%;height:100%}
+.overlay{position:fixed;z-index:3;pointer-events:none;text-shadow:0 2px 14px #080b1a}
+header{top:0;left:0;right:0;padding:16px 22px;background:linear-gradient(#080c20dd,transparent)}
+h1{font-family:Georgia,serif;font-size:clamp(1.5rem,3.4vw,2.4rem);font-weight:400;letter-spacing:.03em;margin:0}
+.subtitle{font-size:.8rem;letter-spacing:.13em;text-transform:uppercase;color:#eed49b;margin:7px 0}
+footer{left:0;bottom:0;right:0;padding:55px 18px 18px;background:linear-gradient(transparent,#080c21df)}
+footer .status{font-size:.86rem;color:#fff2cd;margin-bottom:10px;max-width:540px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;pointer-events:auto}
+button{background:#172343e8;border:1px solid #f5d88980;border-radius:999px;color:#fff2d6;font:inherit;padding:11px 18px;cursor:pointer;min-height:44px}
+button:hover,button:focus-visible{background:#294268;outline:2px solid #f5d889}
+.note{position:fixed;z-index:3;right:20px;top:20px;text-align:right;font-size:.75rem;color:#c4c8d9;pointer-events:none;max-width:185px}
+#error{display:none;position:fixed;inset:22% 15%;padding:26px;background:#141d38;border:1px solid #d9b75c;border-radius:15px;z-index:10;overflow:auto}
+@media(max-width:650px){header{padding:14px}.subtitle{font-size:.67rem}.note{display:none}footer{padding:40px 12px 12px}button{padding:10px 14px}}
+</style>
+</head>
+<body>
+<div id="viewport" aria-label="A three-dimensional pyramid of champagne glasses receiving falling golden starlight"></div>
+<header class="overlay">
+<h1>Starlight Cascade</h1><div class="subtitle">A tower of champagne &amp; liquid stars</div>
+</header>
+<div class="note">Four tiers · 30 glasses<br>Drag to look around · Scroll to zoom</div>
+<footer class="overlay"><div id="status" class="status" aria-live="polite">The bottle is about to turn. Watch the starlight descend.</div>
+<div class="controls"><button id="restart">↻ Replay</button><button id="pause">⏸ Pause</button><button id="sound">♪ Enable sound</button><button id="auto">◉ Auto camera</button></div></footer>
+<div id="error" role="alert"></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script>
+(()=>{
+'use strict';
+const err=document.getElementById('error'),status=document.getElementById('status');
+if(!window.THREE){err.style.display='block';err.textContent='This scene needs Three.js. Please connect to the internet and reload.';return;}
+const THREE=window.THREE, host=document.getElementById('viewport');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.42;host.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#080c1e');scene.fog=new THREE.FogExp2('#0b1026',.014);
+const camera=new THREE.PerspectiveCamera(51,innerWidth/innerHeight,.05,150);
+scene.add(new THREE.AmbientLight(0x7890ba,1.05));
+const light=new THREE.PointLight(0xffcb6b,105,24,1.6);light.position.set(1,13,2);scene.add(light);
+const side=new THREE.DirectionalLight(0xc1e6ff,2.0);side.position.set(-6,13,6);scene.add(side);
+const rimlight=new THREE.PointLight(0x8a69d6,50,24);rimlight.position.set(-5,4,-4);scene.add(rimlight);
+const ground=new THREE.Mesh(new THREE.CircleGeometry(15,80),new THREE.MeshStandardMaterial({color:0x111630,metalness:.35,roughness:.32}));
+ground.rotation.x=-Math.PI/2;ground.position.y=-.05;scene.add(ground);
+const pedestal=new THREE.Mesh(new THREE.CylinderGeometry(3.85,4.05,.28,72),new THREE.MeshStandardMaterial({color:0x282841,metalness:.75,roughness:.24}));
+pedestal.position.y=.12;scene.add(pedestal);
+const ring=new THREE.Mesh(new THREE.TorusGeometry(3.92,.035,8,92),new THREE.MeshBasicMaterial({color:0xd4b879}));
+ring.rotation.x=Math.PI/2;ring.position.y=.265;scene.add(ring);
+const starsBg=new THREE.BufferGeometry(), bgCount=500, bgPositions=new Float32Array(bgCount*3);
+for(let i=0;i<bgCount;i++){let a=Math.random()*Math.PI*2,r=12+Math.random()*38;bgPositions[3*i]=Math.cos(a)*r;bgPositions[3*i+1]=Math.random()*28-2;bgPositions[3*i+2]=Math.sin(a)*r;}
+starsBg.setAttribute('position',new THREE.BufferAttribute(bgPositions,3));
+scene.add(new THREE.Points(starsBg,new THREE.PointsMaterial({color:0xcbd5ff,size:.07,transparent:true,opacity:.7,sizeAttenuation:true})));
+const glassMat=new THREE.MeshPhysicalMaterial({color:0xd4edff,metalness:.03,roughness:.045,transmission:.78,thickness:.15,transparent:true,opacity:.63,side:THREE.DoubleSide,depthWrite:false});
+const edgeMat=new THREE.MeshBasicMaterial({color:0xd4ebff,transparent:true,opacity:.8});
+const stemMat=new THREE.MeshPhysicalMaterial({color:0xb5cfe5,metalness:.15,roughness:.14,transparent:true,opacity:.68});
+const liquidMat=new THREE.MeshPhysicalMaterial({color:0xffc840,emissive:0xd78a18,emissiveIntensity:1.6,metalness:.35,roughness:.19,transparent:true,opacity:.90,depthWrite:false,side:THREE.DoubleSide});
+const glowMat=new THREE.MeshBasicMaterial({color:0xffe292,transparent:true,opacity:.52,depthWrite:false,side:THREE.DoubleSide});
+const levels=[9.45,6.55,3.65,.75], spacing=1.35, glasses=[],groups=[[],[],[],[]];
+const profile=[new THREE.Vector2(.02,.56),new THREE.Vector2(.21,.62),new THREE.Vector2(.39,.77),new THREE.Vector2(.55,1.06),new THREE.Vector2(.61,1.32),new THREE.Vector2(.63,1.47)];
+const bowlGeom=new THREE.LatheGeometry(profile,42);
+const rimGeom=new THREE.TorusGeometry(.63,.016,6,52);
+const footGeom=new THREE.CylinderGeometry(.37,.41,.055,36);
+const stemGeom=new THREE.CylinderGeometry(.045,.065,.55,14);
+const sparkleGeom=new THREE.OctahedronGeometry(.055,0);
+const sparkMaterial=new THREE.MeshBasicMaterial({color:0xfff2a8,transparent:true,opacity:1,depthWrite:false});
+function glass(x,y,z,tier){
+ const g=new THREE.Group();g.position.set(x,y,z);scene.add(g);
+ const foot=new THREE.Mesh(footGeom,stemMat);foot.position.y=.038;g.add(foot);
+ const stem=new THREE.Mesh(stemGeom,stemMat);stem.position.y=.315;g.add(stem);
+ const bowl=new THREE.Mesh(bowlGeom,glassMat);g.add(bowl);
+ const brim=new THREE.Mesh(rimGeom,edgeMat);brim.rotation.x=Math.PI/2;brim.position.y=1.47;g.add(brim);
+ // A glowing fluid body whose height grows in concert with all glasses on this tier.
+ const fluid=new THREE.Group();fluid.position.y=.61;g.add(fluid);
+ const cylinder=new THREE.Mesh(new THREE.CylinderGeometry(.555,.22,.8,36,1,true),liquidMat);cylinder.position.y=.4;fluid.add(cylinder);
+ const top=new THREE.Mesh(new THREE.CircleGeometry(.555,40),glowMat);top.rotation.x=-Math.PI/2;top.position.y=.8;fluid.add(top);
+ const object={x,y,z,tier,fluid,top,g,frac:0};
+ glasses.push(object);groups[tier].push(object);
+ return object;
+}
+for(let t=0;t<4;t++){
+ const n=t+1;
+ for(let row=0;row<n;row++)for(let col=0;col<n;col++){
+  const x=(col-(n-1)/2)*spacing,z=(row-(n-1)/2)*spacing;
+  glass(x,levels[t],z,t);
+ }
+}
+// Clear bottle of concentrated starlight, tipped over the first glass.
+const bottle=new THREE.Group();bottle.position.set(1.10,13.0,0);scene.add(bottle);
+const bottleGlass=new THREE.MeshPhysicalMaterial({color:0xe4fcff,metalness:.04,roughness:.08,transparent:true,opacity:.48,transmission:.65,thickness:.13});
+const core=new THREE.Mesh(new THREE.CylinderGeometry(.30,.31,1.25,30),bottleGlass);core.position.y=.10;bottle.add(core);
+const contents=new THREE.Mesh(new THREE.CylinderGeometry(.26,.27,.97,26),liquidMat);contents.position.y=.0;bottle.add(contents);
+const neck=new THREE.Mesh(new THREE.CylinderGeometry(.115,.19,.47,26),bottleGlass);neck.position.y=.92;bottle.add(neck);
+const lip=new THREE.Mesh(new THREE.TorusGeometry(.123,.03,8,28),edgeMat);lip.rotation.x=Math.PI/2;lip.position.y=1.17;bottle.add(lip);
+const cap=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.12,24),new THREE.MeshStandardMaterial({color:0xc09c50,metalness:.8,roughness:.2}));cap.position.y=1.18;bottle.add(cap);
+const neckLocal=new THREE.Vector3(0,1.15,0),spoutWorld=new THREE.Vector3();
+// Floating particle paths: source bottle -> top, and tier n -> tier n+1.
+const paths=[],pathByTier=[[],[],[],[]];
+function path(from,to,tier){
+ const obj={from:from.clone(),to:to.clone(),tier};
+ paths.push(obj);pathByTier[tier].push(obj);
+}
+path(new THREE.Vector3(.08,12.05,0),new THREE.Vector3(0,levels[0]+1.47,0),0);
+for(let tier=0;tier<3;tier++){
+ for(const child of groups[tier+1]){
+  let parent=groups[tier][0], best=Infinity;
+  for(const p of groups[tier]){let d=(p.x-child.x)**2+(p.z-child.z)**2;if(d<best){best=d;parent=p;}}
+  path(new THREE.Vector3(parent.x,levels[tier]+1.47,parent.z),new THREE.Vector3(child.x,levels[tier+1]+1.29,child.z),tier+1);
+ }
+}
+const count=500,particles=new THREE.Group(),pool=[];
+const golds=[0xffe8a0,0xffd35d,0xfff8da,0xffb92e];
+for(let i=0;i<count;i++){
+ const m=new THREE.Mesh(sparkleGeom,new THREE.MeshBasicMaterial({color:golds[i%golds.length],transparent:true,opacity:.95,depthWrite:false}));
+ m.visible=false;m.scale.setScalar(.5+Math.random()*.95);particles.add(m);
+ pool.push({m,offset:Math.random(),path:paths[i%paths.length],speed:.7+Math.random()*.55,spin:Math.random()*5});
+}
+scene.add(particles);
+const dustCount=90,dust=[];
+for(let i=0;i<dustCount;i++){
+ const m=new THREE.Mesh(sparkleGeom,sparkMaterial);m.scale.setScalar(Math.random()*.7+.12);m.position.set((Math.random()-.5)*10,Math.random()*13,(Math.random()-.5)*10);scene.add(m);
+ dust.push({m,start:m.position.clone(),phase:Math.random()*6.28});
+}
+let elapsed=0,previous=performance.now(),paused=false,auto=true,manualTheta=.6,manualPhi=1.13,zoom=9.4,dragging=false,lastX=0,lastY=0;
+const tierDuration=12,begin=2,end=begin+4*tierDuration;
+const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+const ease=x=>x*x*(3-2*x);
+function pointOnPath(p,u,t){
+ const q=p.from.clone().lerp(p.to,u);
+ q.x+=Math.sin(u*Math.PI)*.15*Math.cos(t*1.5+u*12+p.from.x);
+ q.z+=Math.sin(u*Math.PI)*.15*Math.sin(t*1.1+u*15+p.to.z);
+ q.y+=.18*Math.sin(u*Math.PI);
+ return q;
+}
+function update(){
+ const t=elapsed;
+ bottle.rotation.z=ease(clamp((t-.2)/1.6,0,1))*2.21;
+ bottle.updateMatrixWorld(true);
+ bottle.localToWorld(spoutWorld.copy(neckLocal));
+ paths[0].from.copy(spoutWorld);
+ for(let tier=0;tier<4;tier++){
+  const fraction=clamp((t-begin-tier*tierDuration)/tierDuration,0,1);
+  for(const g of groups[tier]){
+   g.frac=fraction;
+   g.fluid.visible=fraction>.006;
+   const h=.84*fraction;
+   g.fluid.scale.y=Math.max(.001,fraction);
+   // The top plate remains at the rising fluid surface.
+   g.top.material=glowMat;
+  }
+ }
+ for(const p of pool){
+  const tier=p.path.tier, start=begin+tier*tierDuration;
+  const active=t>=start && t<end+3 && (tier===0 || t>=begin+tier*tierDuration);
+  p.m.visible=active;
+  if(!active)continue;
+  const u=((t-start)*.85*p.speed+p.offset)%1;
+  const pos=pointOnPath(p.path,u,t);
+  p.m.position.copy(pos);
+  p.m.rotation.set(t+p.spin,t*1.6+p.spin,0);
+  p.m.scale.setScalar((.45+.5*Math.sin(u*Math.PI))*(.55+Math.random()*.25));
+ }
+ for(const d of dust){d.m.position.y=d.start.y+.13*Math.sin(t*.6+d.phase);d.m.rotation.y=t*.45+d.phase;}
+ // Make the camera circle downward, tracking the level that is filling.
+ const progress=clamp((t-2)/(4*tierDuration),0,1);
+ const angle=.45+t*.21;
+ const focusY=10.5-progress*8.2;
+ if(auto){
+  camera.position.set(Math.cos(angle)*zoom,focusY+3.2,Math.sin(angle)*zoom);
+  camera.lookAt(0,focusY,0);
+ }else{
+  camera.position.set(Math.cos(manualTheta)*Math.sin(manualPhi)*zoom,focusY+Math.cos(manualPhi)*zoom,Math.sin(manualTheta)*Math.sin(manualPhi)*zoom);
+  camera.lookAt(0,focusY,0);
+ }
+ if(t<begin) status.textContent='The bottle turns toward the first glass…';
+ else if(t<end){const tier=Math.min(3,Math.floor((t-begin)/tierDuration));status.textContent='Tier '+(tier+1)+' of 4 · '+groups[tier].length+' glass'+(groups[tier].length===1?'':'es')+' filling together · starlight cascading below';}
+ else status.textContent='All 30 glasses filled with starlight. Replay the cascade whenever you like.';
+ if(audioCtx && audioCtx.state==='running')updateAudio(t);
+}
+let audioCtx=null, audioGain=null,osc=null,shimmer=null;
+function initAudio(){
+ try{
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  audioGain=audioCtx.createGain();audioGain.gain.value=.0;audioGain.connect(audioCtx.destination);
+  osc=audioCtx.createOscillator();osc.type='sine';osc.frequency.value=210;osc.connect(audioGain);osc.start();
+  shimmer=audioCtx.createOscillator();const g=audioCtx.createGain();g.gain.value=.007;shimmer.type='sine';shimmer.frequency.value=625;shimmer.connect(g);g.connect(audioCtx.destination);shimmer.start();
+ }catch(e){audioCtx=null;}
+}
+function updateAudio(t){if(!audioCtx||!audioGain)return;audioGain.gain.setTargetAtTime(paused?0:(t>begin&&t<end?.022:.005),audioCtx.currentTime,.25);osc.frequency.setTargetAtTime(170+Math.sin(t*2)*12,audioCtx.currentTime,.1);}
+function animate(now){requestAnimationFrame(animate);const dt=Math.min(.08,(now-previous)/1000);previous=now;if(!paused)elapsed=Math.min(end+9,elapsed+dt);update();renderer.render(scene,camera);}
+requestAnimationFrame(animate);
+document.getElementById('restart').onclick=()=>{elapsed=0;paused=false;document.getElementById('pause').textContent='⏸ Pause';};
+document.getElementById('pause').onclick=()=>{paused=!paused;document.getElementById('pause').textContent=paused?'▶ Resume':'⏸ Pause';};
+document.getElementById('auto').onclick=()=>{auto=!auto;document.getElementById('auto').textContent=auto?'◉ Auto camera':'◎ Manual camera';};
+document.getElementById('sound').onclick=async()=>{
+ if(!audioCtx)initAudio();
+ if(!audioCtx){document.getElementById('sound').textContent='Sound unavailable';return;}
+ if(audioCtx.state!=='running'){await audioCtx.resume();document.getElementById('sound').textContent='♪ Sound on';}
+ else{await audioCtx.suspend();document.getElementById('sound').textContent='♪ Enable sound';}
+};
+renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;auto=false;document.getElementById('auto').textContent='◎ Manual camera';renderer.domElement.setPointerCapture(e.pointerId);});
+renderer.domElement.addEventListener('pointermove',e=>{if(!dragging)return;manualTheta-=(e.clientX-lastX)*.008;manualPhi=clamp(manualPhi+(e.clientY-lastY)*.006,.22,2.8);lastX=e.clientX;lastY=e.clientY;});
+renderer.domElement.addEventListener('pointerup',()=>dragging=false);
+renderer.domElement.addEventListener('pointercancel',()=>dragging=false);
+renderer.domElement.addEventListener('wheel',e=>{zoom=clamp(zoom+e.deltaY*.012,5.5,18);},{passive:true});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+})();
+</script>
+</body></html>
