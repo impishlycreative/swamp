@@ -141,6 +141,7 @@ function finish(){
  scores[result.winner]++;showScores();saveScores();
  status.textContent=result.winner==="tick"?"The tick wins! Blood-curdling brilliance.":result.winner==="toe"?"The big toe wins! You've been out-toed.":"A draw! Nobody gets the last toe.";
  render();
+ for(const i of result.line)cells[i].classList.add("win");
  return true;
 }
 function move(i,side){
