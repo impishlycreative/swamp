@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142b2a">
+<meta name="description" content="A silly, single-player Tic-tac-toe game: a real tick versus a giant toe. No account or backend required.">
+<title>Tick · Tack · Toe — Swamp</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark;--bg:#142b2a;--panel:#20403a;--ink:#f9f3dd;--muted:#bed0bc;--lime:#d7ed98;--orange:#f3b17c;--line:#547367}
+*{box-sizing:border-box}body{margin:0;min-height:100svh;background:radial-gradient(ellipse at top,#315349 0,#142b2a 65%);color:var(--ink)}
+main{width:min(100%,800px);margin:0 auto;padding:18px 16px 36px}
+nav a{color:var(--lime);font-weight:700;text-decoration:none}nav a:hover{text-decoration:underline}
+.eyebrow{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--lime);font-weight:850;margin:24px 0 5px}
+h1{margin:0;font-weight:950;font-size:clamp(2.6rem,10vw,5.1rem);line-height:1.05;letter-spacing:-.065em}
+.intro{color:var(--muted);line-height:1.5;margin:12px 0 20px}
+.panel{padding:clamp(14px,4vw,27px);border:1px solid var(--line);background:rgba(31,63,57,.88);border-radius:24px;box-shadow:0 18px 45px #091e1c5e}
+.legend{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding-bottom:10px}
+.legend-item{display:flex;gap:8px;align-items:center;font-size:.92rem;font-weight:800}
+.legend-symbol{height:45px;width:45px;display:inline-grid;place-items:center;background:#f7efd8;border-radius:12px}
+.legend-symbol svg{height:42px;width:42px}.vs{color:var(--muted);font-size:.75rem;font-weight:800;letter-spacing:.15em}
+.state{font-weight:850;min-height:2.2em;text-align:center;margin:11px 0 14px;font-size:clamp(1rem,3vw,1.25rem)}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;max-width:510px;margin:0 auto}
+.cell{position:relative;aspect-ratio:1;border:2px solid #eddcaa;border-radius:17px;background:linear-gradient(150deg,#fff5d8,#edddb5);cursor:pointer;display:grid;place-items:center;padding:12%;min-height:0;box-shadow:inset 0 -5px #9b825e40;transition:transform .13s,background .13s}
+.cell:focus-visible{outline:4px solid var(--lime);outline-offset:3px}
+.cell:not(:disabled):hover{background:#fff9e9;transform:translateY(-2px)}
+.cell:disabled{cursor:default}
+.cell svg{width:100%;height:100%;max-width:118px;max-height:118px;filter:drop-shadow(0 5px 3px #4b30252d)}
+.cell.win{outline:4px solid var(--lime);outline-offset:-5px;background:#f0f9ca}
+.controls{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:20px}
+button.primary{border:0;padding:13px 21px;border-radius:999px;font:inherit;font-weight:850;background:var(--lime);color:#1b342b;cursor:pointer}
+button.primary:hover{filter:brightness(1.05)}
+label{color:var(--muted);font-weight:700;font-size:.9rem}
+select{font:inherit;margin-left:6px;padding:8px 10px;background:#15322d;border:1px solid var(--line);color:var(--ink);border-radius:9px}
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}
+.score{background:#19362f;border:1px solid var(--line);border-radius:15px;padding:12px 8px;text-align:center}
+.score b{font-size:clamp(1.4rem,4vw,2rem);display:block;font-variant-numeric:tabular-nums}.score span{color:var(--muted);font-size:.8rem;font-weight:700}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0;color:var(--muted);font-size:.86rem}
+.tax{border:1px dashed var(--orange);border-radius:99px;padding:6px 11px;color:var(--orange);font-weight:800;letter-spacing:.04em}
+.tack{display:inline-block;vertical-align:middle;width:17px;height:17px;margin-right:4px}
+@media(max-width:440px){.board{gap:6px}.cell{border-radius:11px}.legend-symbol{height:36px;width:36px}.legend-symbol svg{height:34px;width:34px}.legend-item{font-size:.78rem}main{padding:12px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="../index.html">← Back to Swamp</a></nav>
+<p class="eyebrow">A perfectly ridiculous single-player game</p>
+<h1>Tick. Tack. Toe.</h1>
+<p class="intro">You are the tick. Your opponent is a remarkably large toe. Get three in a row before the toe stomps your plans.</p>
+<section class="panel" aria-label="Tick Tack Toe game">
+<div class="legend">
+<div class="legend-item"><span class="legend-symbol" id="tickPreview"></span><span>YOU · TICK</span></div>
+<span class="vs">VERSUS</span>
+<div class="legend-item"><span>COMPUTER · TOE</span><span class="legend-symbol" id="toePreview"></span></div>
+</div>
+<div class="state" id="status" role="status" aria-live="polite">Your move, little tick!</div>
+<div class="board" id="board" role="group" aria-label="3 by 3 game board">
+<button class="cell" data-cell="0" aria-label="Empty top left square"></button>
+<button class="cell" data-cell="1" aria-label="Empty top middle square"></button>
+<button class="cell" data-cell="2" aria-label="Empty top right square"></button>
+<button class="cell" data-cell="3" aria-label="Empty middle left square"></button>
+<button class="cell" data-cell="4" aria-label="Empty center square"></button>
+<button class="cell" data-cell="5" aria-label="Empty middle right square"></button>
+<button class="cell" data-cell="6" aria-label="Empty bottom left square"></button>
+<button class="cell" data-cell="7" aria-label="Empty bottom middle square"></button>
+<button class="cell" data-cell="8" aria-label="Empty bottom right square"></button>
+</div>
+<div class="controls">
+<button type="button" class="primary" id="restart">New round ↻</button>
+<label for="difficulty">Toe intelligence
+<select id="difficulty"><option value="playful">Playful</option><option value="clever">Very clever</option></select>
+</label>
+</div>
+</section>
+<div class="scores" aria-label="Scoreboard">
+<div class="score"><b id="tickWins">0</b><span>Tick wins</span></div>
+<div class="score"><b id="draws">0</b><span>Draws</span></div>
+<div class="score"><b id="toeWins">0</b><span>Toe wins</span></div>
+</div>
+<div class="footer">
+<span>Three in a row wins. No sign-in, no server, no fees.</span>
+<span class="tax"><svg class="tack" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6l-1 6 4 4v2H6v-2l4-4z" fill="#f3b17c"/><path d="M12 14v8" stroke="#f3b17c" stroke-width="2"/></svg>TACK TAX: $0.00</span>
+</div>
+</main>
+<script>
+"use strict";
+// Two original, embedded SVG illustrations: an eight-legged tick and a giant toenail-topped toe.
+const TICK = '<svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tick"><g fill="none" stroke="#324b39" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M35 39 20 27 7 32M32 50 17 46 5 52M35 62 18 69 10 83M43 71 33 86 31 101M65 39 80 27 93 32M68 50 83 46 95 52M65 62 82 69 90 83M57 71 67 86 69 101"/></g><ellipse cx="50" cy="56" rx="24" ry="32" fill="#465d3e" stroke="#283e2f" stroke-width="3"/><path d="M50 30v51M38 40l24 14M62 40 38 54" stroke="#78905c" stroke-width="3" opacity=".7"/><circle cx="50" cy="24" r="11" fill="#465d3e" stroke="#283e2f" stroke-width="3"/><path d="M46 13 42 7M54 13 58 7" stroke="#283e2f" stroke-width="4" stroke-linecap="round"/><circle cx="46" cy="22" r="2" fill="#e0f09d"/><circle cx="54" cy="22" r="2" fill="#e0f09d"/></svg>';
+const TOE = '<svg viewBox="0 0 120 135" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Big toe"><defs><linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffdcac"/><stop offset=".65" stop-color="#efb58c"/><stop offset="1" stop-color="#d58e75"/></linearGradient></defs><path d="M62 8C89 8 105 28 105 56L100 107C98 122 86 130 70 124L39 113C28 109 27 96 32 79L36 43C39 23 48 8 62 8Z" fill="url(#skin)" stroke="#ba7667" stroke-width="3"/><rect x="49" y="20" width="44" height="43" rx="16" fill="#f9d9ce" stroke="#cf948b" stroke-width="2.5"/><path d="M53 55Q72 62 90 55" fill="none" stroke="#e7aea4" stroke-width="2"/><path d="M43 88q23 10 49 0M42 99q20 9 46 4" fill="none" stroke="#bc7f70" stroke-width="2.5" stroke-linecap="round" opacity=".75"/><path d="M42 45Q47 19 63 16" stroke="#ffe7c6" stroke-width="5" stroke-linecap="round" opacity=".6" fill="none"/></svg>';
+const cells = Array.from(document.querySelectorAll(".cell"));
+const boardElement = document.querySelector("#board");
+const status = document.querySelector("#status");
+const difficulty = document.querySelector("#difficulty");
+const scoreEls = {tick:document.querySelector("#tickWins"),toe:document.querySelector("#toeWins"),draw:document.querySelector("#draws")};
+document.querySelector("#tickPreview").innerHTML=TICK;
+document.querySelector("#toePreview").innerHTML=TOE;
+const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+let board, gameOver, thinking, timer=null, generation=0;
+let scores={tick:0,toe:0,draw:0};
+try { const stored=JSON.parse(localStorage.getItem("swamp-tick-tack-toe-score-v1")); if(stored && ["tick","toe","draw"].every(k=>Number.isSafeInteger(stored[k])&&stored[k]>=0)) scores=stored; } catch(e) {}
+function saveScores(){try{localStorage.setItem("swamp-tick-tack-toe-score-v1",JSON.stringify(scores))}catch(e){}}
+function showScores(){Object.keys(scoreEls).forEach(k=>scoreEls[k].textContent=scores[k]);}
+function getResult(b){
+ for(const line of lines){const [a,c,d]=line;if(b[a] && b[a]===b[c] && b[a]===b[d])return {winner:b[a],line};}
+ return b.every(Boolean)?{winner:"draw",line:[]}:null;
+}
+function available(b){return b.map((v,i)=>v===null?i:-1).filter(v=>v>=0);}
+function scoreMove(b,turn,depth){
+ const end=getResult(b);
+ if(end) return end.winner==="toe"?10-depth:end.winner==="tick"?depth-10:0;
+ const scoresHere=[];
+ for(const i of available(b)){b[i]=turn;scoresHere.push(scoreMove(b,turn==="toe"?"tick":"toe",depth+1));b[i]=null;}
+ return turn==="toe"?Math.max(...scoresHere):Math.min(...scoresHere);
+}
+function bestToeMove(){
+ const options=available(board);
+ if(difficulty.value==="playful" && Math.random()<.6) {
+   // Prefer an immediate win, otherwise sometimes pick a random square.
+   for(const i of options){board[i]="toe";const win=getResult(board)?.winner==="toe";board[i]=null;if(win)return i;}
+   return options[Math.floor(Math.random()*options.length)];
+ }
+ let top=-Infinity, best=[];
+ for(const i of options){board[i]="toe";const v=scoreMove(board,"tick",0);board[i]=null;if(v>top){top=v;best=[i]} else if(v===top)best.push(i);}
+ return best[Math.floor(Math.random()*best.length)];
+}
+function render(){
+ cells.forEach((cell,i)=>{
+   const val=board[i];
+   cell.innerHTML=val==="tick"?TICK:val==="toe"?TOE:"";
+   cell.disabled=gameOver||thinking||val!==null;
+   cell.setAttribute("aria-label",(val==="tick"?"Tick in ":val==="toe"?"Toe in ":"Empty ")+["top left","top middle","top right","middle left","center","middle right","bottom left","bottom middle","bottom right"][i]+" square");
+   cell.classList.remove("win");
+ });
+}
+function finish(){
+ const result=getResult(board);
+ if(!result)return false;
+ gameOver=true;thinking=false;
+ for(const i of result.line)cells[i].classList.add("win");
+ scores[result.winner]++;showScores();saveScores();
+ status.textContent=result.winner==="tick"?"The tick wins! Blood-curdling brilliance.":result.winner==="toe"?"The big toe wins! You've been out-toed.":"A draw! Nobody gets the last toe.";
+ render();
+ return true;
+}
+function move(i,side){
+ if(gameOver || board[i]!==null)return;
+ board[i]=side;
+ if(finish())return;
+ thinking=side==="tick";
+ status.textContent=thinking?"The toe is thinking…":"Your move, little tick!";
+ render();
+ if(thinking){
+   const round=generation;
+   timer=setTimeout(()=>{timer=null;if(round!==generation||gameOver)return;const next=bestToeMove();if(next!==undefined){thinking=false;move(next,"toe");}},420);
+ }
+}
+boardElement.addEventListener("click",e=>{
+ const cell=e.target.closest("button[data-cell]");
+ if(cell && !thinking && !gameOver)move(Number(cell.dataset.cell),"tick");
+});
+function restart(){
+ generation++;if(timer!==null){clearTimeout(timer);timer=null;}
+ board=Array(9).fill(null);gameOver=false;thinking=false;
+ status.textContent="Your move, little tick!";render();
+}
+document.querySelector("#restart").addEventListener("click",restart);
+difficulty.addEventListener("change",restart);
+showScores();restart();
+</script>
+</body>
+</html>
