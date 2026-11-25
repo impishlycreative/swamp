@@ -1,20 +1,20 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.2.2</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.2.3</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#160f0c;color:#e8d7b8;font:16px system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:12px}header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px}h1{margin:0;font-size:1.3rem}a{color:#dbc28e}button{background:#39291e;color:#fff2d5;border:1px solid #92744b;border-radius:8px;padding:10px;font:inherit}canvas{width:100%;height:auto;display:block;background:#100c09;border:1px solid #483428;border-radius:8px}p{color:#c7b69b;font-size:.9rem}
-</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.2.2</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Full-body silhouettes shuffle against the frosted glass. Tap Enable sound for moans, palm impacts and glass squeaks.</p></main>
+</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.2.3</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans, palm impacts and glass squeaks.</p></main>
 <script>
 "use strict";
 const canvas=document.getElementById("view"), c=canvas.getContext("2d"), W=1100,H=680;
 const rnd=(a,b)=>a+Math.random()*(b-a), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const panes=[{x:123,y:133,w:157,h:290},{x:411,y:160,w:130,h:267},{x:557,y:132,w:220,h:295},{x:793,y:160,w:130,h:267}];
-const actors=panes.map((p,i)=>({p,phase:rnd(0,6),x:p.x+p.w*.5,side:i%2?1:-1,height:rnd(.88,.94),stride:rnd(1.7,2.3)}));
+const actors=panes.map((p,i)=>({p,phase:rnd(0,6),x:p.x+p.w*.5,side:i%2?1:-1,height:rnd(1.48,1.58),stride:rnd(1.7,2.3)}));
 const silhouette=document.createElement("canvas");silhouette.width=260;silhouette.height=330;
 const sg=silhouette.getContext("2d");
 const smooth=v=>v*v*(3-2*v);
 function actorX(a,t){return a.x+Math.sin(t*.57+a.phase)*a.p.w*.16}
 function pose(a,t){
-  const h=a.p.h*a.height, floor=a.p.y+a.p.h-7, x=actorX(a,t);
+  const h=a.p.h*a.height, floor=a.p.y+a.p.h+h*.34, x=actorX(a,t);
   const lean=Math.sin(t*.72+a.phase)*h*.025+a.side*h*.025;
   const hip={x,y:floor-h*.46}, shoulder={x:x+lean,y:floor-h*.78+Math.sin(t*1.5+a.phase)*h*.006};
   return {h,floor,x,hip,shoulder};
