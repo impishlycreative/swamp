@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.2.9</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.3.0</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#160f0c;color:#e8d7b8;font:16px system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:12px}header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px}h1{margin:0;font-size:1.3rem}a{color:#dbc28e}button{background:#39291e;color:#fff2d5;border:1px solid #92744b;border-radius:8px;padding:10px;font:inherit}canvas{width:100%;height:auto;display:block;background:#100c09;border:1px solid #483428;border-radius:8px}p{color:#c7b69b;font-size:.9rem}
-</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.2.9</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans and palm impacts.</p></main>
+</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.3.0</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans and palm impacts.</p></main>
 <script>
 "use strict";
 const canvas=document.getElementById("view"), c=canvas.getContext("2d"), W=1100,H=680;
@@ -117,7 +117,26 @@ function spawn(){
 }
 function update(dt){time+=dt;if(time>=next)spawn();if(time>=nextMoan){moan(rnd(-.85,.85));nextMoan=time+rnd(3,7)}for(const e of events){const t=time-e.start,pan=(e.x/W)*2-1;if(t>=.42&&!e.hit){e.hit=true;slap(pan)}if(e.blood&&t>=2.7&&!e.mark){e.mark=true;stains.push({...e,when:time})}}events=events.filter(e=>time-e.start<3.15);stains=stains.filter(e=>time-e.when<95).slice(-35)}
 function trail(e,amount,alpha){if(amount<=0)return;c.save();c.globalAlpha=alpha;c.lineCap="round";for(let i=0;i<5;i++){const x=e.x+(i-2)*9*e.scale,y=e.y-32*e.scale+i%2*7;c.strokeStyle=i%2?"#702323":"#8d2829";c.lineWidth=(i%3+2)*e.scale;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+Math.sin(i)*9,y+e.drop*amount*.55,x+(i-2)*3,y+e.drop*amount);c.stroke()}c.restore()}
-function draw(){c.drawImage(bg,0,0);for(const p of panes){c.save();c.beginPath();c.rect(p.x,p.y,p.w,p.h);c.clip();grad(c,p.x,p.y,p.w,p.h,[[0,"#9caeaf"],[.45,"#778d91"],[1,"#465b61"]]);for(const a of actors.filter(a=>a.p===p))body(c,a,time);for(const e of stains.filter(e=>e.p===p))trail(e,1,.63*(1-(time-e.when)/100));for(const e of events.filter(e=>e.p===p)){const t=time-e.start,drag=clamp((t-.95)/1.75,0,1),y=e.y+e.drop*drag;const op=t<.42?.12+.76*t/.42:t>2.7?.88*(1-(t-2.7)/.45):.88;if(e.blood)trail(e,drag,.72);hand(c,e.x,y,e.scale*(t<.42?.7+.3*t/.42:1),e.rot,e.blood&&t>=.42?"rgba(93,34,35,"+op+")":"rgba(33,48,51,"+op+")")}c.globalAlpha=.44;c.fillStyle=c.createPattern(grain,"repeat");c.fillRect(p.x,p.y,p.w,p.h);c.globalAlpha=1;const edge=c.createLinearGradient(p.x,p.y,p.x+p.w,p.y);edge.addColorStop(0,"rgba(28,37,37,.55)");edge.addColorStop(.16,"rgba(226,232,217,.12)");edge.addColorStop(.85,"rgba(226,232,217,.07)");edge.addColorStop(1,"rgba(20,30,33,.5)");rect(c,p.x,p.y,p.w,p.h,edge);c.restore();c.strokeStyle="#a18057";c.lineWidth=2;c.strokeRect(p.x-2,p.y-2,p.w+4,p.h+4)}
+function distantLights(g,t){
+  g.save();
+  function glow(x,y,r,color,alpha){
+    const z=g.createRadialGradient(x,y,0,x,y,r);
+    z.addColorStop(0,color);z.addColorStop(.3,color);z.addColorStop(1,"rgba(0,0,0,0)");
+    g.globalAlpha=alpha;g.fillStyle=z;g.fillRect(x-r,y-r,r*2,r*2);
+  }
+  // Distant gas lantern: diffuse amber flame and barely visible post.
+  g.globalAlpha=.13;rect(g,738,210,5,215,"#29373a");
+  glow(740,207,48,"#d8a65d",.29);
+  glow(740,207,20,"#ffe2a0",.43+.035*Math.sin(t*3.1)+.025*Math.sin(t*7.3));
+  // A distant, softly sagging string of holiday bulbs, behind the figures.
+  const colors=["#c95c57","#7eb68a","#d8b46d","#779ec9"];
+  for(let i=0;i<23;i++){
+    const x=111+i*36,y=172+13*Math.sin(i*.49);
+    glow(x,y,12+(i%3)*2,colors[i%4],.23+.035*Math.sin(i*2.1));
+  }
+  g.restore();
+}
+function draw(){c.drawImage(bg,0,0);for(const p of panes){c.save();c.beginPath();c.rect(p.x,p.y,p.w,p.h);c.clip();grad(c,p.x,p.y,p.w,p.h,[[0,"#9caeaf"],[.45,"#778d91"],[1,"#465b61"]]);distantLights(c,time);for(const a of actors.filter(a=>a.p===p))body(c,a,time);for(const e of stains.filter(e=>e.p===p))trail(e,1,.63*(1-(time-e.when)/100));for(const e of events.filter(e=>e.p===p)){const t=time-e.start,drag=clamp((t-.95)/1.75,0,1),y=e.y+e.drop*drag;const op=t<.42?.12+.76*t/.42:t>2.7?.88*(1-(t-2.7)/.45):.88;if(e.blood)trail(e,drag,.72);hand(c,e.x,y,e.scale*(t<.42?.7+.3*t/.42:1),e.rot,e.blood&&t>=.42?"rgba(93,34,35,"+op+")":"rgba(33,48,51,"+op+")")}c.globalAlpha=.44;c.fillStyle=c.createPattern(grain,"repeat");c.fillRect(p.x,p.y,p.w,p.h);c.globalAlpha=1;const edge=c.createLinearGradient(p.x,p.y,p.x+p.w,p.y);edge.addColorStop(0,"rgba(28,37,37,.55)");edge.addColorStop(.16,"rgba(226,232,217,.12)");edge.addColorStop(.85,"rgba(226,232,217,.07)");edge.addColorStop(1,"rgba(20,30,33,.5)");rect(c,p.x,p.y,p.w,p.h,edge);c.restore();c.strokeStyle="#a18057";c.lineWidth=2;c.strokeRect(p.x-2,p.y-2,p.w+4,p.h+4)}
 const v=c.createRadialGradient(550,300,230,550,330,640);v.addColorStop(0,"rgba(0,0,0,0)");v.addColorStop(1,"rgba(0,0,0,.74)");rect(c,0,0,W,H,v)}
 function loop(now){const dt=Math.min(.07,(now-last)/1000);last=now;if(!paused&&!document.hidden)update(dt);if(!document.hidden)draw();requestAnimationFrame(loop)}
 draw();requestAnimationFrame(loop);
