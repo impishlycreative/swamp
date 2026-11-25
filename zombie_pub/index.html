@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.3.0</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.3.1</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#160f0c;color:#e8d7b8;font:16px system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:12px}header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px}h1{margin:0;font-size:1.3rem}a{color:#dbc28e}button{background:#39291e;color:#fff2d5;border:1px solid #92744b;border-radius:8px;padding:10px;font:inherit}canvas{width:100%;height:auto;display:block;background:#100c09;border:1px solid #483428;border-radius:8px}p{color:#c7b69b;font-size:.9rem}
-</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.3.0</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans and palm impacts.</p></main>
+</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.3.1</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans and palm impacts.</p></main>
 <script>
 "use strict";
 const canvas=document.getElementById("view"), c=canvas.getContext("2d"), W=1100,H=680;
@@ -41,7 +41,7 @@ for(const p of panes)wood(b,p.x-10,p.y-10,p.w+20,p.h+20);
 wood(b,369,435,596,26);wood(b,0,462,90,23);wood(b,313,462,56,23);wood(b,963,462,137,23);
 for(const x of [15,325,976]){wood(b,x,490,88,92);wood(b,x+8,500,72,70)}
 // Pub furniture, counter, lamps and warm pools of light.
-poly(b,[[0,555],[180,525],[270,544],[270,680],[0,680]],"#24160f");poly(b,[[0,544],[180,513],[281,538],[269,555],[0,565]],"#795033");wood(b,18,568,180,111);
+// Keep the left doorway and its approach clear.
 ellipse(b,938,557,130,30,"#130d0a");ellipse(b,938,549,132,29,"#5b3a24");rect(b,925,569,23,105,"#251810");ellipse(b,937,672,58,9,"#23160f");
 for(const x of [24,353,986]){rect(b,x+30,40,4,46,"#110d0b");const r=b.createRadialGradient(x+32,102,5,x+32,102,100);r.addColorStop(0,"rgba(245,174,76,.28)");r.addColorStop(1,"rgba(245,174,76,0)");rect(b,x-68,2,200,200,r);poly(b,[[x+14,91],[x+50,91],[x+59,112],[x+5,112]],"#bd8b43");rect(b,x+16,113,32,4,"#e6b66a")}
 const grain=document.createElement("canvas");grain.width=256;grain.height=256;const gc=grain.getContext("2d");const im=gc.createImageData(256,256);for(let i=0;i<im.data.length;i+=4){const q=Math.random()*255;im.data[i]=im.data[i+1]=im.data[i+2]=q;im.data[i+3]=rnd(10,44)}gc.putImageData(im,0,0);
