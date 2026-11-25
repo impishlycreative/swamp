@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.2.6</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.2.7</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#160f0c;color:#e8d7b8;font:16px system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:12px}header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px}h1{margin:0;font-size:1.3rem}a{color:#dbc28e}button{background:#39291e;color:#fff2d5;border:1px solid #92744b;border-radius:8px;padding:10px;font:inherit}canvas{width:100%;height:auto;display:block;background:#100c09;border:1px solid #483428;border-radius:8px}p{color:#c7b69b;font-size:.9rem}
-</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.2.6</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans and palm impacts.</p></main>
+</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.2.7</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans and palm impacts.</p></main>
 <script>
 "use strict";
 const canvas=document.getElementById("view"), c=canvas.getContext("2d"), W=1100,H=680;
@@ -55,7 +55,7 @@ function body(g,a,t){
   for(const side of [-1,1]){
     const f=foot(a,t,side,p), hip={x:p.hip.x+side*h*.059,y:p.hip.y};
     const knee={x:(hip.x+f.x)*.5+side*h*.012,y:p.floor-h*.235-(p.floor-f.y)*.32};
-    limb([hip,knee],h*.093);limb([knee,{x:f.x,y:f.y-h*.024}],h*.068);
+    limb([hip,knee],h*(a.kind==='santa'?.155:.093));limb([knee,{x:f.x,y:f.y-h*.024}],h*(a.kind==='santa'?.105:.068));
     ellipse(sg,f.x+side*h*.022,f.y-h*.014,h*.047,h*.021,col,side*.08);
   }
   // Hunched torso, neck, and an irregularly tilted head.
@@ -70,6 +70,7 @@ function body(g,a,t){
   if(a.kind==="santa"){
     const hx=sh.x+a.side*h*.025, hy=sh.y-h*.132;
     ellipse(sg,sh.x,sh.y+h*.15,h*.155,h*.19,col,0);
+    ellipse(sg,hip.x,hip.y-h*.015,h*.145,h*.09,col,0);
     poly(sg,[[hx-h*.07,hy-h*.035],[hx-h*.045,hy-h*.14],[hx+h*.095,hy-h*.075],[hx+h*.07,hy-h*.025]],col);
     ellipse(sg,hx+h*.095,hy-h*.075,h*.023,h*.023,col,0);
     ellipse(sg,hx,hy-h*.035,h*.075,h*.018,col,0);
