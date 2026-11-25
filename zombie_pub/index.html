@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.2.4</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>The Pub — v0.2.5</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#160f0c;color:#e8d7b8;font:16px system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:12px}header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px}h1{margin:0;font-size:1.3rem}a{color:#dbc28e}button{background:#39291e;color:#fff2d5;border:1px solid #92744b;border-radius:8px;padding:10px;font:inherit}canvas{width:100%;height:auto;display:block;background:#100c09;border:1px solid #483428;border-radius:8px}p{color:#c7b69b;font-size:.9rem}
-</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.2.4</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans, palm impacts and glass squeaks.</p></main>
+</style></head><body><main><header><a href="../index.html">Back to Swamp</a><h1>The Pub · v0.2.5</h1><button id="sound">Enable sound</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Volume"></label><button id="pause">Pause</button></header><canvas id="view" width="1100" height="680" aria-label="Inside a dim pub, silhouettes and hands move behind frosted windows"></canvas><p id="status">A quiet pub. Something is outside. Human silhouettes shuffle behind the raised frosted windows. Tap Enable sound for moans and palm impacts.</p></main>
 <script>
 "use strict";
 const canvas=document.getElementById("view"), c=canvas.getContext("2d"), W=1100,H=680;
 const rnd=(a,b)=>a+Math.random()*(b-a), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const panes=[{x:123,y:133,w:157,h:290},{x:411,y:160,w:130,h:267},{x:557,y:132,w:220,h:295},{x:793,y:160,w:130,h:267}];
-const actors=panes.map((p,i)=>({p,phase:rnd(0,6),x:p.x+p.w*.5,side:i%2?1:-1,height:rnd(1.30,1.39),stride:rnd(1.7,2.3)}));
+const actors=panes.map((p,i)=>({p,kind:i===1?'woman':i===2?'santa':'walker',phase:rnd(0,6),x:p.x+p.w*.5,side:i%2?1:-1,height:rnd(1.30,1.39),stride:rnd(1.7,2.3)}));
 const silhouette=document.createElement("canvas");silhouette.width=260;silhouette.height=330;
 const sg=silhouette.getContext("2d");
 const smooth=v=>v*v*(3-2*v);
@@ -47,7 +47,7 @@ for(const x of [24,353,986]){rect(b,x+30,40,4,46,"#110d0b");const r=b.createRadi
 const grain=document.createElement("canvas");grain.width=256;grain.height=256;const gc=grain.getContext("2d");const im=gc.createImageData(256,256);for(let i=0;i<im.data.length;i+=4){const q=Math.random()*255;im.data[i]=im.data[i+1]=im.data[i+2]=q;im.data[i+3]=rnd(10,44)}gc.putImageData(im,0,0);
 function hand(g,x,y,scale,rot,col){g.save();g.translate(x,y);g.rotate(rot);g.scale(scale,scale);g.fillStyle=col;g.strokeStyle=col;g.lineCap="round";ellipse(g,0,0,15,21,col,.12);g.lineWidth=9;for(const [xx,yy,ex,ey] of [[-10,-11,-22,-39],[-3,-15,-7,-50],[6,-15,7,-52],[13,-10,20,-42],[-13,4,-30,-8]]){g.beginPath();g.moveTo(xx,yy);g.quadraticCurveTo((xx+ex)*.5,ey+12,ex,ey);g.stroke()}poly(g,[[-11,12],[10,12],[15,40],[-10,42]],col);g.restore()}
 function body(g,a,t){
-  const p=pose(a,t), h=p.h, col="#29373a", active=events.find(e=>e.actor===a);
+  const p=pose(a,t), h=p.h, col="#29373a";
   sg.setTransform(1,0,0,1,0,0);sg.clearRect(0,0,silhouette.width,silhouette.height);
   sg.save();sg.translate(-a.p.x+16,-a.p.y+16);sg.fillStyle=col;sg.strokeStyle=col;sg.lineCap="round";sg.lineJoin="round";
   function limb(points,width){sg.lineWidth=width;sg.beginPath();points.forEach((v,i)=>i?sg.lineTo(v.x,v.y):sg.moveTo(v.x,v.y));sg.stroke()}
@@ -63,19 +63,32 @@ function body(g,a,t){
   poly(sg,[[sh.x-h*.13,sh.y+h*.012],[sh.x-h*.09,sh.y-h*.033],[sh.x+h*.085,sh.y-h*.033],[sh.x+h*.13,sh.y+h*.012],[hip.x+h*.09,hip.y+h*.028],[hip.x-h*.09,hip.y+h*.028]],col);
   limb([{x:sh.x,y:sh.y+h*.015},{x:sh.x+a.side*h*.016,y:sh.y-h*.085}],h*.062);
   ellipse(sg,sh.x+a.side*h*.025,sh.y-h*.132,h*.055,h*.075,col,Math.sin(t*.65+a.phase)*.12+a.side*.13);
+  if(a.kind==="woman"){
+    ellipse(sg,sh.x,sh.y-h*.09,h*.073,h*.115,col,-.08);
+    ellipse(sg,sh.x-h*.025,sh.y+h*.005,h*.065,h*.09,col,.12);
+  }
+  if(a.kind==="santa"){
+    const hx=sh.x+a.side*h*.025, hy=sh.y-h*.132;
+    ellipse(sg,sh.x,sh.y+h*.15,h*.155,h*.19,"#653638",0);
+    poly(sg,[[hx-h*.07,hy-h*.035],[hx-h*.045,hy-h*.14],[hx+h*.095,hy-h*.075],[hx+h*.07,hy-h*.025]],"#74383a");
+    ellipse(sg,hx+h*.095,hy-h*.075,h*.023,h*.023,"#b5b7ad",0);
+    ellipse(sg,hx,hy-h*.035,h*.075,h*.018,"#b5b7ad",0);
+    ellipse(sg,hx,hy+h*.055,h*.064,h*.07,"#a5a9a1",0);
+  }
   for(const side of [-1,1]){
     const start={x:sh.x+side*h*.11,y:sh.y+h*.015};
     const swing=Math.sin(t*1.5+a.phase+side)*h*.025;
     const rest={x:hip.x+side*h*.157+swing,y:hip.y+h*.09};
     let wrist=rest;
-    if(active&&active.side===side){
+    const active=events.find(e=>e.actor===a&&e.side===side);
+    if(active){
       const age=t-active.start, drag=clamp((age-.95)/1.75,0,1);
       const reach=smooth(clamp(age/.42,0,1))*(1-smooth(clamp((age-2.7)/.45,0,1)));
       wrist={x:rest.x+(active.x-rest.x)*reach,y:rest.y+(active.y+active.drop*drag+17*active.scale-rest.y)*reach};
     }
     const elbow={x:(start.x+wrist.x)*.5+side*h*.028,y:(start.y+wrist.y)*.5+h*.035};
     limb([start,elbow],h*.072);limb([elbow,wrist],h*.055);
-    if(!active||active.side!==side)ellipse(sg,wrist.x,wrist.y+h*.011,h*.026,h*.034,col,side*.15);
+    if(!active)ellipse(sg,wrist.x,wrist.y+h*.011,h*.026,h*.034,col,side*.15);
   }
   sg.restore();
   g.save();g.globalAlpha=.68;g.shadowColor="rgba(26,38,41,.55)";g.shadowBlur=5;
@@ -87,7 +100,6 @@ function route(node,pan){if(ac.createStereoPanner){const p=ac.createStereoPanner
 function hiss(t,dur,amp,freq,Q,pan,endFreq){const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=noise;f.type="bandpass";f.frequency.setValueAtTime(freq,t);f.frequency.exponentialRampToValueAtTime(endFreq||freq,t+dur);f.Q.value=Q;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(amp,t+Math.min(.035,dur*.2));g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);route(g,pan);s.start(t,rnd(0,.5),dur);s.stop(t+dur)}
 function tone(t,dur,amp,freq,end,pan,type="sine"){const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(end,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(amp,t+Math.min(.08,dur*.2));g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);route(g,pan);o.start(t);o.stop(t+dur)}
 function slap(pan){if(!enabled||paused||!ac||ac.state!=="running")return;const t=ac.currentTime;hiss(t,.12,.55,850,.7,pan,250);hiss(t,.038,.38,2400,.8,pan,1100);tone(t,.18,.22,190,85,pan);tone(t,.11,.08,880,790,pan)}
-function squeak(pan,strength){if(!enabled||paused||!ac||ac.state!=="running")return;const t=ac.currentTime;const f=rnd(650,1450);hiss(t,rnd(.08,.16),.24*strength,f,1.1,pan,f*rnd(.65,1.35));hiss(t+.025,.07,.12*strength,rnd(1700,3000),.8,pan,1200)}
 function moan(pan){if(!enabled||paused||!ac||ac.state!=="running")return;const t=ac.currentTime,d=rnd(1.2,2.5),f=rnd(90,145);const o=ac.createOscillator(),lp=ac.createBiquadFilter(),g=ac.createGain(),v=ac.createOscillator(),vg=ac.createGain();o.type="sawtooth";o.frequency.setValueAtTime(f,t);o.frequency.linearRampToValueAtTime(f*1.18,t+d*.4);o.frequency.exponentialRampToValueAtTime(f*.75,t+d);lp.type="lowpass";lp.frequency.value=1100;v.frequency.value=4;vg.gain.value=3;v.connect(vg);vg.connect(o.frequency);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.18,t+d*.3);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(lp);lp.connect(g);route(g,pan);o.start(t);v.start(t);o.stop(t+d);v.stop(t+d);hiss(t,d,.045,330,.7,pan,190)}
 document.getElementById("sound").onclick=async function(){if(!audio()){this.textContent="Audio unavailable";return}enabled=!enabled;if(enabled){try{await ac.resume()}catch(e){enabled=false}}master.gain.value=enabled&&!paused?4*Number(document.getElementById("volume").value)/100:0;this.textContent=enabled?"Mute sound":"Enable sound"};
 document.getElementById("volume").oninput=function(){if(master)master.gain.value=enabled&&!paused?4*Number(this.value)/100:0};
@@ -97,10 +109,12 @@ function spawn(){
   if(!available.length){next=time+.4;return}
   const actor=available[Math.floor(rnd(0,available.length))], p=actor.p, at=pose(actor,time), side=Math.random()<.5?-1:1;
   const scale=rnd(.49,.64);
+  for(const handSide of (Math.random()<.4?[-1,1]:[side])){ const side=handSide;
   events.push({actor,side,p,x:clamp(at.shoulder.x+side*at.h*rnd(.15,.21),p.x+24,p.x+p.w-24),y:at.shoulder.y+rnd(-14,10),drop:rnd(62,88),start:time,rot:side*rnd(-.12,.25),scale,blood:Math.random()<.55,hit:false,mark:false,nextSqueak:0});
+  }
   next=time+rnd(1.3,3.4);
 }
-function update(dt){time+=dt;if(time>=next)spawn();if(time>=nextMoan){moan(rnd(-.85,.85));nextMoan=time+rnd(3,7)}for(const e of events){const t=time-e.start,pan=(e.x/W)*2-1;if(t>=.42&&!e.hit){e.hit=true;slap(pan)}if(t>=.95&&t<2.7&&time>=e.nextSqueak){squeak(pan,rnd(.5,1));e.nextSqueak=time+rnd(.13,.31)}if(e.blood&&t>=2.7&&!e.mark){e.mark=true;stains.push({...e,when:time})}}events=events.filter(e=>time-e.start<3.15);stains=stains.filter(e=>time-e.when<95).slice(-35)}
+function update(dt){time+=dt;if(time>=next)spawn();if(time>=nextMoan){moan(rnd(-.85,.85));nextMoan=time+rnd(3,7)}for(const e of events){const t=time-e.start,pan=(e.x/W)*2-1;if(t>=.42&&!e.hit){e.hit=true;slap(pan)}if(e.blood&&t>=2.7&&!e.mark){e.mark=true;stains.push({...e,when:time})}}events=events.filter(e=>time-e.start<3.15);stains=stains.filter(e=>time-e.when<95).slice(-35)}
 function trail(e,amount,alpha){if(amount<=0)return;c.save();c.globalAlpha=alpha;c.lineCap="round";for(let i=0;i<5;i++){const x=e.x+(i-2)*9*e.scale,y=e.y-32*e.scale+i%2*7;c.strokeStyle=i%2?"#702323":"#8d2829";c.lineWidth=(i%3+2)*e.scale;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+Math.sin(i)*9,y+e.drop*amount*.55,x+(i-2)*3,y+e.drop*amount);c.stroke()}c.restore()}
 function draw(){c.drawImage(bg,0,0);for(const p of panes){c.save();c.beginPath();c.rect(p.x,p.y,p.w,p.h);c.clip();grad(c,p.x,p.y,p.w,p.h,[[0,"#9caeaf"],[.45,"#778d91"],[1,"#465b61"]]);for(const a of actors.filter(a=>a.p===p))body(c,a,time);for(const e of stains.filter(e=>e.p===p))trail(e,1,.63*(1-(time-e.when)/100));for(const e of events.filter(e=>e.p===p)){const t=time-e.start,drag=clamp((t-.95)/1.75,0,1),y=e.y+e.drop*drag;const op=t<.42?.12+.76*t/.42:t>2.7?.88*(1-(t-2.7)/.45):.88;if(e.blood)trail(e,drag,.72);hand(c,e.x,y,e.scale*(t<.42?.7+.3*t/.42:1),e.rot,e.blood&&t>=.42?"rgba(93,34,35,"+op+")":"rgba(33,48,51,"+op+")")}c.globalAlpha=.44;c.fillStyle=c.createPattern(grain,"repeat");c.fillRect(p.x,p.y,p.w,p.h);c.globalAlpha=1;const edge=c.createLinearGradient(p.x,p.y,p.x+p.w,p.y);edge.addColorStop(0,"rgba(28,37,37,.55)");edge.addColorStop(.16,"rgba(226,232,217,.12)");edge.addColorStop(.85,"rgba(226,232,217,.07)");edge.addColorStop(1,"rgba(20,30,33,.5)");rect(c,p.x,p.y,p.w,p.h,edge);c.restore();c.strokeStyle="#a18057";c.lineWidth=2;c.strokeRect(p.x-2,p.y-2,p.w+4,p.h+4)}
 const v=c.createRadialGradient(550,300,230,550,330,640);v.addColorStop(0,"rgba(0,0,0,0)");v.addColorStop(1,"rgba(0,0,0,.74)");rect(c,0,0,W,H,v)}
