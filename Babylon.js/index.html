@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Babylon.js Framework · v0.1.0</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101923;color:#e5edf4;font:16px/1.45 system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:16px}a{color:#9be0fc}h1{font-size:clamp(1.4rem,4vw,2rem);margin:.5rem 0}p{color:#b3c1ce;margin:.4rem 0 1rem}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}select{font:inherit;background:#253649;color:white;border:1px solid #657a8b;border-radius:8px;padding:10px}#status{font-variant-numeric:tabular-nums;color:#b7d7e8}canvas{display:block;width:100%;height:60vh;min-height:260px;max-height:780px;background:#09131d;touch-action:none;border:1px solid #3d5365;border-radius:12px}#error{color:#ffb3a7}small{color:#b3c1ce}
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/babylonjs@8.0.0/babylon.js"></script>
+<script defer src="framework.js"></script>
+</head>
+<body><main>
+<a href="../index.html">← Back to Swamp</a>
+<h1>Babylon.js Framework <small>v0.1.0</small></h1>
+<p>Cross-browser rendering test. Drag to orbit; pinch or scroll to zoom.</p>
+<div class="toolbar"><label for="quality">Graphics quality</label><select id="quality"><option value="auto">Auto (device)</option><option value="mobile">Mobile / low</option><option value="desktop">Desktop / high</option></select><span id="status">Loading engine…</span></div>
+<canvas id="renderCanvas" aria-label="Interactive 3D graphics test" tabindex="0"></canvas>
+<p id="error" role="alert" hidden></p>
+<p><small>Front-end rendering only. No game server, accounts or private game rules are connected.</small></p>
+</main>
+<script>
+window.addEventListener("DOMContentLoaded", function () {
+  const status = document.getElementById("status");
+  const error = document.getElementById("error");
+  const select = document.getElementById("quality");
+  try {
+    if (!window.SwampBabylon) throw new Error("Framework could not load.");
+    const app = SwampBabylon.start(document.getElementById("renderCanvas"), function (s) {
+      status.textContent = "WebGL " + s.webgl + " · " + s.fps + " FPS · " + s.quality + " · Babylon " + s.version;
+    });
+    select.addEventListener("change", function () { app.setQuality(select.value === "auto" ? app.autoQuality() : select.value); });
+    window.addEventListener("pagehide", function (event) { if (!event.persisted) app.dispose(); });
+  } catch (e) {
+    status.textContent = "Unable to start";
+    error.hidden = false;
+    error.textContent = e.message + " Check WebGL support and the internet connection.";
+  }
+});
+</script>
+</body>
+</html>
